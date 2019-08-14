@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Petify</string>
+    <string name="title">Title</string>
+    <string name="artist">Artist</string>
+    <string name="genre">Genre</string>
+    <string name="album">Album</string>
+    <string name="search">Search</string>
+    <string name="song_name">Nothing Playing</string>
+    <string name="song_author">Swipe up to select a song</string>
+    <string name="todo">TODO</string>
+    <string name="songDuration">00:00</string>
+</resources>

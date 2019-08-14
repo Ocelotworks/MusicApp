@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.preference.PreferenceScreen
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:theme="@style/AppTheme">
+
+    <PreferenceCategory android:title="Server setup">
+
+        <EditTextPreference
+                android:key="address"
+                android:title="Server address"
+                android:summary="Address to compatible server, e.g. Petify"
+                android:defaultValue="https://unacceptableuse.com/petify"
+        />
+
+        <SwitchPreferenceCompat
+                android:key="aggressiveReporting"
+                android:title="Aggressive error reports"
+                android:summary="Show error reports as soon as they appear"
+                android:defaultValue="1"
+        />
+
+        <SwitchPreferenceCompat
+                android:key="usageReporting"
+                android:title="Anonymised statistics reports"
+                android:summary="Send usage reports"
+                android:defaultValue="0"
+        />
+
+        <SwitchPreferenceCompat
+                android:key="crashReporting"
+                android:title="Anonymised crash reports"
+                android:summary="Send crash reports"
+                android:defaultValue="1"
+        />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Offline play">
+
+        <SeekBarPreference
+                android:key="download"
+                android:title="Offline download song count"
+                android:summary="Keeps most played songs locally downloaded"
+        />
+
+        <SwitchPreferenceCompat
+                android:key="albumart"
+                android:title="Keep album art stored locally"
+                android:summary="Downloads played album art to reduce data usage"
+        />
+
+        <EditTextPreference
+                android:key="storage"
+                android:title="Offline Storage Directory"
+                android:defaultValue="/sdcard/petify"
+        />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Intents">
+
+        <SwitchPreferenceCompat
+                android:key="useIntents"
+                android:title="Use intents"
+                android:summary="Listens to intents to allow audio control
+                \nIntent root: pw.dvd604.music
+                \nUsable intents: PAUSE, PLAY, NEXT and PREV"
+        />
+    </PreferenceCategory>
+
+</android.support.v7.preference.PreferenceScreen>

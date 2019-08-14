@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="layer_width">16</dimen>
+    <dimen name="layer_height">16</dimen>
+    <dimen name="offset_distance">32</dimen>
+    <dimen name="preview_offset_distance">32</dimen>
+</resources>
