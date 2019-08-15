@@ -1,15 +1,23 @@
 package pw.dvd604.music.fragment
 
+import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import com.android.volley.Response
+import kotlinx.android.synthetic.main.fragment_playing.*
+import org.json.JSONObject
+import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
-import pw.dvd604.music.fragment.helper.BitmapAsync
+import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.util.BitmapAsync
+import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.MediaController
+import pw.dvd604.music.util.Util
 
 
 class NowPlayingFragment : Fragment() {
@@ -17,13 +25,12 @@ class NowPlayingFragment : Fragment() {
     private var tempPlayState : Boolean = false
     private var tempStarState : Boolean = false
     private var tempShuffleState : Boolean = false
+    private var http : HTTP? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         // Inflate the layout for this fragment
         val v = inflater.inflate(R.layout.fragment_playing, container, false)
-
-        BitmapAsync(this).execute("https://unacceptableuse.com/petify/album/7ad4c877-45d4-423c-8cf7-757f4969f02b")
-
+        http = HTTP(context)
         return v
     }
 
@@ -82,6 +89,30 @@ class NowPlayingFragment : Fragment() {
     fun hideStar() {
         this.view?.let{
             it.findViewById<ImageView>(R.id.btnStar).visibility = View.INVISIBLE
+        }
+    }
+
+    fun setSong(song: Song) {
+        BitmapAsync(this).execute("https://unacceptableuse.com/petify/album/" + song.album)
+        songName.text = song.name
+        songAuthor.text = song.author
+        http?.getReq(HTTP.songInfo(song.id), SongInfoListener(this))
+
+        val activity = this.activity as MainActivity
+        val serviceIntent = Intent(this.context, MediaController::class.java)
+        serviceIntent.action = MediaController.playIntent
+        serviceIntent.putExtra("url", "https://unacceptableuse.com/petify/song/${song.id}")
+        activity.startService(serviceIntent)
+
+    }
+
+    class SongInfoListener(private val nowPlayingFragment: NowPlayingFragment) : Response.Listener<String> {
+        override fun onResponse(response: String?) {
+            val json = JSONObject(response)
+
+            nowPlayingFragment.songDuration.text = Util.prettyTime(json.getInt("duration"))
+            nowPlayingFragment.songProgress.max = json.getInt("duration")
+            nowPlayingFragment.songProgress.progress = 0
         }
     }
 

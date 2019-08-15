@@ -1,4 +1,4 @@
-package pw.dvd604.music.fragment.helper
+package pw.dvd604.music.util
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

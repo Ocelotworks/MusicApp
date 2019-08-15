@@ -15,6 +15,9 @@ import pw.dvd604.music.fragment.SongFragment
 import android.content.SharedPreferences
 import android.support.design.widget.Snackbar
 import android.support.v7.preference.PreferenceManager
+import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.MediaController
 
 
 class MainActivity : AppCompatActivity() {
@@ -23,9 +26,7 @@ class MainActivity : AppCompatActivity() {
     private var nowPlayingFragment: NowPlayingFragment = NowPlayingFragment()
     private var songFragment: SongFragment = SongFragment()
     private var menuItem: MenuItem? = null
-    private val wes: Int = 1
-    private val res: Int = 2
-
+    private val permissionsResult: Int = 1
 
     private val prefKeys = hashMapOf(
         1 to "address",
@@ -45,18 +46,23 @@ class MainActivity : AppCompatActivity() {
     private val crashReports: Int = 6
     private val storage: Int = 7
     private val useIntents: Int = 8
-    private var prefs: SharedPreferences? = null
+    private lateinit var prefs: SharedPreferences
     private var homeLab: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        prefs.getString(prefKeys[server], "https://unacceptableuse.com/petify")?.let {
+            HTTP.setup(it)
+        }
+
 
         //Insert actual fragments into shell containers
         val fM = this.supportFragmentManager
         val fT = fM.beginTransaction()
-        songFragment.address = prefs?.getString(prefKeys[server],"")
         fT.add(R.id.fragmentContainer, nowPlayingFragment)
         fT.add(R.id.slideContainer, songFragment)
         fT.commit()
@@ -68,7 +74,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkServerPrefs() {
-        if (prefs?.getString(prefKeys[server], "") == "https://unacceptableuse.com/petify") {
+        if (prefs.getString(prefKeys[server], "") == "https://unacceptableuse.com/petify") {
             //We're connecting to petify
         } else {
             //We're on a home lab, disable all advanced functions
@@ -79,21 +85,9 @@ class MainActivity : AppCompatActivity() {
 
     fun onClick(v: View) {
         when (v.id) {
-            R.id.btnTitle -> {
-                songFragment.changeTextColour(v.id)
-                songFragment.searchMode = v.id
-                return
-            }
-            R.id.btnAlbum -> {
-                songFragment.changeTextColour(v.id)
-                songFragment.searchMode = v.id
-                return
-            }
-            R.id.btnGenre -> {
-                songFragment.changeTextColour(v.id)
-                songFragment.searchMode = v.id
-                return
-            }
+            R.id.btnTitle,
+            R.id.btnAlbum,
+            R.id.btnGenre,
             R.id.btnArtist -> {
                 songFragment.changeTextColour(v.id)
                 songFragment.searchMode = v.id
@@ -179,34 +173,38 @@ class MainActivity : AppCompatActivity() {
     private fun checkPermissions() {
         //Check we have both storage permissions
         //Request them if we don't
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
+        val permissions = arrayOf(
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+
+        val check: Boolean = check(
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+
+        if (!check) {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                wes
+                permissions,
+                permissionsResult
             )
         }
+    }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                wes
-            )
+    private fun check(vararg perms: String): Boolean {
+        var result = true
+        for (perm in perms) {
+            if (ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_DENIED)
+                result = false
         }
-
+        return result
     }
 
     fun report(text: String) {
-        prefs?.let {
-            if (it.getBoolean(prefKeys[aggressiveReporting], true)) {
-                Snackbar.make(this.findViewById(R.id.fragmentContainer), text as CharSequence, Snackbar.LENGTH_SHORT)
-                    .show()
-            }
+        if (prefs.getBoolean(prefKeys[aggressiveReporting], true)) {
+            Snackbar.make(this.findViewById(R.id.fragmentContainer), text as CharSequence, Snackbar.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -214,17 +212,16 @@ class MainActivity : AppCompatActivity() {
         requestCode: Int,
         permissions: Array<String>, grantResults: IntArray
     ) {
-        //Get request result - keep asking until we get the required permissions
+        //Get request result
         when (requestCode) {
-            wes -> {
-                if (!((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED))) {
-                    checkPermissions()
-                }
-                return
-            }
-            res -> {
-                if (!((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED))) {
-                    checkPermissions()
+            permissionsResult -> {
+                if (grantResults.isNotEmpty()) {
+                    for (perm in grantResults) {
+                        if (perm != PackageManager.PERMISSION_GRANTED) {
+                            report("This app will not work without permissions")
+                            return
+                        }
+                    }
                 }
                 return
             }
@@ -232,6 +229,10 @@ class MainActivity : AppCompatActivity() {
                 // Ignore all other requests.
             }
         }
+    }
+
+    fun setSong(song: Song) {
+        nowPlayingFragment.setSong(song)
     }
 
 

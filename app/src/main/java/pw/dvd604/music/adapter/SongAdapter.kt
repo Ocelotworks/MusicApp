@@ -31,4 +31,8 @@ open class SongAdapter(context: Context, list: ArrayList<Song>, resource: Int = 
         return view
     }
 
+    fun getItemAtPosition(position: Int) : Song{
+        return list[position]
+    }
+
 }

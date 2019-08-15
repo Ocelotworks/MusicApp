@@ -4,25 +4,28 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ListView
 import com.android.volley.Response
 import kotlinx.android.synthetic.main.fragment_songs.*
 import org.json.JSONArray
 import org.json.JSONObject
+import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.fragment.helper.HTTP
+import pw.dvd604.music.util.HTTP
 
 
-class SongFragment : Fragment(), TextWatcher {
+class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
 
     var searchMode: Int = R.id.btnTitle
-    var address: String? = ""
     var http: HTTP? = null
     //Array of our songs
     var songs = ArrayList<Song>(0)
@@ -40,6 +43,7 @@ class SongFragment : Fragment(), TextWatcher {
 
         //Tell the search text box to tell us when it's changed
         v.findViewById<EditText>(R.id.songSearch).addTextChangedListener(this)
+        v.findViewById<ListView>(R.id.songList).onItemClickListener = this
 
         http = HTTP(context)
         pullSongs()
@@ -66,7 +70,7 @@ class SongFragment : Fragment(), TextWatcher {
     }
 
     private fun pullSongs() {
-        http?.getReq(address + http?.getSong, PullSongListener(this))
+        http?.getReq(HTTP.getSong(), PullSongListener(this))
     }
 
     private fun setSongs() {
@@ -83,11 +87,19 @@ class SongFragment : Fragment(), TextWatcher {
                 pullSongs()
                 return
             }
-            http?.getReq(address + http?.search + it, SearchListener(this))
+            http?.getReq(HTTP.search(it.toString()), SearchListener(this))
         }
     }
 
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+
+    override fun onItemClick(adapter: AdapterView<*>?, v: View?, position: Int, id: Long) {
+        val songAdapter = adapter?.adapter as SongAdapter
+        val song : Song = songAdapter.getItemAtPosition(position)
+
+        val activity = this.activity as MainActivity
+        activity.setSong(song)
+    }
 
 
     //HTTP req listeners below
