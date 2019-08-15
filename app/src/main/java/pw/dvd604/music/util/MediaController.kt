@@ -16,6 +16,7 @@ import org.json.JSONArray
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.fragment.NowPlayingFragment
 
 class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
     MediaPlayer.OnCompletionListener {
@@ -36,6 +37,7 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
     private var bR: IntentReceiver? = null
     var nextSong: Song? = null
     var lastSong: Song? = null
+    var currentSong: Song? = null
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
@@ -72,6 +74,7 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
                     mediaPlayer?.reset()
                     mediaPlayer?.release()
                 }
+                currentSong = intent.getSerializableExtra("song") as Song
                 mediaPlayer = MediaPlayer()
                 mediaPlayer?.setAudioAttributes(
                     AudioAttributes
@@ -101,11 +104,44 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
         return START_STICKY
     }
 
+    private fun prepMediaPlayer(shuffle: Boolean = false) {
+        if (mediaPlayer != null) {
+            mediaPlayer?.reset()
+            mediaPlayer?.release()
+        }
+        mediaPlayer = MediaPlayer()
+        mediaPlayer?.setAudioAttributes(
+            AudioAttributes
+                .Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+        )
+        mediaPlayer?.setOnErrorListener(this)
+        mediaPlayer?.setOnPreparedListener(this)
+        mediaPlayer?.setOnCompletionListener(this)
+
+        mediaPlayer?.apply {
+            setDataSource(Util.songToUrl(nextSong))
+            prepareAsync()
+        }
+
+        val intent = Intent(NowPlayingFragment.songIntent)
+        intent.putExtra("song", nextSong)
+        currentSong = nextSong
+        this.sendBroadcast(intent)
+        if (!shuffle)
+            return
+
+        nextSong?.let { createNotification(it, true) }
+        shuffleCount = shuffleCount % 9 + 1
+        http?.getReq(HTTP.getQueue(), QueueListener(this))
+    }
+
     override fun onPrepared(p0: MediaPlayer?) {
         mediaPlayer?.start()
     }
 
-    private fun createNotification(song: Song, notify: Boolean = false): Notification? {
+    private fun createNotification(song: Song, notify: Boolean = false, pausePlay: Boolean = false): Notification? {
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT
         }
@@ -122,16 +158,28 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
         val pauseIntent = Intent(pauseIntentCode)
         val pausePIntent: PendingIntent = PendingIntent.getBroadcast(this, 0, pauseIntent, 0)
 
+        val playIntent = Intent(playIntentCode)
+        val playPIntent: PendingIntent = PendingIntent.getBroadcast(this, 0, playIntent, 0)
 
         val builder = NotificationCompat.Builder(this, "petify_Not_panel")
-            .setSmallIcon(R.drawable.baseline_shuffle_white_18)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setDefaults(Notification.DEFAULT_LIGHTS)
+            .setSound(null)
+            .setVibrate(null)
             .setContentTitle("Now Playing:")
             .setContentText("${song.name} - ${song.author}")
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setContentIntent(pendingIntent)
             .addAction(R.drawable.baseline_skip_previous_white_18, "prev", prevPIntent)
-            .addAction(R.drawable.baseline_pause_white_18, "pause", pausePIntent)
-            .addAction(R.drawable.baseline_skip_next_white_18, "next", nextPIntent)
+
+        if (pausePlay) {
+            builder.addAction(R.drawable.baseline_play_arrow_white_18, "play", playPIntent)
+        } else {
+            builder.addAction(R.drawable.baseline_pause_white_18, "pause", pausePIntent)
+        }
+        builder.addAction(R.drawable.baseline_skip_next_white_18, "next", nextPIntent)
+
+
 
         if (notify) {
             with(NotificationManagerCompat.from(this)) {
@@ -160,97 +208,31 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
         }
     }
 
-
     override fun onError(p0: MediaPlayer?, p1: Int, p2: Int): Boolean {
         return true
     }
 
-    //TODO: Forgive me father for I have sinned, beyond this point
-
     override fun onCompletion(mp: MediaPlayer?) {
-        if (mediaPlayer != null) {
-            mediaPlayer?.reset()
-            mediaPlayer?.release()
-        }
-        mediaPlayer = MediaPlayer()
-        mediaPlayer?.setAudioAttributes(
-            AudioAttributes
-                .Builder()
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                .build()
-        )
-        mediaPlayer?.setOnErrorListener(this)
-        mediaPlayer?.setOnPreparedListener(this)
-        mediaPlayer?.setOnCompletionListener(this)
-
-        mediaPlayer?.apply {
-            setDataSource(Util.songToUrl(nextSong))
-            prepareAsync()
-        }
-
-        nextSong?.let { createNotification(it, true) }
-        shuffleCount = shuffleCount % 9 + 1
-        http?.getReq(HTTP.getQueue(), QueueListener(this))
+        prepMediaPlayer(true)
     }
 
     class IntentReceiver(private val service: MediaController) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-
-            //TODO: Fix this shit out of this
             when (intent?.action) {
                 pauseIntentCode -> {
                     service.mediaPlayer?.pause()
+                    service.currentSong?.let { service.createNotification(it, notify = true, pausePlay = true) }
                 }
                 nextIntentCode -> {
-                    if (service.mediaPlayer != null) {
-                        service.mediaPlayer?.reset()
-                        service.mediaPlayer?.release()
-                    }
-                    service.mediaPlayer = MediaPlayer()
-                    service.mediaPlayer?.setAudioAttributes(
-                        AudioAttributes
-                            .Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build()
-                    )
-                    service.mediaPlayer?.setOnErrorListener(service)
-                    service.mediaPlayer?.setOnPreparedListener(service)
-                    service.mediaPlayer?.setOnCompletionListener(service)
-
-                    service.mediaPlayer?.apply {
-                        setDataSource(Util.songToUrl(service.nextSong))
-                        prepareAsync()
-                    }
-
-                    service.nextSong?.let { service.createNotification(it, true) }
-                    service.shuffleCount = service.shuffleCount % 9 + 1
-                    service.http?.getReq(HTTP.getQueue(), QueueListener(service))
+                    service.prepMediaPlayer(true)
                 }
                 prevIntentCode -> {
-                    if (service.mediaPlayer != null) {
-                        service.mediaPlayer?.reset()
-                        service.mediaPlayer?.release()
-                    }
-                    service.mediaPlayer = MediaPlayer()
-                    service.mediaPlayer?.setAudioAttributes(
-                        AudioAttributes
-                            .Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build()
-                    )
-                    service.mediaPlayer?.setOnErrorListener(service)
-                    service.mediaPlayer?.setOnPreparedListener(service)
-                    service.mediaPlayer?.setOnCompletionListener(service)
-
-                    service.mediaPlayer?.apply {
-                        setDataSource(Util.songToUrl(service.lastSong))
-                        prepareAsync()
-                    }
-
+                    service.prepMediaPlayer()
                     service.lastSong?.let { service.createNotification(it, true) }
                 }
                 playIntentCode -> {
                     service.mediaPlayer?.start()
+                    service.currentSong?.let { service.createNotification(it, notify = true, pausePlay = false) }
                 }
             }
         }
