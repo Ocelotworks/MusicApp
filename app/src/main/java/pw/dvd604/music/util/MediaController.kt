@@ -197,7 +197,7 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.channel_name)
             val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_MIN
             val channel = NotificationChannel("petify_Not_panel", name, importance).apply {
                 description = descriptionText
             }
