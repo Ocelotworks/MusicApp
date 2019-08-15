@@ -12,21 +12,28 @@ class HTTP(context: Context?) {
 
     companion object {
         var address: String? = null
-        fun setup(addr : String){
+        fun setup(addr: String) {
             address = addr
         }
 
         private const val songAPI: String = "/api/song"
         private const val searchAPI: String = "/search/query/"
+        private const val queueAPI: String = "/templates/songs/shuffleQueue"
 
         fun songInfo(id: String): String {
             return "$address$songAPI/$id/info"
         }
-        fun getSong():String{
+
+        fun getSong(): String {
             return address + songAPI
         }
-        fun search(term: String):String{
+
+        fun search(term: String): String {
             return address + searchAPI + term
+        }
+
+        fun getQueue(): String? {
+            return address + queueAPI
         }
     }
 

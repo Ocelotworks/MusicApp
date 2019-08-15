@@ -2,8 +2,10 @@ package pw.dvd604.music.fragment
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -98,12 +100,12 @@ class NowPlayingFragment : Fragment() {
         songAuthor.text = song.author
         http?.getReq(HTTP.songInfo(song.id), SongInfoListener(this))
 
-        val activity = this.activity as MainActivity
-        val serviceIntent = Intent(this.context, MediaController::class.java)
-        serviceIntent.action = MediaController.playIntent
-        serviceIntent.putExtra("url", "https://unacceptableuse.com/petify/song/${song.id}")
-        activity.startService(serviceIntent)
 
+        val serviceIntent = Intent(this.context, MediaController::class.java)
+        serviceIntent.action = MediaController.playIntentCode
+        serviceIntent.putExtra("url", Util.songToUrl(song))
+        serviceIntent.putExtra("song", song)
+        ContextCompat.startForegroundService(this.context!!, serviceIntent)
     }
 
     class SongInfoListener(private val nowPlayingFragment: NowPlayingFragment) : Response.Listener<String> {

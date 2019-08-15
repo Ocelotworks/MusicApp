@@ -3,6 +3,7 @@ package pw.dvd604.music.adapter.data
 import android.view.View
 import android.widget.TextView
 import pw.dvd604.music.R
+import java.io.Serializable
 
 data class Song(
     var name: String,
@@ -12,7 +13,11 @@ data class Song(
     var genre: String = "",
     var artistID: String = "",
     val hideDash: Boolean = false
-){
+) : Serializable{
+
+    companion object {
+        private const val serialVersionUID = 20180617104400L
+    }
 
     fun generateText(view: View): View {
         var text = "%author% - %name%"

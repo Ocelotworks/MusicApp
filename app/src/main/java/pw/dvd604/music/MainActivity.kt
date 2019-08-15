@@ -234,6 +234,4 @@ class MainActivity : AppCompatActivity() {
     fun setSong(song: Song) {
         nowPlayingFragment.setSong(song)
     }
-
-
 }

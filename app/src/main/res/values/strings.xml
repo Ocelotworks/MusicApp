@@ -9,4 +9,6 @@
     <string name="song_author">Swipe up to select a song</string>
     <string name="todo">TODO</string>
     <string name="songDuration">00:00</string>
+    <string name="channel_name">Media Controls</string>
+    <string name="channel_description">Lorem Ipsum</string>
 </resources>

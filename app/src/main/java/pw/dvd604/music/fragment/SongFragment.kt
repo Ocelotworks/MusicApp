@@ -21,6 +21,7 @@ import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.Util
 
 
 class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
@@ -111,14 +112,7 @@ class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
             val array = JSONArray(response)
             for (i in 0 until array.length()) {
                 val songJSON = array.getJSONObject(i)
-                val song = Song(
-                    songJSON.getString("title"),
-                    songJSON.getString("name"),
-                    songJSON.getString("song_id"),
-                    songJSON.getString("album"),
-                    "",
-                    songJSON.getString("artist_id")
-                )
+                val song = Util.jsonToSong(songJSON)
                 songFragment.songs.add(song)
             }
 
@@ -138,14 +132,7 @@ class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
 
                 when (songFragment.searchMode) {
                     R.id.btnTitle -> {
-                        song = Song(
-                            songJSON.getString("title"),
-                            songJSON.getString("name"),
-                            songJSON.getString("song_id"),
-                            songJSON.getString("album"),
-                            "",
-                            songJSON.getString("artist_id")
-                        )
+                        song = Util.jsonToSong(songJSON)
                     }
                     R.id.btnArtist,
                     R.id.btnGenre,
