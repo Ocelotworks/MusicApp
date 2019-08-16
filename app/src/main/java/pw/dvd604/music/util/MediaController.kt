@@ -56,6 +56,7 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
         filter.addAction(nextIntentCode)
         filter.addAction(prevIntentCode)
         filter.addAction(pauseIntentCode)
+        filter.addAction(NowPlayingFragment.updateIntent)
 
         bR = IntentReceiver(this)
 
@@ -263,6 +264,11 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
                 playIntentCode -> {
                     service.mediaPlayer?.start()
                     service.currentSong?.let { service.createNotification(it, notify = true, pausePlay = false) }
+                }
+                NowPlayingFragment.updateIntent ->{
+                    val songIntent = Intent(NowPlayingFragment.songIntent)
+                    songIntent.putExtra("song", service.nextSong)
+                    this.service.sendBroadcast(intent)
                 }
             }
         }

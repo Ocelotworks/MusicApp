@@ -32,6 +32,7 @@ class NowPlayingFragment : Fragment() {
         private const val intentRoot  = "pw.dvd604.music.service"
         const val songIntent = "$intentRoot.song"
         const val timingIntent = "$intentRoot.timing"
+        const val updateIntent = "$intentRoot.update"
     }
 
     private var tempPlayState: Boolean = false
@@ -40,7 +41,6 @@ class NowPlayingFragment : Fragment() {
     private var http: HTTP? = null
     private var broadcastReceiver = MediaControllerReceiver(this)
     private var iFilter = IntentFilter()
-    private var songProgess: Int = 0
 
     init {
         iFilter.addAction(songIntent)
@@ -54,13 +54,19 @@ class NowPlayingFragment : Fragment() {
         return v
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         this.context?.registerReceiver(broadcastReceiver, iFilter)
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onResume() {
+        super.onResume()
+        val intent = Intent(updateIntent)
+        this.context?.sendBroadcast(intent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
         this.context?.unregisterReceiver(broadcastReceiver)
     }
 

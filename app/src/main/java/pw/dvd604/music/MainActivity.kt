@@ -1,6 +1,7 @@
 package pw.dvd604.music
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -76,17 +77,19 @@ class MainActivity : AppCompatActivity() {
         checkServerPrefs()
     }
 
+    override fun onResume() {
+        super.onResume()
+        val intent = Intent(NowPlayingFragment.updateIntent)
+        this.sendBroadcast(intent)
+    }
+
     fun startTracking(){
         tracking = (application as MusicApplication).mixpanel
 
         if(!prefs.getBoolean(prefKeys[usageReports], false)){
-            Log.e("Tracking", "Stopped tracking")
             tracking?.optOutTracking()
         } else {
-            if(tracking != null) {
-                Log.e("Tracking", "Opted into tracking")
-                tracking?.optInTracking()
-            }
+            tracking?.optInTracking()
         }
     }
 
