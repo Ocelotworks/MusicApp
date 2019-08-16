@@ -15,9 +15,13 @@ import pw.dvd604.music.fragment.SongFragment
 import android.content.SharedPreferences
 import android.support.design.widget.Snackbar
 import android.support.v7.preference.PreferenceManager
+import android.util.Log
+import com.mixpanel.android.mpmetrics.MixpanelAPI
+import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.MediaController
+import pw.dvd604.music.util.Util
 
 
 class MainActivity : AppCompatActivity() {
@@ -27,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private var songFragment: SongFragment = SongFragment()
     private var menuItem: MenuItem? = null
     private val permissionsResult: Int = 1
+    private var tracking: MixpanelAPI? = null
 
     private val prefKeys = hashMapOf(
         1 to "address",
@@ -54,11 +59,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
-
         prefs.getString(prefKeys[server], "https://unacceptableuse.com/petify")?.let {
             HTTP.setup(it)
         }
-
 
         //Insert actual fragments into shell containers
         val fM = this.supportFragmentManager
@@ -73,6 +76,20 @@ class MainActivity : AppCompatActivity() {
         checkServerPrefs()
     }
 
+    fun startTracking(){
+        tracking = (application as MusicApplication).mixpanel
+
+        if(!prefs.getBoolean(prefKeys[usageReports], false)){
+            Log.e("Tracking", "Stopped tracking")
+            tracking?.optOutTracking()
+        } else {
+            if(tracking != null) {
+                Log.e("Tracking", "Opted into tracking")
+                tracking?.optInTracking()
+            }
+        }
+    }
+
     private fun checkServerPrefs() {
         if (prefs.getString(prefKeys[server], "") == "https://unacceptableuse.com/petify") {
             //We're connecting to petify
@@ -84,6 +101,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onClick(v: View) {
+        if(tracking != null) {
+            tracking?.track("${Util.idToString(v.id)} Click")
+        }
+
         when (v.id) {
             R.id.btnTitle,
             R.id.btnAlbum,

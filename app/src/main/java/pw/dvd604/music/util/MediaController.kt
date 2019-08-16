@@ -8,15 +8,21 @@ import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
+import android.util.Log
 import com.android.volley.Response
+import kotlinx.android.synthetic.main.fragment_playing.*
 import org.json.JSONArray
 import pw.dvd604.music.MainActivity
+import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.fragment.NowPlayingFragment
+import java.util.*
 
 class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
     MediaPlayer.OnCompletionListener {
@@ -55,6 +61,20 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
 
         this.registerReceiver(bR, filter)
         http = HTTP(this)
+
+        var timer = Timer()
+        timer.scheduleAtFixedRate(createRunnable(this), 0,1000)
+    }
+
+    private fun createRunnable(media : MediaController): TimerTask = object : TimerTask() {
+        override fun run() {
+            val intent = Intent(NowPlayingFragment.timingIntent)
+
+            mediaPlayer?.let {
+                intent.putExtra("time",it.currentPosition/1000)
+            }
+            media.sendBroadcast(intent)
+        }
     }
 
     override fun onDestroy() {
@@ -93,6 +113,11 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
                 What the fuck
                 wifiLock.acquire()*/
 
+                (this.application as MusicApplication).mixpanel?.track(
+                    "Song play",
+                    Util.songToJson(intent.getSerializableExtra("song") as Song)
+                )
+
                 mediaPlayer?.apply {
                     setDataSource(intent.getStringExtra("url"))
                     prepareAsync()
@@ -116,6 +141,7 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build()
         )
+
         mediaPlayer?.setOnErrorListener(this)
         mediaPlayer?.setOnPreparedListener(this)
         mediaPlayer?.setOnCompletionListener(this)
@@ -132,7 +158,11 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
         if (!shuffle)
             return
 
-        nextSong?.let { createNotification(it, true) }
+
+        nextSong?.let {
+            createNotification(it, true)
+            (this.application as MusicApplication).mixpanel?.track("Song play", Util.songToJson(it))
+        }
         shuffleCount = shuffleCount % 9 + 1
         http?.getReq(HTTP.getQueue(), QueueListener(this))
     }

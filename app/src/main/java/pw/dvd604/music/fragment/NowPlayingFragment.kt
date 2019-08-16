@@ -6,8 +6,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,8 +28,10 @@ import pw.dvd604.music.util.Util
 
 class NowPlayingFragment : Fragment() {
 
-    companion object{
-        const val songIntent = "pw.dvd604.music.service.song"
+    companion object {
+        private const val intentRoot  = "pw.dvd604.music.service"
+        const val songIntent = "$intentRoot.song"
+        const val timingIntent = "$intentRoot.timing"
     }
 
     private var tempPlayState: Boolean = false
@@ -35,9 +40,11 @@ class NowPlayingFragment : Fragment() {
     private var http: HTTP? = null
     private var broadcastReceiver = MediaControllerReceiver(this)
     private var iFilter = IntentFilter()
+    private var songProgess: Int = 0
 
     init {
         iFilter.addAction(songIntent)
+        iFilter.addAction(timingIntent)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -123,7 +130,6 @@ class NowPlayingFragment : Fragment() {
         songAuthor.text = song.author
         http?.getReq(HTTP.songInfo(song.id), SongInfoListener(this))
 
-
         if (fromService)
             return
 
@@ -151,6 +157,11 @@ class NowPlayingFragment : Fragment() {
                     //There's a new song being played on the service
                     val song: Song = intent.getSerializableExtra("song") as Song
                     nowPlayingFragment.setSong(song, true)
+                }
+                timingIntent ->{
+                    //We got a timing update
+                    nowPlayingFragment.songProgress.progress = intent.getIntExtra("time", 0)
+                    nowPlayingFragment.songProgessText.text = Util.prettyTime(intent.getIntExtra("time", 0))
                 }
             }
         }
