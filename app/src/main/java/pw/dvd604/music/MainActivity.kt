@@ -16,12 +16,9 @@ import pw.dvd604.music.fragment.SongFragment
 import android.content.SharedPreferences
 import android.support.design.widget.Snackbar
 import android.support.v7.preference.PreferenceManager
-import android.util.Log
 import com.mixpanel.android.mpmetrics.MixpanelAPI
-import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.HTTP
-import pw.dvd604.music.util.MediaController
 import pw.dvd604.music.util.Util
 
 

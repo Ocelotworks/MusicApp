@@ -6,11 +6,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +19,7 @@ import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.BitmapAsync
 import pw.dvd604.music.util.HTTP
-import pw.dvd604.music.util.MediaController
+import pw.dvd604.music.MediaService
 import pw.dvd604.music.util.Util
 
 
@@ -75,10 +72,10 @@ class NowPlayingFragment : Fragment() {
             val image: ImageView = it.findViewById(R.id.btnPause)
             if (!tempPlayState) {
                 image.setImageResource(R.drawable.baseline_play_arrow_white_48)
-                this.context?.sendBroadcast(Intent(MediaController.pauseIntentCode))
+                this.context?.sendBroadcast(Intent(MediaService.pauseIntentCode))
             } else {
                 image.setImageResource(R.drawable.baseline_pause_white_48)
-                this.context?.sendBroadcast(Intent(MediaController.playIntentCode))
+                this.context?.sendBroadcast(Intent(MediaService.playIntentCode))
             }
             if (!change) return
             tempPlayState = !tempPlayState
@@ -91,11 +88,11 @@ class NowPlayingFragment : Fragment() {
     }
 
     fun nextSong() {
-        this.context?.sendBroadcast(Intent(MediaController.nextIntentCode))
+        this.context?.sendBroadcast(Intent(MediaService.nextIntentCode))
     }
 
     fun prevSong() {
-        this.context?.sendBroadcast(Intent(MediaController.prevIntentCode))
+        this.context?.sendBroadcast(Intent(MediaService.prevIntentCode))
     }
 
     fun starSong() {
@@ -139,8 +136,8 @@ class NowPlayingFragment : Fragment() {
         if (fromService)
             return
 
-        val serviceIntent = Intent(this.context, MediaController::class.java)
-        serviceIntent.action = MediaController.playIntentCode
+        val serviceIntent = Intent(this.context, MediaService::class.java)
+        serviceIntent.action = MediaService.playIntentCode
         serviceIntent.putExtra("url", Util.songToUrl(song))
         serviceIntent.putExtra("song", song)
         ContextCompat.startForegroundService(this.context!!, serviceIntent)

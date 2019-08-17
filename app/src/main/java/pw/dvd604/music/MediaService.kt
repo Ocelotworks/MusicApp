@@ -1,4 +1,4 @@
-package pw.dvd604.music.util
+package pw.dvd604.music
 
 import android.app.*
 import android.content.BroadcastReceiver
@@ -6,25 +6,24 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioAttributes
+import android.media.MediaMetadata
 import android.media.MediaPlayer
 import android.os.Build
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
-import android.util.Log
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import com.android.volley.Response
-import kotlinx.android.synthetic.main.fragment_playing.*
 import org.json.JSONArray
-import pw.dvd604.music.MainActivity
-import pw.dvd604.music.MusicApplication
-import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.fragment.NowPlayingFragment
+import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.Util
 import java.util.*
 
-class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
+class MediaService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
     MediaPlayer.OnCompletionListener {
 
     companion object {
@@ -41,6 +40,10 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
     private var http: HTTP? = null
     private var mediaPlayer: MediaPlayer? = null
     private var bR: IntentReceiver? = null
+    private var session: MediaSessionCompat? = null
+    private var playbackState: PlaybackStateCompat? = null
+    private var stateBuilder: PlaybackStateCompat.Builder? = null
+    private var mediaMetadata : MediaMetadataCompat? = null
     var nextSong: Song? = null
     var lastSong: Song? = null
     var currentSong: Song? = null
@@ -51,6 +54,26 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
 
     override fun onCreate() {
         super.onCreate()
+        session = MediaSessionCompat(this, "petify")
+        stateBuilder = PlaybackStateCompat.Builder()
+        stateBuilder?.setActions(PlaybackStateCompat.ACTION_PLAY and
+                PlaybackStateCompat.ACTION_PAUSE and
+                PlaybackStateCompat.ACTION_STOP and
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT and
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS and
+                PlaybackStateCompat.ACTION_SEEK_TO and
+                PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE and
+                PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH)
+        playbackState = stateBuilder?.build()
+        session?.let {
+            it.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS)
+            it.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+            it.setPlaybackState(playbackState)
+            it.setCallback(SessionCallbackReceiver(this))
+            it.isActive = true
+        }
+
+
         val filter = IntentFilter()
         filter.addAction(playIntentCode)
         filter.addAction(nextIntentCode)
@@ -64,15 +87,15 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
         http = HTTP(this)
 
         var timer = Timer()
-        timer.scheduleAtFixedRate(createRunnable(this), 0,1000)
+        timer.scheduleAtFixedRate(createRunnable(this), 0, 1000)
     }
 
-    private fun createRunnable(media : MediaController): TimerTask = object : TimerTask() {
+    private fun createRunnable(media: MediaService): TimerTask = object : TimerTask() {
         override fun run() {
             val intent = Intent(NowPlayingFragment.timingIntent)
 
             mediaPlayer?.let {
-                intent.putExtra("time",it.currentPosition/1000)
+                intent.putExtra("time", it.currentPosition / 1000)
             }
             media.sendBroadcast(intent)
         }
@@ -81,6 +104,7 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
     override fun onDestroy() {
         super.onDestroy()
         this.unregisterReceiver(bR)
+        session?.release()
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -124,7 +148,10 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
                     prepareAsync()
                 }
 
-                http?.getReq(HTTP.getQueue(), QueueListener(this))
+                http?.getReq(
+                    HTTP.getQueue(),
+                    QueueListener(this)
+                )
             }
         }
         return START_STICKY
@@ -162,7 +189,10 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
 
         nextSong?.let {
             createNotification(it, true)
-            (this.application as MusicApplication).mixpanel?.track("Song play", Util.songToJson(it))
+            (this.application as MusicApplication).mixpanel?.track(
+                "Song play",
+                Util.songToJson(it)
+            )
         }
         shuffleCount = shuffleCount % 9 + 1
         http?.getReq(HTTP.getQueue(), QueueListener(this))
@@ -247,7 +277,37 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
         prepMediaPlayer(true)
     }
 
-    class IntentReceiver(private val service: MediaController) : BroadcastReceiver() {
+    class SessionCallbackReceiver(private val service: MediaService) : MediaSessionCompat.Callback(){
+        override fun onPlay() {
+            super.onPlay()
+        }
+
+        override fun onPause() {
+            super.onPause()
+        }
+
+        override fun onStop() {
+            super.onStop()
+        }
+
+        override fun onSeekTo(pos: Long) {
+            super.onSeekTo(pos)
+        }
+
+        override fun onSkipToNext() {
+            super.onSkipToNext()
+        }
+
+        override fun onSkipToPrevious() {
+            super.onSkipToPrevious()
+        }
+
+        override fun onSetShuffleMode(shuffleMode: Int) {
+            super.onSetShuffleMode(shuffleMode)
+        }
+    }
+
+    class IntentReceiver(private val service: MediaService) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 pauseIntentCode -> {
@@ -265,7 +325,7 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
                     service.mediaPlayer?.start()
                     service.currentSong?.let { service.createNotification(it, notify = true, pausePlay = false) }
                 }
-                NowPlayingFragment.updateIntent ->{
+                NowPlayingFragment.updateIntent -> {
                     val songIntent = Intent(NowPlayingFragment.songIntent)
                     songIntent.putExtra("song", service.nextSong)
                     this.service.sendBroadcast(intent)
@@ -275,10 +335,11 @@ class MediaController : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.O
 
     }
 
-    class QueueListener(private val mediaController: MediaController) : Response.Listener<String> {
+    class QueueListener(private val mediaController: MediaService) : Response.Listener<String> {
         override fun onResponse(response: String?) {
             val array = JSONArray(response)
-            val song: Song = Util.jsonToSong(array.getJSONObject(mediaController.shuffleCount))
+            val song: Song =
+                Util.jsonToSong(array.getJSONObject(mediaController.shuffleCount))
             mediaController.lastSong = mediaController.nextSong
             mediaController.nextSong = song
         }
