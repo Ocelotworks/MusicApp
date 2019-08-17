@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             //We're on a home lab, disable all advanced functions
             homeLab = true
-            nowPlayingFragment.hideStar()
+            //nowPlayingFragment.hideStar()
         }
     }
 
@@ -116,23 +116,23 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.btnPause -> {
-                nowPlayingFragment.changePausePlay()
+                //nowPlayingFragment.changePausePlay()
                 return
             }
             R.id.btnNext -> {
-                nowPlayingFragment.nextSong()
+                //nowPlayingFragment.nextSong()
                 return
             }
             R.id.btnPrev -> {
-                nowPlayingFragment.prevSong()
+                //nowPlayingFragment.prevSong()
                 return
             }
             R.id.btnStar -> {
-                nowPlayingFragment.starSong()
+                //nowPlayingFragment.starSong()
                 return
             }
             R.id.btnShuffle -> {
-                nowPlayingFragment.toggleShuffle()
+                //nowPlayingFragment.toggleShuffle()
                 return
             }
         }
