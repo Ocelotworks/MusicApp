@@ -20,6 +20,8 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaButtonReceiver
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
+import android.view.KeyEvent
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.SongListRequest
@@ -43,6 +45,11 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private lateinit var audioFocusRequest: AudioFocusRequest
 
     private var currentSong: Song? = null
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        MediaButtonReceiver.handleIntent(mediaSession, intent)
+        return super.onStartCommand(intent, flags, startId)
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -76,6 +83,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 )
 
             setPlaybackState(stateBuilder.build())
+
 
             // Set the session's token so that client activities can communicate with it.
             setSessionToken(sessionToken)
@@ -150,11 +158,32 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     class SessionCallbackReceiver(private val service: MediaService) : MediaSessionCompat.Callback() {
 
+        override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
+            when ((mediaButtonEvent?.extras?.get(Intent.EXTRA_KEY_EVENT) as KeyEvent).keyCode) {
+
+                KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+                    if (service.player.isPlaying) {
+                        service.player.pause()
+                    } else {
+                        service.player.start()
+                    }
+                    buildNotification()
+                }
+                KeyEvent.KEYCODE_MEDIA_NEXT -> {
+                    service.nextSong()
+                }
+                KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+
+                }
+            }
+            return super.onMediaButtonEvent(mediaButtonEvent)
+        }
+
         override fun onCommand(command: String?, extras: Bundle?, cb: ResultReceiver?) {
             super.onCommand(command, extras, cb)
-            when(command){
+            when (command) {
                 "shuffle" -> {
-                    if(extras?.getBoolean("shuffle")!!) {
+                    if (extras?.getBoolean("shuffle")!!) {
                         service.mediaSession.setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL)
                     } else {
                         service.mediaSession.setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE)
@@ -197,6 +226,14 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             val am = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             // Request audio focus for playback, this registers the afChangeListener
 
+            service.mediaSession.setPlaybackState(
+                PlaybackStateCompat.Builder().setState(
+                    PlaybackStateCompat.STATE_PLAYING,
+                    0,
+                    1f
+                ).build()
+            )
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 service.audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
                     setOnAudioFocusChangeListener(service.afChangeListener)
@@ -217,10 +254,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     // Put the service in the foreground, post notification
                     buildNotification()
                 }
-
-
-                val handler = Handler()
-                handler.postDelayed(SeekRunnable(), 1000)
             }
 
         }
@@ -279,18 +312,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             service.stopForeground(false)
         }
 
-        inner class SeekRunnable : Runnable {
-            override fun run() {
-                service.mediaSession.setPlaybackState(
-                    PlaybackStateCompat.Builder().setState(
-                        PlaybackStateCompat.STATE_PLAYING,
-                        service.player.currentPosition.toLong(),
-                        1f
-                    ).build()
-                )
-            }
-        }
-
         private fun buildNotification() {
             val controller = service.mediaSession.controller
             val mediaMetadata = controller?.metadata
@@ -322,14 +343,40 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 setSmallIcon(R.mipmap.ic_launcher)
                 color = ContextCompat.getColor(service, R.color.colorPrimary)
 
+                addAction(
+                    NotificationCompat.Action(
+                        R.drawable.baseline_skip_previous_white_24,
+                        "Previous",
+                        MediaButtonReceiver.buildMediaButtonPendingIntent(
+                            service,
+                            PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                        )
+                    )
+                )
+
                 // Add a pause button
                 addAction(
                     NotificationCompat.Action(
-                        R.drawable.baseline_pause_white_24,
+                        if (service.player.isPlaying) {
+                            R.drawable.baseline_pause_white_24
+                        } else {
+                            R.drawable.baseline_play_arrow_white_24
+                        },
                         service.getString(R.string.pause),
                         MediaButtonReceiver.buildMediaButtonPendingIntent(
                             service,
                             PlaybackStateCompat.ACTION_PLAY_PAUSE
+                        )
+                    )
+                )
+
+                addAction(
+                    NotificationCompat.Action(
+                        R.drawable.baseline_skip_next_white_24,
+                        "Next",
+                        MediaButtonReceiver.buildMediaButtonPendingIntent(
+                            service,
+                            PlaybackStateCompat.ACTION_SKIP_TO_NEXT
                         )
                     )
                 )
