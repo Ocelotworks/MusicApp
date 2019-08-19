@@ -1,7 +1,9 @@
 package pw.dvd604.music.fragment
 
+import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.media.session.MediaControllerCompat
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -21,6 +23,7 @@ import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
 
 
@@ -29,7 +32,7 @@ class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
     var searchMode: Int = R.id.btnTitle
     var http: HTTP? = null
     //Array of our songs
-    var songs = ArrayList<Song>(0)
+    var songData = ArrayList<Song>(0)
     //Search modes are how we translate button IDs to JSON array names
     var searchModes = hashMapOf(
         R.id.btnTitle to "songs",
@@ -71,10 +74,11 @@ class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
     }
 
     private fun pullSongs() {
-        http?.getReq(HTTP.getSong(), PullSongListener(this))
+        http?.getReq(HTTP.getSong(), SongListRequest(::setSongs))
     }
 
-    private fun setSongs() {
+    fun setSongs(songs : ArrayList<Song>) {
+        songData = songs
         context?.let {
             songList.adapter = SongAdapter(it, songs)
         }
@@ -99,30 +103,17 @@ class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
         val song : Song = songAdapter.getItemAtPosition(position)
 
         val activity = this.activity as MainActivity
-        activity.setSong(song)
+        //activity.setSong(song)
+        MediaControllerCompat.getMediaController(activity).transportControls.prepareFromUri(Uri.parse(Util.songToUrl(song)), null)
     }
 
 
     //HTTP req listeners below
 
-
-    class PullSongListener(private val songFragment: SongFragment) : Response.Listener<String> {
-        override fun onResponse(response: String?) {
-            songFragment.songs.clear()
-            val array = JSONArray(response)
-            for (i in 0 until array.length()) {
-                val songJSON = array.getJSONObject(i)
-                val song = Util.jsonToSong(songJSON)
-                songFragment.songs.add(song)
-            }
-
-            songFragment.setSongs()
-        }
-    }
-
     class SearchListener(private val songFragment: SongFragment) : Response.Listener<String> {
         override fun onResponse(response: String?) {
-            songFragment.songs.clear()
+            val data = ArrayList<Song>()
+            songFragment.songData.clear()
             val json = JSONObject(response)
             val array = json.getJSONArray(songFragment.searchModes[songFragment.searchMode])
 
@@ -149,10 +140,10 @@ class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
                     }
                 }
 
-                song?.let { songFragment.songs.add(it) }
+                song?.let { data.add(it) }
 
             }
-            songFragment.setSongs()
+            songFragment.setSongs(data)
         }
     }
 }

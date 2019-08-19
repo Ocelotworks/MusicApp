@@ -1,5 +1,9 @@
 package pw.dvd604.music.util
 
+import android.media.browse.MediaBrowser
+import android.net.Uri
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import org.json.JSONObject
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
@@ -86,6 +90,17 @@ class Util {
                     return "Button"
                 }
             }
+        }
+
+        fun songToMediaItem(song: Song): MediaBrowserCompat.MediaItem {
+            val descriptionBuilder = MediaDescriptionCompat.Builder().apply {
+                setTitle(song.name)
+                setDescription(song.author)
+                setMediaUri(Uri.parse(songToUrl(song)))
+                setIconUri(Uri.parse("https://unacceptableuse.com/petify/album/${song.album}"))
+                setMediaId(song.id)
+            }
+            return MediaBrowserCompat.MediaItem(descriptionBuilder.build(), MediaBrowserCompat.MediaItem.FLAG_PLAYABLE)
         }
     }
 }

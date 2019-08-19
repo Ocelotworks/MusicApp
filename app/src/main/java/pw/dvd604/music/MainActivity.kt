@@ -116,23 +116,18 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.btnPause -> {
-                //nowPlayingFragment.changePausePlay()
                 return
             }
             R.id.btnNext -> {
-                //nowPlayingFragment.nextSong()
                 return
             }
             R.id.btnPrev -> {
-                //nowPlayingFragment.prevSong()
                 return
             }
             R.id.btnStar -> {
-                //nowPlayingFragment.starSong()
                 return
             }
             R.id.btnShuffle -> {
-                //nowPlayingFragment.toggleShuffle()
                 return
             }
         }
@@ -253,6 +248,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun setSong(song: Song) {
-        nowPlayingFragment.setSong(song)
+        //nowPlayingFragment.setSong(song)
     }
 }
