@@ -104,7 +104,9 @@ class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
 
         val activity = this.activity as MainActivity
         //activity.setSong(song)
-        MediaControllerCompat.getMediaController(activity).transportControls.prepareFromUri(Uri.parse(Util.songToUrl(song)), null)
+        val bundle = Bundle()
+        bundle.putSerializable("song", song)
+        MediaControllerCompat.getMediaController(activity).transportControls.prepareFromUri(Uri.parse(Util.songToUrl(song)), bundle)
     }
 
 

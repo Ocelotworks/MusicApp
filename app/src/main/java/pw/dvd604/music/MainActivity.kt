@@ -1,7 +1,7 @@
 package pw.dvd604.music
 
 import android.Manifest
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -13,8 +13,9 @@ import android.view.View
 import pw.dvd604.music.fragment.NowPlayingFragment
 import pw.dvd604.music.fragment.SettingsFragment
 import pw.dvd604.music.fragment.SongFragment
-import android.content.SharedPreferences
+import android.os.IBinder
 import android.support.design.widget.Snackbar
+import android.support.v4.media.session.PlaybackStateCompat
 import android.support.v7.preference.PreferenceManager
 import com.mixpanel.android.mpmetrics.MixpanelAPI
 import pw.dvd604.music.adapter.data.Song
@@ -52,6 +53,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var prefs: SharedPreferences
     private var homeLab: Boolean = false
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -72,18 +74,19 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
 
         checkServerPrefs()
+
+        startService(Intent(this, MediaService::class.java))
     }
 
-    override fun onResume() {
-        super.onResume()
-        val intent = Intent(NowPlayingFragment.updateIntent)
-        this.sendBroadcast(intent)
+    override fun onDestroy() {
+        super.onDestroy()
+        this.mediaController.transportControls.stop()
     }
 
-    fun startTracking(){
+    fun startTracking() {
         tracking = (application as MusicApplication).mixpanel
 
-        if(!prefs.getBoolean(prefKeys[usageReports], false)){
+        if (!prefs.getBoolean(prefKeys[usageReports], false)) {
             tracking?.optOutTracking()
         } else {
             tracking?.optInTracking()
@@ -101,7 +104,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onClick(v: View) {
-        if(tracking != null) {
+        if (tracking != null) {
             tracking?.track("${Util.idToString(v.id)} Click")
         }
 
@@ -116,9 +119,19 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.btnPause -> {
+                val pbState = this.mediaController.playbackState?.state
+                if (pbState == PlaybackStateCompat.STATE_PLAYING) {
+                    mediaController.transportControls.pause()
+                } else {
+                    mediaController.transportControls.play()
+                }
                 return
             }
             R.id.btnNext -> {
+                val pbState = this.mediaController.playbackState?.state
+                if (pbState == PlaybackStateCompat.STATE_PLAYING or PlaybackStateCompat.STATE_PAUSED) {
+                    mediaController.transportControls.skipToNext()
+                }
                 return
             }
             R.id.btnPrev -> {
@@ -128,6 +141,7 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             R.id.btnShuffle -> {
+                mediaController.sendCommand("", null, null)
                 return
             }
         }
@@ -245,9 +259,5 @@ class MainActivity : AppCompatActivity() {
                 // Ignore all other requests.
             }
         }
-    }
-
-    fun setSong(song: Song) {
-        //nowPlayingFragment.setSong(song)
     }
 }

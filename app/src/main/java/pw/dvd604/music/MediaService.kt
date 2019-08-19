@@ -8,14 +8,15 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.media.session.PlaybackState
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
+import android.os.*
 import android.service.media.MediaBrowserService
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserServiceCompat
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaButtonReceiver
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
@@ -23,6 +24,7 @@ import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
+import kotlin.random.Random
 
 class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
     MediaPlayer.OnCompletionListener {
@@ -40,6 +42,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     private lateinit var audioFocusRequest: AudioFocusRequest
 
+    private var currentSong: Song? = null
+    private var shuffleState : Boolean = false
 
     override fun onCreate() {
         super.onCreate()
@@ -68,6 +72,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 .setActions(
                     PlaybackStateCompat.ACTION_PLAY
                             or PlaybackStateCompat.ACTION_PLAY_PAUSE
+                            or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                            or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
                 )
 
             setPlaybackState(stateBuilder.build())
@@ -75,7 +81,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             // Set the session's token so that client activities can communicate with it.
             setSessionToken(sessionToken)
         }
-        mediaSession?.setCallback(SessionCallbackReceiver(this))
+        mediaSession.setCallback(SessionCallbackReceiver(this))
     }
 
     private fun setSongs(songs: ArrayList<Song>) {
@@ -95,8 +101,26 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         result.sendResult(mediaList)
     }
 
-    override fun onCompletion(mp: MediaPlayer?) {
+    private fun nextSong() {
+        val currentSongIndex: Int = songList.indexOf(currentSong)
+        val nextSongIndex: Int =
+            if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+                Random.nextInt(songList.size)
+            } else {
+                currentSongIndex + 1
+            }
 
+        val nextSong: Song = songList[nextSongIndex]
+        val url: String = Util.songToUrl(nextSong)
+
+        val bundle = Bundle()
+        bundle.putSerializable("song", nextSong)
+
+        mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), bundle)
+    }
+
+    override fun onCompletion(mp: MediaPlayer?) {
+        nextSong()
     }
 
     override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
@@ -104,7 +128,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
-        SessionCallbackReceiver(this).onPlay()
+        mediaSession.setMetadata(Util.addMetadata(mp?.duration))
+        mediaSession.controller.transportControls.play()
     }
 
     private fun createNotificationChannel() {
@@ -113,7 +138,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.channel_name)
             val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_MIN
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(channelId, name, importance).apply {
                 description = descriptionText
             }
@@ -126,10 +151,33 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     class SessionCallbackReceiver(private val service: MediaService) : MediaSessionCompat.Callback() {
 
+        override fun onCommand(command: String?, extras: Bundle?, cb: ResultReceiver?) {
+            super.onCommand(command, extras, cb)
+            when(command){
+                "shuffle" -> {
+                    service.shuffleState = !service.shuffleState
+                    if(service.shuffleState) {
+                        service.mediaSession.setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL)
+                    } else {
+                        service.mediaSession.setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE)
+                    }
+                }
+            }
+        }
+
         override fun onPrepareFromUri(uri: Uri?, extras: Bundle?) {
             super.onPrepareFromUri(uri, extras)
 
+            service.mediaSession.setPlaybackState(
+                PlaybackStateCompat.Builder().setState(
+                    PlaybackStateCompat.STATE_BUFFERING,
+                    0,
+                    1f
+                ).build()
+            )
+            service.player.stop()
             service.player.reset()
+
             service.player.setAudioAttributes(
                 AudioAttributes
                     .Builder()
@@ -141,6 +189,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 setDataSource(uri.toString())
                 prepareAsync()
             }
+
+            service.currentSong = extras?.getSerializable("song") as Song
+            Util.songToMetadata(extras.getSerializable("song") as Song, true)
         }
 
         override fun onPlay() {
@@ -168,8 +219,21 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     // Put the service in the foreground, post notification
                     buildNotification()
                 }
+
+
+                val handler = Handler()
+                handler.postDelayed(SeekRunnable(), 1000)
             }
 
+        }
+
+        override fun onSkipToPrevious() {
+            super.onSkipToPrevious()
+        }
+
+        override fun onSkipToNext() {
+            super.onSkipToNext()
+            service.nextSong()
         }
 
         override fun onStop() {
@@ -188,6 +252,14 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 // Take the service out of the foreground
                 service.stopForeground(false)
             }
+
+            service.mediaSession.setPlaybackState(
+                PlaybackStateCompat.Builder().setState(
+                    PlaybackStateCompat.STATE_STOPPED,
+                    0,
+                    1f
+                ).build()
+            )
         }
 
         override fun onPause() {
@@ -195,14 +267,34 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             // Update metadata and state
             // pause the player (custom call)
             service.player.pause()
+
+            service.mediaSession.setPlaybackState(
+                PlaybackStateCompat.Builder().setState(
+                    PlaybackStateCompat.STATE_PAUSED,
+                    service.player.currentPosition.toLong(),
+                    1f
+                ).build()
+            )
             // unregister BECOME_NOISY BroadcastReceiver
             //unregisterReceiver(myNoisyAudioStreamReceiver)
             // Take the service out of the foreground, retain the notification
             service.stopForeground(false)
         }
 
+        inner class SeekRunnable : Runnable {
+            override fun run() {
+                service.mediaSession.setPlaybackState(
+                    PlaybackStateCompat.Builder().setState(
+                        PlaybackStateCompat.STATE_PLAYING,
+                        service.player.currentPosition.toLong(),
+                        1f
+                    ).build()
+                )
+            }
+        }
+
         private fun buildNotification() {
-            val controller = service.mediaSession?.controller
+            val controller = service.mediaSession.controller
             val mediaMetadata = controller?.metadata
             val description = mediaMetadata?.description
 
@@ -235,7 +327,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 // Add a pause button
                 addAction(
                     NotificationCompat.Action(
-                        R.drawable.baseline_pause_white_18,
+                        R.drawable.baseline_pause_white_24,
                         service.getString(R.string.pause),
                         MediaButtonReceiver.buildMediaButtonPendingIntent(
                             service,
@@ -247,7 +339,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 // Take advantage of MediaStyle features
                 setStyle(
                     android.support.v4.media.app.NotificationCompat.MediaStyle()
-                        .setMediaSession(service.mediaSession?.sessionToken)
+                        .setMediaSession(service.mediaSession.sessionToken)
                         .setShowActionsInCompactView(0)
 
                         // Add a cancel button
@@ -270,6 +362,5 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         override fun onAudioFocusChange(focusChange: Int) {
 
         }
-
     }
 }
