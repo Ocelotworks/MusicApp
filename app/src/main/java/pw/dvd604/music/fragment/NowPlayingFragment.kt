@@ -3,6 +3,8 @@ package pw.dvd604.music.fragment
 import android.app.Activity
 import android.content.ComponentName
 import android.graphics.Bitmap
+import android.graphics.ColorFilter
+import android.graphics.PorterDuff
 import android.media.AudioManager
 import android.media.session.PlaybackState
 import android.os.Bundle
@@ -12,6 +14,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,28 +26,24 @@ import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.BitmapAsync
 import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
 
 
 class NowPlayingFragment : Fragment() {
 
-    companion object {
-        private const val intentRoot = "pw.dvd604.music.service"
-        const val songIntent = "$intentRoot.song"
-        const val timingIntent = "$intentRoot.timing"
-        const val updateIntent = "$intentRoot.update"
-    }
-
     private var volumeControlStream: Int = 0
     private lateinit var mediaBrowser: MediaBrowserCompat
     private var http: HTTP? = null
     private var controllerCallback: MediaControllerCompat.Callback = ControllerCallback(this)
-    private var shuffleMode : Boolean = false
+    private var shuffleMode: Boolean = Settings.getBoolean(Settings.shuffle, true)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         // Inflate the layout for this fragment
         val v = inflater.inflate(R.layout.fragment_playing, container, false)
         http = HTTP(context)
+
+        shuffleMode(false, v)
         return v
     }
 
@@ -96,6 +95,35 @@ class NowPlayingFragment : Fragment() {
         this.view?.findViewById<ImageView>(R.id.songArt)?.setImageBitmap(bmp)
     }
 
+    fun shuffleMode(change: Boolean = true, v: View? = null) {
+        Log.e(this::class.java.name, "Shuffle Pressed")
+        if (change) {
+            shuffleMode = !shuffleMode
+            Settings.putBoolean(Settings.shuffle, shuffleMode)
+        }
+        val view: View? = if (this.view != null) {
+            this.view
+        } else {
+            v
+        }
+
+        view?.let {
+            Log.e(this::class.java.name, "$shuffleMode")
+            val colour: Int = resources.getColor(R.color.colorAccent, null)
+            val img = it.findViewById<ImageView>(R.id.btnShuffle)
+
+            if (shuffleMode) {
+                img.drawable.setColorFilter(colour, PorterDuff.Mode.SRC_IN)
+            } else {
+                img.drawable.clearColorFilter()
+            }
+        }
+
+        val bundle = Bundle()
+        bundle.putBoolean("shuffle", shuffleMode)
+        activity?.mediaController?.sendCommand("shuffle", bundle, null)
+    }
+
     class ConnectionCallback(private val nowPlayingFragment: NowPlayingFragment) :
         MediaBrowserCompat.ConnectionCallback() {
 
@@ -138,7 +166,7 @@ class NowPlayingFragment : Fragment() {
                 nowPlayingFragment.songProgress.progress = it.toInt()
             }
 
-            when(state?.state){
+            when (state?.state) {
                 PlaybackStateCompat.STATE_BUFFERING -> {
                     nowPlayingFragment.btnPause.setImageResource(R.drawable.baseline_shuffle_white_48)
                 }

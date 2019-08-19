@@ -12,6 +12,7 @@ import org.acra.annotation.AcraCore
 import org.acra.config.CoreConfigurationBuilder
 import org.acra.config.MailSenderConfigurationBuilder
 import org.acra.data.StringFormat
+import pw.dvd604.music.util.Settings
 import java.util.*
 
 @AcraCore(buildConfigClass = BuildConfig::class)
@@ -36,6 +37,7 @@ class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
 
     override fun onCreate() {
         super.onCreate()
+        Settings.init(this)
         this.registerActivityLifecycleCallbacks(this)
     }
 

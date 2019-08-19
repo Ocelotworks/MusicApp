@@ -20,6 +20,10 @@ import android.support.v7.preference.PreferenceManager
 import com.mixpanel.android.mpmetrics.MixpanelAPI
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.Settings
+import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
+import pw.dvd604.music.util.Settings.Companion.server
+import pw.dvd604.music.util.Settings.Companion.usageReports
 import pw.dvd604.music.util.Util
 
 
@@ -32,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     private val permissionsResult: Int = 1
     private var tracking: MixpanelAPI? = null
 
-    private val prefKeys = hashMapOf(
+    /*private val prefKeys = hashMapOf(
         1 to "address",
         2 to "download",
         3 to "albumart",
@@ -49,7 +53,7 @@ class MainActivity : AppCompatActivity() {
     private val usageReports: Int = 5
     private val crashReports: Int = 6
     private val storage: Int = 7
-    private val useIntents: Int = 8
+    private val useIntents: Int = 8*/
     private lateinit var prefs: SharedPreferences
     private var homeLab: Boolean = false
 
@@ -58,10 +62,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        prefs.getString(prefKeys[server], "https://unacceptableuse.com/petify")?.let {
-            HTTP.setup(it)
-        }
+        Settings.getSetting(Settings.server, "https://unacceptableuse.com/petify")?.let { HTTP.setup(it) }
 
         //Insert actual fragments into shell containers
         val fM = this.supportFragmentManager
@@ -86,7 +87,7 @@ class MainActivity : AppCompatActivity() {
     fun startTracking() {
         tracking = (application as MusicApplication).mixpanel
 
-        if (!prefs.getBoolean(prefKeys[usageReports], false)) {
+        if (!Settings.getBoolean(usageReports, false)) {
             tracking?.optOutTracking()
         } else {
             tracking?.optInTracking()
@@ -94,7 +95,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkServerPrefs() {
-        if (prefs.getString(prefKeys[server], "") == "https://unacceptableuse.com/petify") {
+        if (Settings.getSetting(server) == "https://unacceptableuse.com/petify") {
             //We're connecting to petify
         } else {
             //We're on a home lab, disable all advanced functions
@@ -141,7 +142,7 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             R.id.btnShuffle -> {
-                mediaController.sendCommand("", null, null)
+                nowPlayingFragment.shuffleMode()
                 return
             }
         }
@@ -232,7 +233,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun report(text: String) {
-        if (prefs.getBoolean(prefKeys[aggressiveReporting], true)) {
+        if (Settings.getBoolean(aggressiveReporting)) {
             Snackbar.make(this.findViewById(R.id.fragmentContainer), text as CharSequence, Snackbar.LENGTH_SHORT)
                 .show()
         }

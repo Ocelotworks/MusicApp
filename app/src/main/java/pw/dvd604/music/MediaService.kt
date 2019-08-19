@@ -43,7 +43,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private lateinit var audioFocusRequest: AudioFocusRequest
 
     private var currentSong: Song? = null
-    private var shuffleState : Boolean = false
 
     override fun onCreate() {
         super.onCreate()
@@ -155,8 +154,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             super.onCommand(command, extras, cb)
             when(command){
                 "shuffle" -> {
-                    service.shuffleState = !service.shuffleState
-                    if(service.shuffleState) {
+                    if(extras?.getBoolean("shuffle")!!) {
                         service.mediaSession.setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL)
                     } else {
                         service.mediaSession.setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE)
