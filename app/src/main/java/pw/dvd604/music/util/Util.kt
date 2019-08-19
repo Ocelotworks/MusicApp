@@ -68,7 +68,7 @@ class Util {
         }
 
         fun songToUrl(song: Song?): String {
-            return "https://unacceptableuse.com/petify/song/${song?.id}"
+            return "${Settings.getSetting(Settings.server)}/song/${song?.id}"
         }
 
         fun idToString(id: Int): String {
@@ -124,10 +124,9 @@ class Util {
                 .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, song.author)
                 .putText(MediaMetadataCompat.METADATA_KEY_GENRE, song.genre)
                 .putText(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, songToAlbumURL(song))
-
+            tempMetadataCompat = metaData
             if (!builder)
                 return metaData.build()
-            tempMetadataCompat = metaData
             return null
         }
 
@@ -141,8 +140,18 @@ class Util {
             return MediaMetadataCompat.Builder().build()
         }
 
+        fun addMetadataProgress(duration : Int?) : MediaMetadataCompat{
+            duration?.let {durationNN ->
+                tempMetadataCompat?.putLong("progress", durationNN.toLong())
+                tempMetadataCompat?.let {
+                    return it.build()
+                }
+            }
+            return MediaMetadataCompat.Builder().build()
+        }
+
         private fun songToAlbumURL(song: Song): String? {
-            return "https://unacceptableuse.com/petify/album/${song.album}"
+            return "${Settings.getSetting(Settings.server)}/album/${song.album}"
         }
     }
 }

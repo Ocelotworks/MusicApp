@@ -8,20 +8,18 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.media.session.PlaybackState
 import android.net.Uri
 import android.os.*
-import android.service.media.MediaBrowserService
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserServiceCompat
-import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaButtonReceiver
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import android.view.KeyEvent
+import com.android.volley.Response
+import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.SongListRequest
@@ -135,7 +133,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
-        mediaSession.setMetadata(Util.addMetadata(mp?.duration))
         mediaSession.controller.transportControls.play()
     }
 
@@ -156,7 +153,12 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         }
     }
 
-    class SessionCallbackReceiver(private val service: MediaService) : MediaSessionCompat.Callback() {
+    class SessionCallbackReceiver(private val service: MediaService) : MediaSessionCompat.Callback(),
+        Response.Listener<String> {
+
+        override fun onResponse(response: String?) {
+            service.mediaSession.setMetadata(Util.addMetadata(JSONObject(response).getInt("duration")))
+        }
 
         override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
             when ((mediaButtonEvent?.extras?.get(Intent.EXTRA_KEY_EVENT) as KeyEvent).keyCode) {
@@ -194,6 +196,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
         override fun onPrepareFromUri(uri: Uri?, extras: Bundle?) {
             super.onPrepareFromUri(uri, extras)
+            service.currentSong = extras?.getSerializable("song") as Song
 
             service.mediaSession.setPlaybackState(
                 PlaybackStateCompat.Builder().setState(
@@ -202,6 +205,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     1f
                 ).build()
             )
+
+            service.http.getReq(HTTP.songInfo(service.currentSong!!.id), this)
+
             service.player.stop()
             service.player.reset()
 
@@ -217,8 +223,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 prepareAsync()
             }
 
-            service.currentSong = extras?.getSerializable("song") as Song
-            Util.songToMetadata(extras.getSerializable("song") as Song, true)
+
+            service.mediaSession.setMetadata(Util.songToMetadata(extras.getSerializable("song") as Song))
         }
 
         override fun onPlay() {
@@ -249,13 +255,23 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     service.mediaSession.isActive = true
                     // start the player (custom call)
                     service.player.start()
+
                     // Register BECOME_NOISY BroadcastReceiver
                     //registerReceiver(myNoisyAudioStreamReceiver, intentFilter)
                     // Put the service in the foreground, post notification
                     buildNotification()
                 }
+                val handler = Handler(Looper.getMainLooper())
+                handler.post(SeekRunnable(service, handler))
             }
 
+        }
+
+        class SeekRunnable(private val service: MediaService, val handler: Handler) : Runnable {
+            override fun run() {
+                service.mediaSession.setMetadata(Util.addMetadataProgress(service.player.currentPosition))
+                handler.postDelayed(this,1000)
+            }
         }
 
         override fun onSkipToPrevious() {

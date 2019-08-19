@@ -88,6 +88,9 @@ class NowPlayingFragment : Fragment() {
         metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)?.let {
             songProgress.max = it.toInt()
         }
+
+        songProgessText.text = Util.prettyTime(metadata?.getLong("progress")!!/1000)
+        songProgress.progress = metadata.getLong("progress").toInt() /1000
         BitmapAsync(this).execute(metadata?.description?.iconUri.toString())
     }
 

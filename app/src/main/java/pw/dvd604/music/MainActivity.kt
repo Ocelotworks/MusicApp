@@ -35,26 +35,6 @@ class MainActivity : AppCompatActivity() {
     private var menuItem: MenuItem? = null
     private val permissionsResult: Int = 1
     private var tracking: MixpanelAPI? = null
-
-    /*private val prefKeys = hashMapOf(
-        1 to "address",
-        2 to "download",
-        3 to "albumart",
-        4 to "aggressiveReporting",
-        5 to "usageReporting",
-        6 to "crashReporting",
-        7 to "storage",
-        8 to "useIntents"
-    )
-    private val server: Int = 1
-    private val offlineMusic: Int = 2
-    private val offlineAlbum: Int = 3
-    private val aggressiveReporting: Int = 4
-    private val usageReports: Int = 5
-    private val crashReports: Int = 6
-    private val storage: Int = 7
-    private val useIntents: Int = 8*/
-    private lateinit var prefs: SharedPreferences
     private var homeLab: Boolean = false
 
 
@@ -62,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Settings.getSetting(Settings.server, "https://unacceptableuse.com/petify")?.let { HTTP.setup(it) }
+        Settings.getSetting(server, "https://unacceptableuse.com/petify")?.let { HTTP.setup(it) }
 
         //Insert actual fragments into shell containers
         val fM = this.supportFragmentManager
