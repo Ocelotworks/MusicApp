@@ -203,6 +203,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                         service.mediaSession.setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE)
                     }
                 }
+                "likesong" -> {
+                    service.http.getReq(HTTP.like(service.currentSong?.id), null)
+                }
             }
         }
 
@@ -329,7 +332,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         }
 
         override fun onPause() {
-            val am = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            //val am = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             // Update metadata and state
             // pause the player (custom call)
             service.player.pause()
@@ -438,9 +441,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         }
     }
 
-    class AudioFocusListener(mediaService: MediaService) : AudioManager.OnAudioFocusChangeListener {
+    class AudioFocusListener(val mediaService: MediaService) : AudioManager.OnAudioFocusChangeListener {
         override fun onAudioFocusChange(focusChange: Int) {
-
+            mediaService.getSystemService(Context.USER_SERVICE)
         }
     }
 }

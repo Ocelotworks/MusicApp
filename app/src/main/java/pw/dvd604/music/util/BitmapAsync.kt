@@ -11,24 +11,24 @@ import java.net.URL
 
 class BitmapAsync(private val nowPlayingFragment: NowPlayingFragment?) : AsyncTask<String, Void, Bitmap>() {
 
-    override fun doInBackground(vararg url: String?): Bitmap? {
-        try {
-            val url = URL(url[0])
+    override fun doInBackground(vararg urls: String?): Bitmap? {
+        return try {
+            val url = URL(urls[0])
             val connection = url.openConnection() as HttpURLConnection
             connection.doInput = true
             connection.connect()
             val input = connection.inputStream
-            return BitmapFactory.decodeStream(input)
+            BitmapFactory.decodeStream(input)
         } catch (e: IOException) {
             // Log exception
-            return null
+            null
         }
     }
 
     override fun onPostExecute(bmp : Bitmap?) {
         if(bmp == null){
             val activity : MainActivity = nowPlayingFragment?.activity as MainActivity
-            activity.report("Failed to connect to server")
+            activity.report("Failed to connect to server", false)
         }
         nowPlayingFragment?.postImage(bmp)
     }

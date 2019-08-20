@@ -12,4 +12,5 @@
     <string name="channel_name">Media Controls</string>
     <string name="channel_description">Lorem Ipsum</string>
     <string name="pause">Pause</string>
+    <string name="homelabError">This feature is only enabled when playing from Petify</string>
 </resources>

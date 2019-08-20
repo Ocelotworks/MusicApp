@@ -1,24 +1,21 @@
 package pw.dvd604.music
 
 import android.Manifest
-import android.content.*
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import com.mixpanel.android.mpmetrics.MixpanelAPI
 import pw.dvd604.music.fragment.NowPlayingFragment
 import pw.dvd604.music.fragment.SettingsFragment
 import pw.dvd604.music.fragment.SongFragment
-import android.os.IBinder
-import android.support.design.widget.Snackbar
-import android.support.v4.media.session.PlaybackStateCompat
-import android.support.v7.preference.PreferenceManager
-import com.mixpanel.android.mpmetrics.MixpanelAPI
-import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
@@ -80,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             //We're on a home lab, disable all advanced functions
             homeLab = true
-            //nowPlayingFragment.hideStar()
+            nowPlayingFragment.hideStar()
         }
     }
 
@@ -116,9 +113,18 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             R.id.btnPrev -> {
+                val pbState = this.mediaController.playbackState?.state
+                if (pbState == PlaybackStateCompat.STATE_PLAYING or PlaybackStateCompat.STATE_PAUSED) {
+                    mediaController.transportControls.skipToPrevious()
+                }
                 return
             }
             R.id.btnStar -> {
+                if (!homeLab) {
+                    mediaController.sendCommand("likesong", null, null)
+                } else {
+                    report(getString(R.string.homelabError), true)
+                }
                 return
             }
             R.id.btnShuffle -> {
@@ -212,8 +218,8 @@ class MainActivity : AppCompatActivity() {
         return result
     }
 
-    fun report(text: String) {
-        if (Settings.getBoolean(aggressiveReporting)) {
+    fun report(text: String, urgent: Boolean) {
+        if (Settings.getBoolean(aggressiveReporting) || urgent) {
             Snackbar.make(this.findViewById(R.id.fragmentContainer), text as CharSequence, Snackbar.LENGTH_SHORT)
                 .show()
         }
@@ -229,7 +235,7 @@ class MainActivity : AppCompatActivity() {
                 if (grantResults.isNotEmpty()) {
                     for (perm in grantResults) {
                         if (perm != PackageManager.PERMISSION_GRANTED) {
-                            report("This app will not work without permissions")
+                            report("This app will not work without permissions", false)
                             return
                         }
                     }

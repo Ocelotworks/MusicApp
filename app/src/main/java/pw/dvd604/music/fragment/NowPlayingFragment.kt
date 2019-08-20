@@ -92,7 +92,7 @@ class NowPlayingFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
         songProgessText.text = Util.prettyTime(metadata?.getLong("progress")!!/1000)
         songProgress.progress = metadata.getLong("progress").toInt() /1000
-        BitmapAsync(this).execute(metadata?.description?.iconUri.toString())
+        BitmapAsync(this).execute(metadata.description?.iconUri.toString())
     }
 
     fun postImage(bmp: Bitmap?) {
@@ -140,6 +140,10 @@ class NowPlayingFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
 
+    }
+
+    fun hideStar() {
+        btnStar.visibility = View.INVISIBLE
     }
 
     class ConnectionCallback(private val nowPlayingFragment: NowPlayingFragment) :
