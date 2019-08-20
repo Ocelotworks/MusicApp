@@ -9,6 +9,8 @@ import org.json.JSONObject
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
 import java.lang.Exception
+import java.util.*
+import kotlin.collections.ArrayList
 
 class Util {
     companion object {
@@ -166,6 +168,13 @@ class Util {
             previousSongs.removeAt(previousSongs.size-1)
             previousSongs.removeAt(previousSongs.size-2)
             return previousSongs[previousSongs.size - 2]
+        }
+
+        fun getTrackingID() : String{
+            val uuid = Settings.getSetting(Settings.tracking, UUID.randomUUID().toString())
+            Settings.putString(Settings.tracking, uuid)
+
+            return uuid ?: ""
         }
     }
 }

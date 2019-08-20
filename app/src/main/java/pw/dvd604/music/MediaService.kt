@@ -441,7 +441,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         }
     }
 
-    class AudioFocusListener(val mediaService: MediaService) : AudioManager.OnAudioFocusChangeListener {
+    class AudioFocusListener(private val mediaService: MediaService) : AudioManager.OnAudioFocusChangeListener {
         override fun onAudioFocusChange(focusChange: Int) {
             mediaService.getSystemService(Context.USER_SERVICE)
         }

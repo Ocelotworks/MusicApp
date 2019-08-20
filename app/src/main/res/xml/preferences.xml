@@ -23,7 +23,7 @@
                 android:key="usageReporting"
                 android:title="Anonymised statistics reports"
                 android:summary="Send usage reports"
-                android:defaultValue="0"
+                android:defaultValue="1"
         />
 
         <SwitchPreferenceCompat

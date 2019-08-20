@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
     fun startTracking() {
         tracking = (application as MusicApplication).mixpanel
 
-        if (!Settings.getBoolean(usageReports, false)) {
+        if (!Settings.getBoolean(usageReports, true)) {
             tracking?.optOutTracking()
         } else {
             tracking?.optInTracking()

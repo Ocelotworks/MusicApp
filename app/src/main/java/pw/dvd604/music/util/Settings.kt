@@ -15,7 +15,8 @@ class Settings {
             6 to "crashReporting",
             7 to "storage",
             8 to "useIntents",
-            9 to "shuffle"
+            9 to "shuffle",
+            10 to "trackingID"
         )
         val server: Int = 1
         val offlineMusic: Int = 2
@@ -26,6 +27,7 @@ class Settings {
         val storage: Int = 7
         val useIntents: Int = 8
         val shuffle : Int = 9
+        val tracking : Int = 10
 
         private var prefs : SharedPreferences? = null
 
@@ -47,6 +49,10 @@ class Settings {
 
         fun putBoolean(name: Int, value: Boolean) {
             prefs?.edit()?.putBoolean(prefKeys[name], value)?.apply()
+        }
+
+        fun putString(setting: Int, value: String?) {
+            prefs?.edit()?.putString(prefKeys[setting], value)?.apply()
         }
     }
 }
