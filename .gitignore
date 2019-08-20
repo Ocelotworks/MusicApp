@@ -3,7 +3,7 @@
 *.ap_
 *.aab
 
-TokenStore.kt
+TokenStore.*
 
 # Files for the ART/Dalvik VM
 *.dex
