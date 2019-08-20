@@ -21,7 +21,7 @@ import java.util.*
 
 class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
 
-    private val mixpanelToken = "55d111267e0216c6895dbac9a5bdfbad"
+    private val mixpanelToken = TokenStore.mixPanelToken
     var mixpanel: MixpanelAPI? = null
     lateinit var prefs : SharedPreferences
 
@@ -36,10 +36,10 @@ class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
                 CoreConfigurationBuilder(this).setBuildConfigClass(BuildConfig::class.java)
                     .setReportFormat(StringFormat.JSON)
             builder.getPluginConfigurationBuilder(HttpSenderConfigurationBuilder::class.java)
-                .setUri("https://dvd604.pw/acra/report")
+                .setUri(TokenStore.reportURL)
                 .setHttpMethod(HttpSender.Method.POST)
-                .setBasicAuthLogin("report")
-                .setBasicAuthPassword(Util.getTrackingID())
+                .setBasicAuthLogin(TokenStore.reportsName)
+                .setBasicAuthPassword(TokenStore.reportsPassword)
                 .setEnabled(true)
             ACRA.init(this, builder)
         }
