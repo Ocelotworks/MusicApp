@@ -1,13 +1,13 @@
 package pw.dvd604.music.util
 
 import android.content.Context
-import android.text.Editable
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
+import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import org.jetbrains.annotations.Nullable
+import org.json.JSONObject
 
 class HTTP(context: Context?) {
 
@@ -47,5 +47,9 @@ class HTTP(context: Context?) {
     fun getReq(url: String?, listener: Response.Listener<String>?) {
         val req = StringRequest(Request.Method.GET, url, listener, null)
         queue.add(req)
+    }
+
+    fun postReq(url: String, payload: JSONObject?) {
+        queue.add(JsonObjectRequest(Request.Method.POST, url, payload, null, null))
     }
 }

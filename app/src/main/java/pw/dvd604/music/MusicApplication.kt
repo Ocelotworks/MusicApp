@@ -8,15 +8,11 @@ import android.os.Bundle
 import androidx.preference.PreferenceManager
 import com.mixpanel.android.mpmetrics.MixpanelAPI
 import org.acra.ACRA
-import org.acra.annotation.AcraCore
 import org.acra.config.CoreConfigurationBuilder
-import org.acra.config.HttpSenderConfigurationBuilder
 import org.acra.data.StringFormat
-import org.acra.sender.HttpSender
+import pw.dvd604.music.acra.HttpSenderFactory
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
-
-@AcraCore(buildConfigClass = BuildConfig::class)
 
 class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
 
@@ -31,15 +27,12 @@ class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
         Settings.init(this)
 
         if(Settings.getBoolean(Settings.crashReports, true)) {
-            val builder: CoreConfigurationBuilder =
-                CoreConfigurationBuilder(this).setBuildConfigClass(BuildConfig::class.java)
-                    .setReportFormat(StringFormat.JSON)
-            builder.getPluginConfigurationBuilder(HttpSenderConfigurationBuilder::class.java)
-                .setUri(TokenStore.reportURL)
-                .setHttpMethod(HttpSender.Method.POST)
-                .setBasicAuthLogin(TokenStore.reportsName)
-                .setBasicAuthPassword(TokenStore.reportsPassword)
-                .setEnabled(true)
+
+            val builder = CoreConfigurationBuilder(this)
+            builder.setBuildConfigClass(BuildConfig::class.java).setReportFormat(StringFormat.JSON)
+            builder.setReportSenderFactoryClasses(HttpSenderFactory::class.java)
+            builder.setEnabled(true)
+
             ACRA.init(this, builder)
         }
     }
