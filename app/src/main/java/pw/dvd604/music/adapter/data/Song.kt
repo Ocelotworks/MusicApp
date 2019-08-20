@@ -1,10 +1,17 @@
 package pw.dvd604.music.adapter.data
 
-import android.view.View
-import android.widget.TextView
-import pw.dvd604.music.R
 import java.io.Serializable
 
+
+enum class SongDataType{
+    SONG, ARTIST, GENRE, ALBUM
+}
+
+/**
+ * The 'Song' datatype
+ * Despite the name, Song is, in fact, the container for most data coming from the server
+ * This is a remnant of early versions of the Petify app, and will likely  be overhauled in the near future
+ **/
 data class Song(
     var name: String,
     var author: String,
@@ -12,21 +19,21 @@ data class Song(
     var album: String = "",
     var genre: String = "",
     var artistID: String = "",
-    val hideDash: Boolean = false
-) : Serializable{
+    val type : SongDataType = SongDataType.SONG
+) : Serializable {
 
     companion object {
         private const val serialVersionUID = 20180617104400L
     }
 
-    fun generateText(view: View): View {
-        var text = "%author% - %name%"
-        if(hideDash)
-            text = "%author% %name%"
-        text = text.replace("%author%", author)
-        text = text.replace("%name%", name)
+    fun generateText(): String {
 
-        view.findViewById<TextView>(R.id.songText).text = text
-        return view
+        val separator: String = if (type != SongDataType.SONG) {
+            " "
+        } else {
+            " - "
+        }
+
+        return "$author$separator$name"
     }
 }

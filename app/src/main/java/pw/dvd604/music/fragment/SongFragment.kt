@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment
 import android.support.v4.media.session.MediaControllerCompat
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +15,6 @@ import android.widget.EditText
 import android.widget.ListView
 import com.android.volley.Response
 import kotlinx.android.synthetic.main.fragment_songs.*
-import org.json.JSONArray
 import org.json.JSONObject
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
@@ -137,7 +135,7 @@ class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
                             "",
                             "",
                             "",
-                            true
+                            Util.viewIDToDataType(songFragment.searchMode)
                         )
                     }
                 }

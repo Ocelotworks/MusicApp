@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.TextView
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
 
@@ -22,11 +23,11 @@ open class SongAdapter(context: Context, list: ArrayList<Song>, resource: Int = 
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        var view : View = convertView ?: inflater.inflate(resource, null)
+        val view : View = convertView ?: inflater.inflate(resource, null)
 
         val song: Song = list[position]
 
-        view = song.generateText(view)
+        view.findViewById<TextView>(R.id.songText).text = song.generateText()
 
         return view
     }

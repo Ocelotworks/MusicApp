@@ -8,6 +8,7 @@ import android.support.v4.media.MediaMetadataCompat
 import org.json.JSONObject
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.adapter.data.SongDataType
 import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
@@ -175,6 +176,23 @@ class Util {
             Settings.putString(Settings.tracking, uuid)
 
             return uuid ?: ""
+        }
+
+        fun viewIDToDataType(viewID: Int): SongDataType {
+            return when(viewID){
+                R.id.btnGenre -> {
+                    SongDataType.GENRE
+                }
+                R.id.btnArtist -> {
+                    SongDataType.ARTIST
+                }
+                R.id.btnAlbum -> {
+                    SongDataType.ALBUM
+                }
+                else -> {
+                    SongDataType.SONG
+                }
+            }
         }
     }
 }
