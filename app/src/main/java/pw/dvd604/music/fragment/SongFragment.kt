@@ -2,7 +2,6 @@ package pw.dvd604.music.fragment
 
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.support.v4.media.session.MediaControllerCompat
 import android.text.Editable
 import android.text.TextWatcher
@@ -26,7 +25,7 @@ import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
 
 
-class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
+class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.OnItemClickListener {
 
     var searchMode: Int = R.id.btnTitle
     var http: HTTP? = null
