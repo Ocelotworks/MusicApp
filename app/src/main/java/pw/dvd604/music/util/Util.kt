@@ -1,15 +1,14 @@
 package pw.dvd604.music.util
 
-import android.media.browse.MediaBrowser
 import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import androidx.room.Room
 import org.json.JSONObject
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
-import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -38,8 +37,8 @@ class Util {
         }
 
         fun jsonToSong(json: JSONObject): Song {
-            try {
-                val song = Song(
+            return try {
+                Song(
                     json.getString("title"),
                     json.getString("name"),
                     json.getString("song_id"),
@@ -47,9 +46,8 @@ class Util {
                     "",
                     json.getString("artist_id")
                 )
-                return song
             } catch (e: Exception) {
-                val song = Song(
+                Song(
                     json.getString("title"),
                     json.getString("artist"),
                     json.getString("id"),
@@ -57,7 +55,6 @@ class Util {
                     "",
                     json.getString("artistID")
                 )
-                return song
             }
         }
 
@@ -79,37 +76,37 @@ class Util {
         }
 
         fun idToString(id: Int): String {
-            when (id) {
+            return when (id) {
                 R.id.btnTitle -> {
-                    return "Title filter"
+                    "Title filter"
                 }
                 R.id.btnAlbum -> {
-                    return "Album filter"
+                    "Album filter"
                 }
                 R.id.btnGenre -> {
-                    return "Genre filter"
+                    "Genre filter"
                 }
                 R.id.btnArtist -> {
-                    return "Artist filter"
+                    "Artist filter"
                 }
 
                 R.id.btnPause -> {
-                    return "Pause"
+                    "Pause"
                 }
                 R.id.btnNext -> {
-                    return "Skip"
+                    "Skip"
                 }
                 R.id.btnPrev -> {
-                    return "Prev"
+                    "Prev"
                 }
                 R.id.btnStar -> {
-                    return "Star"
+                    "Star"
                 }
                 R.id.btnShuffle -> {
-                    return "Shuffle"
+                    "Shuffle"
                 }
                 else -> {
-                    return "Button"
+                    "Button"
                 }
             }
         }
@@ -137,8 +134,8 @@ class Util {
             return null
         }
 
-        fun addMetadata(duration : Int?) : MediaMetadataCompat{
-            duration?.let {durationNN ->
+        fun addMetadata(duration: Int?): MediaMetadataCompat {
+            duration?.let { durationNN ->
                 tempMetadataCompat?.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durationNN.toLong())
                 tempMetadataCompat?.let {
                     return it.build()
@@ -147,8 +144,8 @@ class Util {
             return MediaMetadataCompat.Builder().build()
         }
 
-        fun addMetadataProgress(duration : Int?) : MediaMetadataCompat{
-            duration?.let {durationNN ->
+        fun addMetadataProgress(duration: Int?): MediaMetadataCompat {
+            duration?.let { durationNN ->
                 tempMetadataCompat?.putLong("progress", durationNN.toLong())
                 tempMetadataCompat?.let {
                     return it.build()
@@ -166,12 +163,11 @@ class Util {
         }
 
         fun popSongStack(): Song {
-            previousSongs.removeAt(previousSongs.size-1)
-            previousSongs.removeAt(previousSongs.size-2)
-            return previousSongs[previousSongs.size - 2]
+            previousSongs.removeAt(previousSongs.size - 1)
+            return previousSongs[previousSongs.size - 1]
         }
 
-        fun getTrackingID() : String{
+        fun getTrackingID(): String {
             val uuid = Settings.getSetting(Settings.tracking, UUID.randomUUID().toString())
             Settings.putString(Settings.tracking, uuid)
 
@@ -179,7 +175,7 @@ class Util {
         }
 
         fun viewIDToDataType(viewID: Int): SongDataType {
-            return when(viewID){
+            return when (viewID) {
                 R.id.btnGenre -> {
                     SongDataType.GENRE
                 }

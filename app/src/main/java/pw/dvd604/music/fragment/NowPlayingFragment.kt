@@ -20,15 +20,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.SeekBar
+import androidx.room.Room
 import kotlinx.android.synthetic.main.fragment_playing.*
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.MediaService
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.util.BitmapAsync
-import pw.dvd604.music.util.HTTP
-import pw.dvd604.music.util.Settings
-import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.*
 
 
 class NowPlayingFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
@@ -37,6 +35,7 @@ class NowPlayingFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
     private var http: HTTP? = null
     private var controllerCallback: MediaControllerCompat.Callback = ControllerCallback(this)
     private var shuffleMode: Boolean = Settings.getBoolean(Settings.shuffle, true)
+    private var stopUpdatingSeek : Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         // Inflate the layout for this fragment
@@ -56,6 +55,8 @@ class NowPlayingFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
             ConnectionCallback(this),
             null // optional Bundle
         )
+
+
     }
 
     override fun onStart() {
@@ -129,17 +130,16 @@ class NowPlayingFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        if(fromUser){
-            activity?.mediaController?.transportControls?.seekTo(progress.toLong())
-        }
+
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
-
+        stopUpdatingSeek = true
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
-
+        activity?.mediaController?.transportControls?.seekTo(seekBar?.progress!!.toLong())
+        stopUpdatingSeek = false
     }
 
     fun hideStar() {
@@ -184,8 +184,10 @@ class NowPlayingFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         }
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
-            state?.position?.let {
-                nowPlayingFragment.songProgress.progress = it.toInt()
+            if(nowPlayingFragment.stopUpdatingSeek) {
+                state?.position?.let {
+                    nowPlayingFragment.songProgress.progress = it.toInt()
+                }
             }
 
             when (state?.state) {

@@ -18,16 +18,18 @@ import android.support.v4.media.session.MediaButtonReceiver
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.KeyEvent
+import androidx.room.Room
 import com.android.volley.Response
 import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.util.AppDatabase
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
 import kotlin.random.Random
 
 class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
-    MediaPlayer.OnCompletionListener {
+    MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
 
     private val id: Int = 696969
     private val channelId: String = "petifyNot"
@@ -44,6 +46,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     private var currentSong: Song? = null
 
+    private lateinit var db: AppDatabase
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         MediaButtonReceiver.handleIntent(mediaSession, intent)
         return super.onStartCommand(intent, flags, startId)
@@ -51,6 +55,11 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     override fun onCreate() {
         super.onCreate()
+
+        db = Room.databaseBuilder(
+            this.applicationContext,
+            AppDatabase::class.java, "petify"
+        ).build()
 
         createNotificationChannel()
         http = HTTP(this)
@@ -61,6 +70,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         player.setOnPreparedListener(this)
         player.setOnErrorListener(this)
         player.setOnCompletionListener(this)
+        player.setOnSeekCompleteListener(this)
 
         // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, "petify").apply {
@@ -92,6 +102,10 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     private fun setSongs(songs: ArrayList<Song>) {
+
+        val array = arrayOfNulls<Song>(songs.size)
+        db.songDao().insertAll(*songs.toArray(array))
+
         songList = songs
     }
 
@@ -126,9 +140,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), bundle)
     }
 
-    private fun prevSong(){
-        val nextSong : Song = Util.popSongStack()
-        val url : String = Util.songToUrl(nextSong)
+    private fun prevSong() {
+        val nextSong: Song = Util.popSongStack()
+        val url: String = Util.songToUrl(nextSong)
 
         val bundle = Bundle()
         bundle.putSerializable("song", nextSong)
@@ -137,6 +151,10 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     override fun onCompletion(mp: MediaPlayer?) {
+        if (currentSong != null) {
+            currentSong!!.plays++
+            db.songDao().updateSong(currentSong!!)
+        }
         nextSong()
     }
 
@@ -146,6 +164,10 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     override fun onPrepared(mp: MediaPlayer?) {
         mediaSession.controller.transportControls.play()
+    }
+
+    override fun onSeekComplete(mp: MediaPlayer?) {
+        mp?.start()
     }
 
     private fun createNotificationChannel() {
@@ -286,13 +308,14 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         class SeekRunnable(private val service: MediaService, val handler: Handler) : Runnable {
             override fun run() {
                 service.mediaSession.setMetadata(Util.addMetadataProgress(service.player.currentPosition))
-                handler.postDelayed(this,1000)
+                handler.postDelayed(this, 1000)
             }
         }
 
         override fun onSeekTo(pos: Long) {
             super.onSeekTo(pos)
-            service.player.seekTo(pos.toInt())
+            service.player.pause()
+            service.player.seekTo(pos.toInt() * 1000)
         }
 
         override fun onSkipToPrevious() {

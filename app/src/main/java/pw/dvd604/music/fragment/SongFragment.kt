@@ -20,6 +20,7 @@ import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.adapter.data.SongDataType
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
@@ -99,12 +100,19 @@ class SongFragment : Fragment(), TextWatcher, AdapterView.OnItemClickListener {
     override fun onItemClick(adapter: AdapterView<*>?, v: View?, position: Int, id: Long) {
         val songAdapter = adapter?.adapter as SongAdapter
         val song : Song = songAdapter.getItemAtPosition(position)
-
         val activity = this.activity as MainActivity
-        //activity.setSong(song)
-        val bundle = Bundle()
-        bundle.putSerializable("song", song)
-        MediaControllerCompat.getMediaController(activity).transportControls.prepareFromUri(Uri.parse(Util.songToUrl(song)), bundle)
+
+
+        if(song.type == SongDataType.SONG) {
+            //activity.setSong(song)
+            val bundle = Bundle()
+            bundle.putSerializable("song", song)
+            MediaControllerCompat.getMediaController(activity)
+                .transportControls.prepareFromUri(Uri.parse(Util.songToUrl(song)), bundle)
+        } else {
+            //Do something else
+            activity.report("Not yet implemented", true)
+        }
     }
 
 
