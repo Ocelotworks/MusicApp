@@ -2,6 +2,7 @@ package pw.dvd604.music.adapter.data
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import java.io.Serializable
 
@@ -17,15 +18,17 @@ enum class SongDataType{
  **/
 @Entity
 data class Song(
-    var name: String,
-    var author: String,
+    @Ignore var name: String,
+    @Ignore var author: String,
     @PrimaryKey var id: String,
-    var album: String = "",
-    var genre: String = "",
-    var artistID: String = "",
-    val type : SongDataType = SongDataType.SONG,
+    @Ignore var album: String = "",
+    @Ignore var genre: String = "",
+    @Ignore var artistID: String = "",
+    @Ignore val type: SongDataType = SongDataType.SONG,
     @ColumnInfo(name = "play_count") var plays : Int = 0
 ) : Serializable {
+
+    constructor() : this("", "", "", "", "", "", SongDataType.SONG, 0)
 
     companion object {
         private const val serialVersionUID = 20180617104400L
