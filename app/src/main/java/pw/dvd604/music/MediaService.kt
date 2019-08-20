@@ -13,12 +13,15 @@ import android.os.*
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
 import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.room.Room
 import com.android.volley.Response
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.AppDatabase
@@ -100,12 +103,29 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         mediaSession.setCallback(SessionCallbackReceiver(this))
     }
 
+    private fun writeSongsToDB() {
+        GlobalScope.launch {
+            val array = arrayOfNulls<Song>(songList.size)
+            db.songDao().insertAll(*songList.toArray(array))
+        }
+    }
+
+    private fun readSongsFromDB() {
+        GlobalScope.launch {
+            Log.e(
+                this::class.java.name, db.songDao().loadTopSongs(100).joinToString(
+                    prefix = "[",
+                    separator = ":",
+                    postfix = "]"
+                )
+            )
+        }
+    }
+
     private fun setSongs(songs: ArrayList<Song>) {
-
-        val array = arrayOfNulls<Song>(songs.size)
-        db.songDao().insertAll(*songs.toArray(array))
-
         songList = songs
+        writeSongsToDB()
+        readSongsFromDB()
     }
 
     override fun onGetRoot(p0: String, p1: Int, p2: Bundle?): BrowserRoot? {
@@ -342,6 +362,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 service.player.stop()
                 // Take the service out of the foreground
                 service.stopForeground(false)
+                service.db.close()
             }
 
             service.mediaSession.setPlaybackState(
