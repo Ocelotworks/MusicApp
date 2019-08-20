@@ -10,14 +10,13 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.*
-import android.support.v4.app.NotificationCompat
-import android.support.v4.content.ContextCompat
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaBrowserServiceCompat
-import android.support.v4.media.session.MediaButtonReceiver
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.KeyEvent
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import androidx.media.MediaBrowserServiceCompat
 import androidx.room.Room
 import com.android.volley.Response
 import org.json.JSONObject
@@ -49,7 +48,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private lateinit var db: AppDatabase
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        MediaButtonReceiver.handleIntent(mediaSession, intent)
+        androidx.media.session.MediaButtonReceiver.handleIntent(mediaSession, intent)
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -390,7 +389,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
                 // Stop the service when the notification is swiped away
                 setDeleteIntent(
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(
+                    androidx.media.session.MediaButtonReceiver.buildMediaButtonPendingIntent(
                         service,
                         PlaybackStateCompat.ACTION_STOP
                     )
@@ -408,7 +407,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     NotificationCompat.Action(
                         R.drawable.baseline_skip_previous_white_24,
                         "Previous",
-                        MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        androidx.media.session.MediaButtonReceiver.buildMediaButtonPendingIntent(
                             service,
                             PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
                         )
@@ -424,7 +423,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                             R.drawable.baseline_play_arrow_white_24
                         },
                         service.getString(R.string.pause),
-                        MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        androidx.media.session.MediaButtonReceiver.buildMediaButtonPendingIntent(
                             service,
                             PlaybackStateCompat.ACTION_PLAY_PAUSE
                         )
@@ -435,7 +434,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     NotificationCompat.Action(
                         R.drawable.baseline_skip_next_white_24,
                         "Next",
-                        MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        androidx.media.session.MediaButtonReceiver.buildMediaButtonPendingIntent(
                             service,
                             PlaybackStateCompat.ACTION_SKIP_TO_NEXT
                         )
@@ -444,14 +443,14 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
                 // Take advantage of MediaStyle features
                 setStyle(
-                    android.support.v4.media.app.NotificationCompat.MediaStyle()
+                    androidx.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(service.mediaSession.sessionToken)
                         .setShowActionsInCompactView(0)
 
                         // Add a cancel button
                         .setShowCancelButton(true)
                         .setCancelButtonIntent(
-                            MediaButtonReceiver.buildMediaButtonPendingIntent(
+                            androidx.media.session.MediaButtonReceiver.buildMediaButtonPendingIntent(
                                 service,
                                 PlaybackStateCompat.ACTION_STOP
                             )

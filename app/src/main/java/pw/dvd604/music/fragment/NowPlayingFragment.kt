@@ -3,13 +3,9 @@ package pw.dvd604.music.fragment
 import android.app.Activity
 import android.content.ComponentName
 import android.graphics.Bitmap
-import android.graphics.ColorFilter
 import android.graphics.PorterDuff
 import android.media.AudioManager
-import android.media.session.PlaybackState
 import android.os.Bundle
-import android.os.Handler
-import android.support.v4.app.Fragment
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -20,16 +16,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.SeekBar
-import androidx.room.Room
 import kotlinx.android.synthetic.main.fragment_playing.*
-import pw.dvd604.music.MainActivity
 import pw.dvd604.music.MediaService
 import pw.dvd604.music.R
-import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.util.*
+import pw.dvd604.music.util.BitmapAsync
+import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.Settings
+import pw.dvd604.music.util.Util
 
 
-class NowPlayingFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
+class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarChangeListener {
     private var volumeControlStream: Int = 0
     private lateinit var mediaBrowser: MediaBrowserCompat
     private var http: HTTP? = null

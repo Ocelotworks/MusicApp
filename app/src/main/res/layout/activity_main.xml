@@ -10,13 +10,13 @@
         sothree:umanoPanelHeight="68dp"
         sothree:umanoShadowHeight="4dp">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent" android:id="@+id/fragmentContainer">
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent" android:id="@+id/slideContainer">
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>
