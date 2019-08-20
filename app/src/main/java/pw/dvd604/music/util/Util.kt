@@ -13,6 +13,7 @@ import java.lang.Exception
 class Util {
     companion object {
         private var tempMetadataCompat: MediaMetadataCompat.Builder? = null
+        private val previousSongs = ArrayList<Song>(0)
 
         fun prettyTime(seconds: Int): String {
             val mins: Int = (seconds % 3600 / 60)
@@ -68,6 +69,9 @@ class Util {
         }
 
         fun songToUrl(song: Song?): String {
+            if (Settings.getBoolean(Settings.offlineMusic)) {
+                //Do offline stored check
+            }
             return "${Settings.getSetting(Settings.server)}/song/${song?.id}"
         }
 
@@ -152,6 +156,16 @@ class Util {
 
         private fun songToAlbumURL(song: Song): String? {
             return "${Settings.getSetting(Settings.server)}/album/${song.album}"
+        }
+
+        fun addSongToStack(song: Song?) {
+            song?.let { previousSongs.add(it) }
+        }
+
+        fun popSongStack(): Song {
+            previousSongs.removeAt(previousSongs.size-1)
+            previousSongs.removeAt(previousSongs.size-2)
+            return previousSongs[previousSongs.size - 2]
         }
     }
 }

@@ -19,6 +19,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.SeekBar
 import kotlinx.android.synthetic.main.fragment_playing.*
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.MediaService
@@ -30,8 +31,7 @@ import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
 
 
-class NowPlayingFragment : Fragment() {
-
+class NowPlayingFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
     private var volumeControlStream: Int = 0
     private lateinit var mediaBrowser: MediaBrowserCompat
     private var http: HTTP? = null
@@ -44,6 +44,7 @@ class NowPlayingFragment : Fragment() {
         http = HTTP(context)
 
         shuffleMode(false, v)
+        v.findViewById<SeekBar>(R.id.songProgress).setOnSeekBarChangeListener(this)
         return v
     }
 
@@ -125,6 +126,20 @@ class NowPlayingFragment : Fragment() {
         val bundle = Bundle()
         bundle.putBoolean("shuffle", shuffleMode)
         activity?.mediaController?.sendCommand("shuffle", bundle, null)
+    }
+
+    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+        if(fromUser){
+            activity?.mediaController?.transportControls?.seekTo(progress.toLong())
+        }
+    }
+
+    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+    }
+
+    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
     }
 
     class ConnectionCallback(private val nowPlayingFragment: NowPlayingFragment) :

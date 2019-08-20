@@ -78,6 +78,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                             or PlaybackStateCompat.ACTION_PLAY_PAUSE
                             or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
                             or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+                            or PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE
+                            or PlaybackStateCompat.ACTION_SEEK_TO
                 )
 
             setPlaybackState(stateBuilder.build())
@@ -112,11 +114,21 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
                 Random.nextInt(songList.size)
             } else {
-                currentSongIndex + 1
+                (currentSongIndex + 1) % songList.size
             }
 
         val nextSong: Song = songList[nextSongIndex]
         val url: String = Util.songToUrl(nextSong)
+
+        val bundle = Bundle()
+        bundle.putSerializable("song", nextSong)
+
+        mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), bundle)
+    }
+
+    private fun prevSong(){
+        val nextSong : Song = Util.popSongStack()
+        val url : String = Util.songToUrl(nextSong)
 
         val bundle = Bundle()
         bundle.putSerializable("song", nextSong)
@@ -175,7 +187,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     service.nextSong()
                 }
                 KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
-
+                    service.prevSong()
                 }
             }
             return super.onMediaButtonEvent(mediaButtonEvent)
@@ -197,6 +209,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         override fun onPrepareFromUri(uri: Uri?, extras: Bundle?) {
             super.onPrepareFromUri(uri, extras)
             service.currentSong = extras?.getSerializable("song") as Song
+            Util.addSongToStack(service.currentSong)
 
             service.mediaSession.setPlaybackState(
                 PlaybackStateCompat.Builder().setState(
@@ -274,8 +287,14 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             }
         }
 
+        override fun onSeekTo(pos: Long) {
+            super.onSeekTo(pos)
+            service.player.seekTo(pos.toInt())
+        }
+
         override fun onSkipToPrevious() {
             super.onSkipToPrevious()
+            service.prevSong()
         }
 
         override fun onSkipToNext() {
