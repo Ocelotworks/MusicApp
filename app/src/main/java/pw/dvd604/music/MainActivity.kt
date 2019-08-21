@@ -12,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
-import com.mixpanel.android.mpmetrics.MixpanelAPI
 import pw.dvd604.music.fragment.NowPlayingFragment
 import pw.dvd604.music.fragment.SettingsFragment
 import pw.dvd604.music.fragment.SongFragment
@@ -20,9 +19,6 @@ import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
-import pw.dvd604.music.util.Settings.Companion.usageReports
-import pw.dvd604.music.util.Util
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,7 +27,6 @@ class MainActivity : AppCompatActivity() {
     private var songFragment: SongFragment = SongFragment()
     private var menuItem: MenuItem? = null
     private val permissionsResult: Int = 1
-    private var tracking: MixpanelAPI? = null
     private var homeLab: Boolean = false
 
 
@@ -61,16 +56,6 @@ class MainActivity : AppCompatActivity() {
         this.mediaController.transportControls.stop()
     }
 
-    fun startTracking() {
-        tracking = (application as MusicApplication).mixpanel
-
-        if (!Settings.getBoolean(usageReports, true)) {
-            tracking?.optOutTracking()
-        } else {
-            tracking?.optInTracking()
-        }
-    }
-
     private fun checkServerPrefs() {
         if (Settings.getSetting(server) == "https://unacceptableuse.com/petify") {
             //We're connecting to petify
@@ -82,10 +67,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onClick(v: View) {
-        if (tracking != null) {
-            tracking?.track("${Util.idToString(v.id)} Click")
-        }
-
         when (v.id) {
             R.id.btnTitle,
             R.id.btnAlbum,
