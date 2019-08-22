@@ -24,6 +24,10 @@ open class SongAdapter(context: Context, list: ArrayList<Song>, resource: Int = 
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view : View = convertView ?: inflater.inflate(resource, null)
+        /*
+        view.findViewById<LinearLayout>(R.id.layoutList).isLongClickable = true
+        view.findViewById<LinearLayout>(R.id.layoutList).isClickable = true
+        view.findViewById<LinearLayout>(R.id.layoutList).descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS*/
 
         val song: Song = list[position]
 

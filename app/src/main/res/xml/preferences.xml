@@ -36,10 +36,10 @@
 
     <PreferenceCategory android:title="Offline play">
 
-        <SeekBarPreference
-                android:key="download"
-                android:title="Offline download song count"
-                android:summary="Keeps most played songs locally downloaded"
+        <SwitchPreferenceCompat
+                android:key="downloadAll"
+                android:title="Download all songs"
+                android:summary="Downloads all songs for offline play"
         />
 
         <SwitchPreferenceCompat

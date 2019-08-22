@@ -6,9 +6,7 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.TextWatcher
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.AdapterView
 import android.widget.Button
 import android.widget.EditText
@@ -27,7 +25,6 @@ import pw.dvd604.music.util.Util
 
 
 class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.OnItemClickListener {
-
     var searchMode: Int = R.id.btnTitle
     var http: HTTP? = null
     //Array of our songs
@@ -47,6 +44,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         //Tell the search text box to tell us when it's changed
         v.findViewById<EditText>(R.id.songSearch).addTextChangedListener(this)
         v.findViewById<ListView>(R.id.songList).onItemClickListener = this
+        activity?.registerForContextMenu(v.findViewById(R.id.songList))
 
         http = HTTP(context)
         pullSongs()
@@ -122,6 +120,41 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
 
     fun reset() {
         this.view?.findViewById<EditText>(R.id.songSearch)?.text = SpannableStringBuilder("")
+    }
+
+    fun buildContext(menu: ContextMenu, v: View): ContextMenu {
+        menu.add(0, v.id, 0, "Download")
+        menu.add(0, v.id, 0, "Add to queue")
+        menu.add(0, v.id, 0, "Go to album")
+        menu.add(0, v.id, 0, "Go to artist")
+        menu.add(0, v.id, 0, "Song info")
+        return menu
+    }
+
+    override fun onContextItemSelected(item: MenuItem?): Boolean {
+        val position: Int = (item?.menuInfo as AdapterView.AdapterContextMenuInfo).position
+        val songAdapter = songList.adapter as SongAdapter
+        val song: Song = songAdapter.getItemAtPosition(position)
+
+        when (item.title) {
+            "Download" -> {
+
+            }
+            "Add to queue" -> {
+
+            }
+            "Go to album" -> {
+                (activity as MainActivity).createSubFragment(HTTP.getAlbum(song.album), song.name)
+            }
+            "Go to artist" -> {
+
+            }
+            "Song info" -> {
+
+            }
+        }
+
+        return true
     }
 
 

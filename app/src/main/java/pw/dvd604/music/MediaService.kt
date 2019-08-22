@@ -13,7 +13,6 @@ import android.os.*
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -104,29 +103,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         mediaSession.setCallback(SessionCallbackReceiver(this))
     }
 
-    private fun writeSongsToDB() {
-        Thread {
-            val array = arrayOfNulls<Song>(songList.size)
-            db.songDao().insertAll(*songList.toArray(array))
-        }
-    }
-
-    private fun readSongsFromDB() {
-        Thread {
-            Log.e(
-                this::class.java.name, db.songDao().loadTopSongs(100).joinToString(
-                    prefix = "[",
-                    separator = ":",
-                    postfix = "]"
-                )
-            )
-        }
-    }
 
     private fun setSongs(songs: ArrayList<Song>) {
         songList = songs
-        writeSongsToDB()
-        readSongsFromDB()
     }
 
     override fun onGetRoot(p0: String, p1: Int, p2: Bundle?): BrowserRoot? {
@@ -210,7 +189,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
         if (currentSong != null) {
             currentSong!!.plays++
-            db.songDao().updateSong(currentSong!!)
+            //db.songDao().updateSong(currentSong!!)
         }
     }
 

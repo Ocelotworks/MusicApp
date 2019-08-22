@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
+import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -259,4 +260,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    override fun onCreateContextMenu(
+        menu: ContextMenu, v: View,
+        menuInfo: ContextMenu.ContextMenuInfo
+    ) {
+        super.onCreateContextMenu(songFragment.buildContext(menu, v), v, menuInfo)
+    }
+
+    override fun onContextItemSelected(item: MenuItem?): Boolean {
+        return songFragment.onContextItemSelected(item)
+    }
+
 }
