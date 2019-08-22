@@ -10,7 +10,6 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -88,7 +87,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         }
 
         songProgessText.text = Util.prettyTime(metadata?.getLong("progress")!!/1000)
-        songProgress.progress = metadata.getLong("progress").toInt() /1000
+        songProgress.progress = metadata.getLong("progress").toInt() / 1000
         BitmapAsync(this).execute(metadata.description?.iconUri.toString())
     }
 
@@ -97,7 +96,6 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
     }
 
     fun shuffleMode(change: Boolean = true, v: View? = null) {
-        Log.e(this::class.java.name, "Shuffle Pressed")
         if (change) {
             shuffleMode = !shuffleMode
             Settings.putBoolean(Settings.shuffle, shuffleMode)
@@ -109,7 +107,6 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         }
 
         view?.let {
-            Log.e(this::class.java.name, "$shuffleMode")
             val colour: Int = resources.getColor(R.color.colorAccent, null)
             val img = it.findViewById<ImageView>(R.id.btnShuffle)
 

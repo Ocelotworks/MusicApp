@@ -62,5 +62,9 @@ class Settings {
         fun putString(setting: Int, value: String?) {
             prefs?.edit()?.putString(prefKeys[setting], value)?.apply()
         }
+
+        fun getDefault(key: Int): Any? {
+            return prefDefault[key]
+        }
     }
 }

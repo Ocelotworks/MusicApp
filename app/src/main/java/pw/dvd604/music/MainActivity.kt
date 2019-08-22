@@ -20,6 +20,7 @@ import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Settings.getSetting(server, "https://unacceptableuse.com/petify")?.let { HTTP.setup(it) }
+        Settings.getSetting(server)?.let { HTTP.setup(it) }
 
         //Insert actual fragments into shell containers
         val fM = this.supportFragmentManager
@@ -60,7 +61,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkServerPrefs() {
-        if (Settings.getSetting(server) == "https://unacceptableuse.com/petify") {
+        if (Settings.getSetting(server) == Settings.getDefault(server)) {
             //We're connecting to petify
         } else {
             //We're on a home lab, disable all advanced functions
@@ -82,10 +83,12 @@ class MainActivity : AppCompatActivity() {
 
             R.id.btnPause -> {
                 val pbState = this.mediaController.playbackState?.state
-                if (pbState == PlaybackStateCompat.STATE_PLAYING) {
-                    mediaController.transportControls.pause()
-                } else {
-                    mediaController.transportControls.play()
+                if (pbState == PlaybackStateCompat.STATE_PAUSED or PlaybackStateCompat.STATE_PLAYING) {
+                    if (pbState == PlaybackStateCompat.STATE_PLAYING) {
+                        mediaController.transportControls.pause()
+                    } else {
+                        mediaController.transportControls.play()
+                    }
                 }
                 return
             }
@@ -124,7 +127,7 @@ class MainActivity : AppCompatActivity() {
                     songFragment.reset()
                     inSubSong = false
                 } else {
-                    report("Tried to back out of invalid fragement")
+                    report("Tried to back out of invalid fragment")
                 }
             }
         }
@@ -207,10 +210,7 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.READ_EXTERNAL_STORAGE
         )
 
-        val check: Boolean = check(
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
+        val check: Boolean = check(permissions)
 
         if (!check) {
             ActivityCompat.requestPermissions(
@@ -221,7 +221,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun check(vararg perms: String): Boolean {
+    private fun check(perms: Array<String>): Boolean {
         var result = true
         for (perm in perms) {
             if (ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_DENIED)
@@ -248,7 +248,7 @@ class MainActivity : AppCompatActivity() {
                     for (perm in grantResults) {
                         if (perm != PackageManager.PERMISSION_GRANTED) {
                             report("This app will not work without permissions", false)
-                            return
+                            exitProcess(-1)
                         }
                     }
                 }

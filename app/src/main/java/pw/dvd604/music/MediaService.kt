@@ -20,8 +20,6 @@ import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.room.Room
 import com.android.volley.Response
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.AppDatabase
@@ -107,14 +105,14 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     private fun writeSongsToDB() {
-        GlobalScope.launch {
+        Thread {
             val array = arrayOfNulls<Song>(songList.size)
             db.songDao().insertAll(*songList.toArray(array))
         }
     }
 
     private fun readSongsFromDB() {
-        GlobalScope.launch {
+        Thread {
             Log.e(
                 this::class.java.name, db.songDao().loadTopSongs(100).joinToString(
                     prefix = "[",
@@ -200,10 +198,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     override fun onCompletion(mp: MediaPlayer?) {
-        if (currentSong != null) {
-            currentSong!!.plays++
-            db.songDao().updateSong(currentSong!!)
-        }
         nextSong()
     }
 
@@ -213,6 +207,11 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     override fun onPrepared(mp: MediaPlayer?) {
         mediaSession.controller.transportControls.play()
+
+        if (currentSong != null) {
+            currentSong!!.plays++
+            db.songDao().updateSong(currentSong!!)
+        }
     }
 
     override fun onSeekComplete(mp: MediaPlayer?) {
