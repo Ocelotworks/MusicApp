@@ -38,6 +38,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
     private lateinit var http: HTTP
     private var songList = ArrayList<Song>(0)
+    private var hasQueue: Boolean = false
+    private var songQueue: ArrayList<Song>? = null
+    private var queuePosition: Int = 0
 
     private lateinit var afChangeListener: AudioManager.OnAudioFocusChangeListener
     //private val myNoisyAudioStreamReceiver = BecomingNoisyReceiver()
@@ -142,21 +145,48 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     private fun nextSong() {
-        val currentSongIndex: Int = songList.indexOf(currentSong)
-        val nextSongIndex: Int =
-            if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
-                Random.nextInt(songList.size)
-            } else {
-                (currentSongIndex + 1) % songList.size
+        if (!hasQueue) {
+            val currentSongIndex: Int = songList.indexOf(currentSong)
+            val nextSongIndex: Int =
+                if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+                    Random.nextInt(songList.size)
+                } else {
+                    (currentSongIndex + 1) % songList.size
+                }
+
+            val nextSong: Song = songList[nextSongIndex]
+            val url: String = Util.songToUrl(nextSong)
+
+            val bundle = Bundle()
+            bundle.putSerializable("song", nextSong)
+
+            mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), bundle)
+        } else {
+            //If there is a song queue loaded
+            currentSong?.let { song ->
+                songQueue?.let { queue ->
+
+                    queuePosition = queue.indexOf(song) + 1
+
+                    if (queuePosition > queue.size) {
+                        hasQueue = false
+                        songQueue = null
+                        nextSong()
+                        return
+                    }
+
+
+                    val nextSong: Song = queue[queuePosition]
+
+                    val url: String = Util.songToUrl(nextSong)
+
+                    val bundle = Bundle()
+                    bundle.putSerializable("song", nextSong)
+
+                    mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), bundle)
+                }
             }
-
-        val nextSong: Song = songList[nextSongIndex]
-        val url: String = Util.songToUrl(nextSong)
-
-        val bundle = Bundle()
-        bundle.putSerializable("song", nextSong)
-
-        mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), bundle)
+        }
     }
 
     private fun prevSong() {
@@ -246,6 +276,10 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 }
                 "likesong" -> {
                     service.http.getReq(HTTP.like(service.currentSong?.id), null)
+                }
+                "setQueue" -> {
+                    service.hasQueue = true
+                    service.songQueue = Util.songQueue
                 }
             }
         }

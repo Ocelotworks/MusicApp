@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 
 class Settings {
-    companion object{
+    companion object {
         private val prefKeys = hashMapOf(
             1 to "address",
             2 to "download",
@@ -26,20 +26,28 @@ class Settings {
         val crashReports: Int = 6
         val storage: Int = 7
         val useIntents: Int = 8
-        val shuffle : Int = 9
-        val tracking : Int = 10
+        val shuffle: Int = 9
+        val tracking: Int = 10
 
-        private var prefs : SharedPreferences? = null
+        private val prefDefault = hashMapOf(server to "https://unacceptableuse.com/petify")
 
-        fun init(context : Context){
+        private var prefs: SharedPreferences? = null
+
+        fun init(context: Context) {
             prefs = PreferenceManager.getDefaultSharedPreferences(context)
         }
 
-        fun getSetting(name : Int, defaultValue : String = "") : String?{
-            return prefs?.getString(prefKeys[name], defaultValue)
+        fun getSetting(name: Int, defaultValue: String = ""): String? {
+            return prefs?.getString(
+                prefKeys[name], if (defaultValue == "") {
+                    prefDefault[name]
+                } else {
+                    defaultValue
+                }
+            )
         }
 
-        fun setSetting(name : Int, value : String){
+        fun setSetting(name: Int, value: String) {
             prefs?.edit()?.putString(prefKeys[name], value)?.apply()
         }
 

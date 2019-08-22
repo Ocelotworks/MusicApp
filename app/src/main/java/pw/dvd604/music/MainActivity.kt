@@ -15,6 +15,7 @@ import com.google.android.material.snackbar.Snackbar
 import pw.dvd604.music.fragment.NowPlayingFragment
 import pw.dvd604.music.fragment.SettingsFragment
 import pw.dvd604.music.fragment.SongFragment
+import pw.dvd604.music.fragment.SubSongFragment
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
@@ -23,8 +24,10 @@ import pw.dvd604.music.util.Settings.Companion.server
 class MainActivity : AppCompatActivity() {
 
     var inSettings: Boolean = false
+    var inSubSong: Boolean = false
     private var nowPlayingFragment: NowPlayingFragment = NowPlayingFragment()
     private var songFragment: SongFragment = SongFragment()
+    private lateinit var subSongFragment: SubSongFragment
     private var menuItem: MenuItem? = null
     private val permissionsResult: Int = 1
     private var homeLab: Boolean = false
@@ -112,7 +115,28 @@ class MainActivity : AppCompatActivity() {
                 nowPlayingFragment.shuffleMode()
                 return
             }
+            R.id.btnBack -> {
+                if (inSubSong) {
+                    val fM = this.supportFragmentManager
+                    val fT = fM.beginTransaction()
+                    fT.replace(R.id.slideContainer, songFragment)
+                    fT.commit()
+                    songFragment.reset()
+                    inSubSong = false
+                } else {
+                    report("Tried to back out of invalid fragement")
+                }
+            }
         }
+    }
+
+    fun createSubFragment(url: String, name: String) {
+        val fM = this.supportFragmentManager
+        val fT = fM.beginTransaction()
+        subSongFragment = SubSongFragment.create(url, name)
+        fT.replace(R.id.slideContainer, subSongFragment)
+        fT.commit()
+        inSubSong = true
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -162,6 +186,13 @@ class MainActivity : AppCompatActivity() {
             supportActionBar?.let {
                 it.title = resources.getString(R.string.app_name)
             }
+        } else if (inSubSong) {
+            val fM = this.supportFragmentManager
+            val fT = fM.beginTransaction()
+            fT.replace(R.id.slideContainer, songFragment)
+            fT.commit()
+            songFragment.reset()
+            inSubSong = false
         } else {
             //Else let the system deal with the back button
             super.onBackPressed()
@@ -199,7 +230,7 @@ class MainActivity : AppCompatActivity() {
         return result
     }
 
-    fun report(text: String, urgent: Boolean) {
+    fun report(text: String, urgent: Boolean = false) {
         if (Settings.getBoolean(aggressiveReporting) || urgent) {
             Snackbar.make(this.findViewById(R.id.fragmentContainer), text as CharSequence, Snackbar.LENGTH_SHORT)
                 .show()

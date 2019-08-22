@@ -139,7 +139,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
     }
 
     fun hideStar() {
-        btnStar.visibility = View.INVISIBLE
+        this.view?.findViewById<ImageView>(R.id.btnStar)?.visibility = View.INVISIBLE
     }
 
     class ConnectionCallback(private val nowPlayingFragment: NowPlayingFragment) :

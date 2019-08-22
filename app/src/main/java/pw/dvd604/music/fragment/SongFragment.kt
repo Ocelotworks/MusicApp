@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.session.MediaControllerCompat
 import android.text.Editable
+import android.text.SpannableStringBuilder
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
@@ -109,9 +110,18 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
             MediaControllerCompat.getMediaController(activity)
                 .transportControls.prepareFromUri(Uri.parse(Util.songToUrl(song)), bundle)
         } else {
-            //Do something else
-            activity.report("Not yet implemented", true)
+            //Open sub song fragment
+            (this.activity as MainActivity).createSubFragment(
+                HTTP.getDetailedSong(
+                    song.id,
+                    song.type
+                ), song.name
+            )
         }
+    }
+
+    fun reset() {
+        this.view?.findViewById<EditText>(R.id.songSearch)?.text = SpannableStringBuilder("")
     }
 
 
