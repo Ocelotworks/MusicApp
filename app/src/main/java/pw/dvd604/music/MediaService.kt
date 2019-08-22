@@ -385,17 +385,18 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             val am = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             // Abandon audio focus
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                am.abandonAudioFocusRequest(service.audioFocusRequest)
-
-                //unregisterReceiver(myNoisyAudioStreamReceiver)
-                // Stop the service
-                service.stopSelf()
-                // Set the session inactive  (and update metadata and state)
-                service.mediaSession.isActive = false
-                // stop the player (custom call)
-                service.player.stop()
-                // Take the service out of the foreground
-                service.stopForeground(false)
+                if (service::audioFocusRequest.isInitialized) {
+                    am.abandonAudioFocusRequest(service.audioFocusRequest)
+                    //unregisterReceiver(myNoisyAudioStreamReceiver)
+                    // Stop the service
+                    service.stopSelf()
+                    // Set the session inactive  (and update metadata and state)
+                    service.mediaSession.isActive = false
+                    // stop the player (custom call)
+                    service.player.stop()
+                    // Take the service out of the foreground
+                    service.stopForeground(false)
+                }
                 service.db.close()
             }
 
