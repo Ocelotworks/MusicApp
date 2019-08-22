@@ -18,16 +18,16 @@ class Settings {
             9 to "shuffle",
             10 to "trackingID"
         )
-        val server: Int = 1
-        val offlineMusic: Int = 2
-        val offlineAlbum: Int = 3
-        val aggressiveReporting: Int = 4
-        val usageReports: Int = 5
-        val crashReports: Int = 6
-        val storage: Int = 7
-        val useIntents: Int = 8
-        val shuffle: Int = 9
-        val tracking: Int = 10
+        const val server: Int = 1
+        const val offlineMusic: Int = 2
+        const val offlineAlbum: Int = 3
+        const val aggressiveReporting: Int = 4
+        const val usageReports: Int = 5
+        const val crashReports: Int = 6
+        const val storage: Int = 7
+        const val useIntents: Int = 8
+        const val shuffle: Int = 9
+        const val tracking: Int = 10
 
         private val prefDefault = hashMapOf(server to "https://unacceptableuse.com/petify")
 
