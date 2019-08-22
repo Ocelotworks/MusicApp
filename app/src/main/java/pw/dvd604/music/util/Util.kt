@@ -4,7 +4,6 @@ import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
-import androidx.room.Room
 import org.json.JSONObject
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
@@ -16,6 +15,7 @@ class Util {
     companion object {
         private var tempMetadataCompat: MediaMetadataCompat.Builder? = null
         private val previousSongs = ArrayList<Song>(0)
+        var songQueue: ArrayList<Song>? = null
 
         fun prettyTime(seconds: Int): String {
             val mins: Int = (seconds % 3600 / 60)
@@ -72,7 +72,10 @@ class Util {
             if (Settings.getBoolean(Settings.offlineMusic)) {
                 //Do offline stored check
             }
-            return "${Settings.getSetting(Settings.server)}/song/${song?.id}"
+            return "${Settings.getSetting(
+                Settings.server,
+                "https://unacceptableuse.com/petify"
+            )}/song/${song?.id}"
         }
 
         fun idToString(id: Int): String {

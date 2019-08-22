@@ -8,7 +8,7 @@ import java.io.Serializable
 
 
 enum class SongDataType{
-    SONG, ARTIST, GENRE, ALBUM
+    SONG, ARTIST, GENRE, ALBUM, PLAYLIST
 }
 
 /**

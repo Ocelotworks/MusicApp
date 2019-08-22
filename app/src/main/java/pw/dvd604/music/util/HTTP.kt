@@ -8,6 +8,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONObject
+import pw.dvd604.music.adapter.data.SongDataType
 
 class HTTP(context: Context?) {
 
@@ -27,6 +28,45 @@ class HTTP(context: Context?) {
 
         fun getSong(): String {
             return address + songAPI
+        }
+
+        fun getDetailedSong(id: String, type: SongDataType): String {
+            val typeString: String = when (type) {
+                SongDataType.ALBUM -> {
+                    "/album/"
+                }
+                SongDataType.ARTIST -> {
+                    "/artist/"
+                }
+                SongDataType.PLAYLIST -> {
+                    "/playlist/"
+                }
+                SongDataType.GENRE -> {
+                    "/genre/"
+                }
+                else -> {
+                    //This shouldn't ever occur
+                    "/song/"
+                }
+            }
+
+            return "$address$songAPI$typeString$id"
+        }
+
+        fun getAlbum(id: String): String {
+            return "$address$songAPI/album/$id"
+        }
+
+        fun getArtist(id: String): String {
+            return "$address$songAPI/artist/$id"
+        }
+
+        fun getGenre(id: String): String {
+            return "$address$songAPI/genre/$id"
+        }
+
+        fun getPlaylist(id: String): String {
+            return "$address$songAPI/playlist/$id"
         }
 
         fun search(term: String): String {
