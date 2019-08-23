@@ -1,19 +1,62 @@
 package pw.dvd604.music.util
 
 import android.os.AsyncTask
+import pw.dvd604.music.adapter.data.Song
+import java.io.BufferedInputStream
+import java.io.FileOutputStream
+import java.net.URL
+import java.net.URLConnection
 
-class DownloaderAsync : AsyncTask<String, Int, Boolean>() {
+class DownloaderAsync(val song: Song, val callback: (song: Song, progress: Int) -> Unit) :
+    AsyncTask<Song, Int, Boolean>() {
 
-    override fun doInBackground(vararg params: String?): Boolean {
+    override fun doInBackground(vararg params: Song?): Boolean {
+        //Open the connection to the song
+        val url = URL(Util.songToUrl(params[0]))
+        val connection: URLConnection = url.openConnection()
+        connection.connect()
+
+        //get the full size, and open streams to both file and server
+        val fileLength = connection.contentLength
+
+        val downStream = BufferedInputStream(url.openStream(), 8192)
+        val outStream = FileOutputStream(Util.songToPath(song))
+
+        var data = ByteArray(8192)
+        var downloadedBytes = 0
+
+        //Write the stream to the file from the server
+        do {
+            val bytesRead = downStream.read(data)
+
+            if (bytesRead == -1) break
+
+            downloadedBytes += bytesRead
+
+            if (fileLength != -1)
+                publishProgress((downloadedBytes / fileLength) * 100)
+
+            outStream.write(data, 0, bytesRead)
+            data = ByteArray(8192)
+        } while (bytesRead != -1)
+
+        //Tidy up streams
+        outStream.flush()
+
+        outStream.close()
+        downStream.close()
+
         return true
     }
 
     override fun onProgressUpdate(vararg values: Int?) {
         super.onProgressUpdate(*values)
+        callback(song, values[0]!!)
     }
 
     override fun onPostExecute(result: Boolean?) {
         super.onPostExecute(result)
+        Util.log(this, "Done downloading")
     }
 
 }

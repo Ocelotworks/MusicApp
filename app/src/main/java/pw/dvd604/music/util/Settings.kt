@@ -2,6 +2,7 @@ package pw.dvd604.music.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Environment
 import androidx.preference.PreferenceManager
 
 class Settings {
@@ -29,7 +30,10 @@ class Settings {
         const val shuffle: Int = 9
         const val tracking: Int = 10
 
-        private val prefDefault = hashMapOf(server to "https://unacceptableuse.com/petify")
+        private val prefDefault = hashMapOf(
+            server to "https://unacceptableuse.com/petify",
+            storage to "${Environment.getExternalStorageDirectory().path}/petify"
+        )
 
         private var prefs: SharedPreferences? = null
 

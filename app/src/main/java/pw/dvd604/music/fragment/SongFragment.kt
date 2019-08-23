@@ -154,6 +154,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         when (item.title) {
             "Download" -> {
                 Util.downloader.addToQueue(song)
+                Util.downloader.doQueue()
             }
             "Add to queue" -> {
                 (activity as MainActivity).report("Not yet implemented", true)

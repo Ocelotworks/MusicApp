@@ -202,5 +202,9 @@ class Util {
         fun log(any: Any, s: String) {
             Log.e(any::class.java.name, s)
         }
+
+        fun songToPath(song: Song): String {
+            return "${Settings.getSetting(Settings.storage)!!}/${song.id}" //TODO
+        }
     }
 }
