@@ -204,7 +204,7 @@ class Util {
         }
 
         fun songToPath(song: Song): String {
-            return "${Settings.getSetting(Settings.storage)!!}/${song.id}" //TODO
+            return "${Settings.getSetting(Settings.storage)!!}/${song.id}"
         }
     }
 }
