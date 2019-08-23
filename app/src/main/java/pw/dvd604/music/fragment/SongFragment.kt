@@ -23,7 +23,6 @@ import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
 
-
 class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.OnItemClickListener {
     var searchMode: Int = R.id.btnTitle
     var http: HTTP? = null
@@ -36,20 +35,30 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         R.id.btnGenre to "genres",
         R.id.btnAlbum to "albums"
     )
+    var createCount: Int = 0
+    var state: Bundle? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         // Inflate the layout for this fragment
-        val v = inflater.inflate(R.layout.fragment_songs, container, false)
+        val view = inflater.inflate(R.layout.fragment_songs, container, false)
 
-        //Tell the search text box to tell us when it's changed
-        v.findViewById<EditText>(R.id.songSearch).addTextChangedListener(this)
-        v.findViewById<ListView>(R.id.songList).onItemClickListener = this
-        activity?.registerForContextMenu(v.findViewById(R.id.songList))
+        view.let {
+            it.findViewById<EditText>(R.id.songSearch).addTextChangedListener(this)
+            it.findViewById<ListView>(R.id.songList).onItemClickListener = this
+            activity?.registerForContextMenu(it.findViewById(R.id.songList))
+        }
 
         http = HTTP(context)
-        pullSongs()
 
-        return v
+        if (createCount == 0) {
+            pullSongs()
+        }
+
+        state = savedInstanceState
+
+        createCount++
+
+        return view
     }
 
     fun changeTextColour(btn: Int) {
@@ -79,6 +88,12 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         context?.let {
             songList.adapter = SongAdapter(it, songs)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt("scrolly", songList.firstVisiblePosition)
+
+        super.onSaveInstanceState(outState)
     }
 
     override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -138,10 +153,10 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
 
         when (item.title) {
             "Download" -> {
-
+                Util.downloader.addToQueue(song)
             }
             "Add to queue" -> {
-
+                (activity as MainActivity).report("Not yet implemented", true)
             }
             "Go to album" -> {
                 (activity as MainActivity).createSubFragment(HTTP.getAlbum(song.album), song.name)

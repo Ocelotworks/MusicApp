@@ -11,8 +11,8 @@ import pw.dvd604.music.adapter.data.Song
 
 open class SongAdapter(context: Context, list: ArrayList<Song>, resource: Int = R.layout.item_songlist) : ArrayAdapter<Song>(context, resource, list){
 
-    var resource: Int = R.layout.item_songlist
-    var list: ArrayList<Song>
+    private var resource: Int = R.layout.item_songlist
+    private var list: ArrayList<Song>
     private var inflater: LayoutInflater
 
 

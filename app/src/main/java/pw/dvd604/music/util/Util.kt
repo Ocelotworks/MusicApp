@@ -4,6 +4,7 @@ import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import android.util.Log
 import org.json.JSONObject
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
@@ -16,6 +17,7 @@ class Util {
         private var tempMetadataCompat: MediaMetadataCompat.Builder? = null
         private val previousSongs = ArrayList<Song>(0)
         var songQueue: ArrayList<Song>? = null
+        var downloader = Downloader()
 
         fun prettyTime(seconds: Int): String {
             val mins: Int = (seconds % 3600 / 60)
@@ -71,6 +73,9 @@ class Util {
         fun songToUrl(song: Song?): String {
             if (Settings.getBoolean(Settings.offlineMusic)) {
                 //Do offline stored check
+                if (downloader.hasSong(song)) {
+                    return "TODO"
+                }
             }
             return "${Settings.getSetting(
                 Settings.server,
@@ -192,6 +197,10 @@ class Util {
                     SongDataType.SONG
                 }
             }
+        }
+
+        fun log(any: Any, s: String) {
+            Log.e(any::class.java.name, s)
         }
     }
 }

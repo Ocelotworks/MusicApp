@@ -24,7 +24,6 @@ import kotlin.system.exitProcess
 class MainActivity : AppCompatActivity() {
 
     var inSettings: Boolean = false
-    var inSubSong: Boolean = false
     private var nowPlayingFragment: NowPlayingFragment = NowPlayingFragment()
     private var songFragment: SongFragment = SongFragment()
     private lateinit var subSongFragment: SubSongFragment
@@ -120,16 +119,9 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             R.id.btnBack -> {
-                if (inSubSong) {
                     val fM = this.supportFragmentManager
-                    val fT = fM.beginTransaction()
-                    fT.replace(R.id.slideContainer, songFragment)
-                    fT.commit()
-                    songFragment.reset()
-                    inSubSong = false
-                } else {
-                    report("Tried to back out of invalid fragment")
-                }
+                fM.popBackStack()
+                //fT.commit()
             }
         }
     }
@@ -137,19 +129,25 @@ class MainActivity : AppCompatActivity() {
     fun createSubFragment(url: String, name: String) {
         val fM = this.supportFragmentManager
         val fT = fM.beginTransaction()
+
+        fM.saveFragmentInstanceState(songFragment)
+
         subSongFragment = SubSongFragment.create(url, name)
         fT.replace(R.id.slideContainer, subSongFragment)
+        fT.addToBackStack(null)
         fT.commit()
-        inSubSong = true
     }
 
     fun createDetailFragment(song: Song) {
         val fM = this.supportFragmentManager
         val fT = fM.beginTransaction()
+
+        fM.saveFragmentInstanceState(songFragment)
+
         detailFragment = SongDetailFragment.create(song)
         fT.replace(R.id.slideContainer, detailFragment)
+        fT.addToBackStack("subSong")
         fT.commit()
-        inSubSong = true
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -184,31 +182,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (inSettings) {
-            //If we're currently looking at the settings, replace the fragment back to the old now playing fragment
-            // and un-hide the menu item
-            val fM = this.supportFragmentManager
-            val fT = fM.beginTransaction()
+        when {
+            inSettings -> {
+                //If we're currently looking at the settings, replace the fragment back to the old now playing fragment
+                // and un-hide the menu item
+                val fM = this.supportFragmentManager
+                val fT = fM.beginTransaction()
 
-            fT.replace(R.id.fragmentContainer, nowPlayingFragment)
-            fT.commit()
-            inSettings = false
-            menuItem?.let {
-                it.isVisible = true
+                fT.replace(R.id.fragmentContainer, nowPlayingFragment)
+                fT.commit()
+                inSettings = false
+                menuItem?.let {
+                    it.isVisible = true
+                }
+                supportActionBar?.let {
+                    it.title = resources.getString(R.string.app_name)
+                }
             }
-            supportActionBar?.let {
-                it.title = resources.getString(R.string.app_name)
-            }
-        } else if (inSubSong) {
-            val fM = this.supportFragmentManager
-            val fT = fM.beginTransaction()
-            fT.replace(R.id.slideContainer, songFragment)
-            fT.commit()
-            songFragment.reset()
-            inSubSong = false
-        } else {
-            //Else let the system deal with the back button
-            super.onBackPressed()
+            else -> //Else let the system deal with the back button
+                super.onBackPressed()
         }
     }
 
