@@ -147,10 +147,13 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
                 (activity as MainActivity).createSubFragment(HTTP.getAlbum(song.album), song.name)
             }
             "Go to artist" -> {
-
+                (activity as MainActivity).createSubFragment(
+                    HTTP.getArtist(song.artistID),
+                    song.author
+                )
             }
             "Song info" -> {
-
+                (activity as MainActivity).createDetailFragment(song)
             }
         }
 

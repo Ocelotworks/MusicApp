@@ -186,11 +186,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     override fun onPrepared(mp: MediaPlayer?) {
         mediaSession.controller.transportControls.play()
-
-        if (currentSong != null) {
-            currentSong!!.plays++
-            //db.songDao().updateSong(currentSong!!)
-        }
     }
 
     override fun onSeekComplete(mp: MediaPlayer?) {
@@ -434,7 +429,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
                 // Add an app icon and set its accent color
                 // Be careful about the color
-                setSmallIcon(R.mipmap.ic_launcher)
+                setSmallIcon(R.drawable.ic_notification)
                 color = ContextCompat.getColor(service, R.color.colorPrimary)
 
                 addAction(

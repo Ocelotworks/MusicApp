@@ -29,12 +29,18 @@ android {
 
         defaultConfig {
             applicationId "pw.dvd604.music"
-            minSdkVersion 23
+            minSdkVersion 24
             targetSdkVersion 28
             versionCode code
-            versionName "1." + code
+            versionName "2." + code
             testInstrumentationRunner "android.support.MediaService.runner.AndroidJUnitRunner"
             buildConfigField("String", "sentryKey", apikeyProperties['sentryKey'])
+
+            javaCompileOptions {
+                annotationProcessorOptions {
+                    arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+                }
+            }
         }
 
     } else {

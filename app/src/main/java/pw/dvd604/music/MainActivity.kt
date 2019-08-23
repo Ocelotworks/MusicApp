@@ -13,10 +13,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
-import pw.dvd604.music.fragment.NowPlayingFragment
-import pw.dvd604.music.fragment.SettingsFragment
-import pw.dvd604.music.fragment.SongFragment
-import pw.dvd604.music.fragment.SubSongFragment
+import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.fragment.*
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
@@ -30,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private var nowPlayingFragment: NowPlayingFragment = NowPlayingFragment()
     private var songFragment: SongFragment = SongFragment()
     private lateinit var subSongFragment: SubSongFragment
+    private lateinit var detailFragment: SongDetailFragment
     private var menuItem: MenuItem? = null
     private val permissionsResult: Int = 1
     private var homeLab: Boolean = false
@@ -64,6 +63,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkServerPrefs() {
         if (Settings.getSetting(server) == Settings.getDefault(server)) {
             //We're connecting to petify
+            homeLab = false
         } else {
             //We're on a home lab, disable all advanced functions
             homeLab = true
@@ -139,6 +139,15 @@ class MainActivity : AppCompatActivity() {
         val fT = fM.beginTransaction()
         subSongFragment = SubSongFragment.create(url, name)
         fT.replace(R.id.slideContainer, subSongFragment)
+        fT.commit()
+        inSubSong = true
+    }
+
+    fun createDetailFragment(song: Song) {
+        val fM = this.supportFragmentManager
+        val fT = fM.beginTransaction()
+        detailFragment = SongDetailFragment.create(song)
+        fT.replace(R.id.slideContainer, detailFragment)
         fT.commit()
         inSubSong = true
     }

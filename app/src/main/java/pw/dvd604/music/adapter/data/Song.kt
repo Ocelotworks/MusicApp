@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 import java.io.Serializable
 
 
-enum class SongDataType{
+enum class SongDataType {
     SONG, ARTIST, GENRE, ALBUM, PLAYLIST
 }
 
@@ -18,17 +18,16 @@ enum class SongDataType{
  **/
 @Entity
 data class Song(
-    @Ignore var name: String,
-    @Ignore var author: String,
-    @PrimaryKey var id: String,
-    @Ignore var album: String = "",
-    @Ignore var genre: String = "",
-    @Ignore var artistID: String = "",
-    @Ignore val type: SongDataType = SongDataType.SONG,
-    @ColumnInfo(name = "play_count") var plays : Int = 0
+    @ColumnInfo(name = "title") var name: String,
+    @ColumnInfo(name = "artist") var author: String,
+    @PrimaryKey @ColumnInfo(name = "song_id") var id: String,
+    @ColumnInfo(name = "album_id") var album: String = "",
+    @ColumnInfo(name = "genre_id") var genre: String = "",
+    @ColumnInfo(name = "artist_id") var artistID: String = "",
+    @Ignore val type: SongDataType = SongDataType.SONG
 ) : Serializable {
 
-    constructor() : this("", "", "", "", "", "", SongDataType.SONG, 0)
+    constructor() : this("", "", "", "", "", "", SongDataType.SONG)
 
     companion object {
         private const val serialVersionUID = 20180617104400L

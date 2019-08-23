@@ -26,6 +26,10 @@ class HTTP(context: Context?) {
             return "$address$songAPI/$id/info"
         }
 
+        fun songDetail(id: String): String {
+            return "$address$songAPI/$id/details"
+        }
+
         fun getSong(): String {
             return address + songAPI
         }

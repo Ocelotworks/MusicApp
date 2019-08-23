@@ -7,11 +7,8 @@ interface SongDao{
     @Query("SELECT * FROM song")
     fun getAll(): List<Song>
 
-    @Query("SELECT * FROM song WHERE id IN (:songIds)")
-    fun loadAllByIds(songIds: IntArray): List<Song>
-
-    @Query("SELECT * FROM song ORDER BY play_count DESC LIMIT :limit ")
-    fun loadTopSongs(limit: Int): List<Song>
+    @Query("SELECT * FROM song WHERE song_id IN (:songIds) LIMIT 1")
+    fun loadByID(songIds: IntArray): Song
 
     @Update
     fun updateSong(song : Song)
