@@ -35,6 +35,8 @@ android {
             versionName "2." + code
             testInstrumentationRunner "android.support.MediaService.runner.AndroidJUnitRunner"
             buildConfigField("String", "sentryKey", apikeyProperties['sentryKey'])
+            buildConfigField("String", "apiURL", apikeyProperties['apiURL'])
+            buildConfigField("int", "siteID", apikeyProperties['siteID'])
 
             javaCompileOptions {
                 annotationProcessorOptions {
@@ -89,6 +91,8 @@ dependencies {
 
     implementation 'io.sentry:sentry-android:1.7.27'
     implementation 'org.slf4j:slf4j-nop:1.7.25'
+
+    implementation 'org.matomo.sdk:tracker:4.1.0'
 
 
 }
