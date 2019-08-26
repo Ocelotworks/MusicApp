@@ -7,7 +7,11 @@ import java.io.FileOutputStream
 import java.net.URL
 import java.net.URLConnection
 
-class DownloaderAsync(val song: Song, val callback: (song: Song, progress: Int) -> Unit) :
+class DownloaderAsync(
+    val song: Song,
+    val callback: (song: Song, progress: Int) -> Unit,
+    val completeCallback: (song: Song) -> Unit
+) :
     AsyncTask<Song, Int, Boolean>() {
 
     override fun doInBackground(vararg params: Song?): Boolean {
@@ -57,6 +61,7 @@ class DownloaderAsync(val song: Song, val callback: (song: Song, progress: Int) 
     override fun onPostExecute(result: Boolean?) {
         super.onPostExecute(result)
         Util.log(this, "Done downloading")
+        completeCallback(song)
     }
 
 }

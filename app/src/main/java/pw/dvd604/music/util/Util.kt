@@ -94,8 +94,8 @@ class Util {
         fun songToUrl(song: Song?): String {
             if (Settings.getBoolean(Settings.offlineMusic)) {
                 //Do offline stored check
-                if (downloader.hasSong(song)) {
-                    return "TODO"
+                if (downloader.hasSong(song) && !downloader.isDownloading(song)) {
+                    return songToPath(song!!)
                 }
             }
             return "${Settings.getSetting(
