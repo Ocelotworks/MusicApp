@@ -275,7 +275,7 @@ class MainActivity : AppCompatActivity() {
         menu: ContextMenu, v: View,
         menuInfo: ContextMenu.ContextMenuInfo
     ) {
-        super.onCreateContextMenu(songFragment.buildContext(menu, v), v, menuInfo)
+        super.onCreateContextMenu(songFragment.buildContext(menu, v, menuInfo), v, menuInfo)
     }
 
     override fun onContextItemSelected(item: MenuItem?): Boolean {

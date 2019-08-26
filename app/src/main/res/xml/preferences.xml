@@ -37,10 +37,13 @@
     <PreferenceCategory android:title="Offline play">
 
         <SwitchPreferenceCompat
+                android:key="download"
+                android:title="Enable offline play" />
+
+        <SwitchPreferenceCompat
                 android:key="downloadAll"
                 android:title="Download all songs"
-                android:summary="Downloads all songs for offline play"
-        />
+                android:summary="Downloads all songs for offline play" />
 
         <SwitchPreferenceCompat
                 android:key="albumart"

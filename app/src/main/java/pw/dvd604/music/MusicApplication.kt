@@ -31,7 +31,7 @@ class MusicApplication : Application() {
 
         Settings.init(this)
 
-        if (Settings.getBoolean(Settings.tracking, true)) {
+        if (Settings.getBoolean(Settings.usageReports, true)) {
             tracker = TrackerBuilder.createDefault(BuildConfig.apiURL, BuildConfig.siteID)
                 .build(Matomo.getInstance(this))
             tracker?.userId = Util.getTrackingID()

@@ -125,6 +125,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
             bundle.putSerializable("song", song)
             MediaControllerCompat.getMediaController(activity)
                 .transportControls.prepareFromUri(Uri.parse(Util.songToUrl(song)), bundle)
+            Util.log(this, Util.songToUrl(song))
         } else {
             //Open sub song fragment
             (this.activity as MainActivity).createSubFragment(
@@ -140,8 +141,20 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         this.view?.findViewById<EditText>(R.id.songSearch)?.text = SpannableStringBuilder("")
     }
 
-    fun buildContext(menu: ContextMenu, v: View): ContextMenu {
-        menu.add(0, v.id, 0, "Download")
+    fun buildContext(
+        menu: ContextMenu,
+        v: View,
+        menuInfo: ContextMenu.ContextMenuInfo
+    ): ContextMenu {
+        val position: Int = (menuInfo as AdapterView.AdapterContextMenuInfo).position
+        val songAdapter = songList.adapter as SongAdapter
+        val song: Song = songAdapter.getItemAtPosition(position)
+
+        if (!Util.downloader.hasSong(song)) {
+            menu.add(0, v.id, 0, "Download")
+        } else {
+            menu.add(0, v.id, 0, "Remove from local storage")
+        }
         menu.add(0, v.id, 0, "Add to queue")
         menu.add(0, v.id, 0, "Go to album")
         menu.add(0, v.id, 0, "Go to artist")
