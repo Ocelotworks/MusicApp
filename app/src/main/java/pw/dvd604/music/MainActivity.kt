@@ -19,6 +19,7 @@ import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
+import pw.dvd604.music.util.Util
 import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
@@ -71,6 +72,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onClick(v: View) {
+        MusicApplication.track(
+            "Button Click",
+            Util.generatePayload(arrayOf("button"), arrayOf(Util.idToString(v.id)))
+        )
         when (v.id) {
             R.id.btnTitle,
             R.id.btnAlbum,
@@ -119,7 +124,7 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             R.id.btnBack -> {
-                    val fM = this.supportFragmentManager
+                val fM = this.supportFragmentManager
                 fM.popBackStack()
                 //fT.commit()
             }
@@ -234,7 +239,11 @@ class MainActivity : AppCompatActivity() {
 
     fun report(text: String, urgent: Boolean = false) {
         if (Settings.getBoolean(aggressiveReporting) || urgent) {
-            Snackbar.make(this.findViewById(R.id.fragmentContainer), text as CharSequence, Snackbar.LENGTH_SHORT)
+            Snackbar.make(
+                this.findViewById(R.id.fragmentContainer),
+                text as CharSequence,
+                Snackbar.LENGTH_SHORT
+            )
                 .show()
         }
     }

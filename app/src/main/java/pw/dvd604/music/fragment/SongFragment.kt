@@ -15,6 +15,7 @@ import com.android.volley.Response
 import kotlinx.android.synthetic.main.fragment_songs.*
 import org.json.JSONObject
 import pw.dvd604.music.MainActivity
+import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Song
@@ -114,6 +115,8 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         val songAdapter = adapter?.adapter as SongAdapter
         val song : Song = songAdapter.getItemAtPosition(position)
         val activity = this.activity as MainActivity
+
+        MusicApplication.track("Song play", Util.songToJson(song).toString())
 
 
         if(song.type == SongDataType.SONG) {

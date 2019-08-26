@@ -8,6 +8,7 @@ import org.matomo.sdk.Tracker
 import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import pw.dvd604.music.util.Settings
+import pw.dvd604.music.util.Util
 import kotlin.system.exitProcess
 
 
@@ -33,7 +34,14 @@ class MusicApplication : Application() {
         if (Settings.getBoolean(Settings.tracking, true)) {
             tracker = TrackerBuilder.createDefault(BuildConfig.apiURL, BuildConfig.siteID)
                 .build(Matomo.getInstance(this))
-            track("App Event", "Start")
+            tracker?.userId = Util.getTrackingID()
+            track(
+                "App Event",
+                Util.generatePayload(
+                    arrayOf("event", "buildType"),
+                    arrayOf("start", BuildConfig.BUILD_TYPE)
+                )
+            )
         }
 
 

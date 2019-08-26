@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Environment
 import androidx.preference.PreferenceManager
+import pw.dvd604.music.BuildConfig
 
 class Settings {
     companion object {
@@ -31,7 +32,7 @@ class Settings {
         const val tracking: Int = 10
 
         private val prefDefault = hashMapOf(
-            server to "https://unacceptableuse.com/petify",
+            server to BuildConfig.defaultURL,
             storage to "${Environment.getExternalStorageDirectory().path}/petify"
         )
 

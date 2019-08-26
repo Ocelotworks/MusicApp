@@ -36,6 +36,7 @@ android {
             testInstrumentationRunner "android.support.MediaService.runner.AndroidJUnitRunner"
             buildConfigField("String", "sentryKey", apikeyProperties['sentryKey'])
             buildConfigField("String", "apiURL", apikeyProperties['apiURL'])
+            buildConfigField("String", "defaultURL", apikeyProperties['defaultURL'])
             buildConfigField("int", "siteID", apikeyProperties['siteID'])
 
             javaCompileOptions {
