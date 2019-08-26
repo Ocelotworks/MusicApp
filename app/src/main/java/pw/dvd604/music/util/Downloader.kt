@@ -34,7 +34,7 @@ class Downloader {
 
     fun doQueue() {
         for (song in downloadQueue) {
-            DownloaderAsync(song, ::onUpdate, ::onComplete).execute(song)
+            DownloaderAsync(song, ::onUpdate, ::onComplete).execute()
             downloadQueue.remove(song)
         }
     }

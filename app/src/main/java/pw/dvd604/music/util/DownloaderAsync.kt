@@ -12,11 +12,11 @@ class DownloaderAsync(
     val callback: (song: Song, progress: Int) -> Unit,
     val completeCallback: (song: Song) -> Unit
 ) :
-    AsyncTask<Song, Int, Boolean>() {
+    AsyncTask<Void, Int, Void>() {
 
-    override fun doInBackground(vararg params: Song?): Boolean {
+    override fun doInBackground(vararg params: Void?): Void? {
         //Open the connection to the song
-        val url = URL(Util.songToUrl(params[0]))
+        val url = URL(Util.songToUrl(song))
         val connection: URLConnection = url.openConnection()
         connection.connect()
 
@@ -50,7 +50,7 @@ class DownloaderAsync(
         outStream.close()
         downStream.close()
 
-        return true
+        return null
     }
 
     override fun onProgressUpdate(vararg values: Int?) {
@@ -58,7 +58,7 @@ class DownloaderAsync(
         callback(song, values[0]!!)
     }
 
-    override fun onPostExecute(result: Boolean?) {
+    override fun onPostExecute(result: Void?) {
         super.onPostExecute(result)
         Util.log(this, "Done downloading")
         completeCallback(song)
