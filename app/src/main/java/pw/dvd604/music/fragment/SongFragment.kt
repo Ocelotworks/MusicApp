@@ -2,6 +2,7 @@ package pw.dvd604.music.fragment
 
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.media.session.MediaControllerCompat
 import android.text.Editable
 import android.text.SpannableStringBuilder
@@ -58,6 +59,9 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         state = savedInstanceState
 
         createCount++
+
+        val handler = Handler()
+        handler.postDelayed({ Util.downloader.doQueue() }, 10000)
 
         return view
     }
@@ -170,7 +174,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         when (item.title) {
             "Download" -> {
                 Util.downloader.addToQueue(song)
-                Util.downloader.doQueue()
             }
             "Add to queue" -> {
                 (activity as MainActivity).report("Not yet implemented", true)

@@ -1,11 +1,14 @@
 package pw.dvd604.music.util
 
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import org.json.JSONObject
+import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
@@ -13,6 +16,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class Util {
+
     companion object {
         /**Used to generate song metadata from the MediaService**/
         private var tempMetadataCompat: MediaMetadataCompat.Builder? = null
@@ -20,8 +24,13 @@ class Util {
         private val previousSongs = ArrayList<Song>(0)
         /**Used to track the songQueue**/
         var songQueue: ArrayList<Song>? = null
-        /**The instance of the song downloader**/
-        var downloader = Downloader()
+        /**Instance of the Downloader**/
+        @SuppressLint("StaticFieldLeak") //TODO: Fix this better later
+        var downloader: Downloader = Downloader()
+
+        fun getApplication(activity: Activity): MusicApplication {
+            return activity.application as MusicApplication
+        }
 
         /**Creates a human readable string representing song duration
          * @param seconds The length of song in seconds in a non-nullable Int
@@ -94,13 +103,31 @@ class Util {
         fun songToUrl(song: Song?): String {
             if (Settings.getBoolean(Settings.offlineMusic)) {
                 //Do offline stored check
-                if (downloader.hasSong(song) && !downloader.isDownloading(song)) {
-                    return songToPath(song!!)
-                }
+                //if ((ma.application as MusicApplication).downloader.hasSong(song) && !(ma.application as MusicApplication).downloader.isDownloading(song)) {
+                //     return songToPath(song!!)
+                // }
             }
             return "${Settings.getSetting(
                 Settings.server
             )}/song/${song?.id}"
+        }
+
+        /**Takes a given Song, and creates a MediaBroswerCompat MediaItem.
+         * This is used for populating the MediaService, and allowing external MediaControllers to parse what music we have
+         * @param song The song to create the media item from
+         * @return MediaItem, The Android MediaItem based off the Song**/
+        fun songToMediaItem(song: Song): MediaBrowserCompat.MediaItem {
+            val descriptionBuilder = MediaDescriptionCompat.Builder().apply {
+                setTitle(song.name)
+                setDescription(song.author)
+                setMediaUri(Uri.parse(songToUrl(song)))
+                setIconUri(Uri.parse(songToAlbumURL(song)))
+                setMediaId(song.id)
+            }
+            return MediaBrowserCompat.MediaItem(
+                descriptionBuilder.build(),
+                MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
+            )
         }
 
         /**Takes an Android internal button ID, and returns a human readable button name. Used in tracking
@@ -140,24 +167,6 @@ class Util {
                     "Button"
                 }
             }
-        }
-
-        /**Takes a given Song, and creates a MediaBroswerCompat MediaItem.
-         * This is used for populating the MediaService, and allowing external MediaControllers to parse what music we have
-         * @param song The song to create the media item from
-         * @return MediaItem, The Android MediaItem based off the Song**/
-        fun songToMediaItem(song: Song): MediaBrowserCompat.MediaItem {
-            val descriptionBuilder = MediaDescriptionCompat.Builder().apply {
-                setTitle(song.name)
-                setDescription(song.author)
-                setMediaUri(Uri.parse(songToUrl(song)))
-                setIconUri(Uri.parse(songToAlbumURL(song)))
-                setMediaId(song.id)
-            }
-            return MediaBrowserCompat.MediaItem(
-                descriptionBuilder.build(),
-                MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
-            )
         }
 
         /**Takes a Song, and returns the Song metadata, including title, artist, genre, and art location.

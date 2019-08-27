@@ -3,6 +3,11 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:theme="@style/AppTheme">
 
+    <Preference
+            android:key="feedback"
+            android:title="Send feedback"
+            android:summary="Report technical issues or suggest new features" />
+
     <PreferenceCategory android:title="Server setup">
 
         <EditTextPreference

@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         Settings.getSetting(server)?.let { HTTP.setup(it) }
+        Util.downloader.context = this.applicationContext
 
         //Insert actual fragments into shell containers
         val fM = this.supportFragmentManager
@@ -203,6 +204,8 @@ class MainActivity : AppCompatActivity() {
                 supportActionBar?.let {
                     it.title = resources.getString(R.string.app_name)
                 }
+
+                report("Settings changes require an app restart to take effect", true)
             }
             else -> //Else let the system deal with the back button
                 super.onBackPressed()
