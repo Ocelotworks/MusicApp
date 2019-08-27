@@ -18,7 +18,8 @@ class Settings {
             7 to "storage",
             8 to "useIntents",
             9 to "shuffle",
-            10 to "trackingID"
+            10 to "trackingID",
+            11 to "downloadAll"
         )
         const val server: Int = 1
         const val offlineMusic: Int = 2
@@ -30,6 +31,7 @@ class Settings {
         const val useIntents: Int = 8
         const val shuffle: Int = 9
         const val tracking: Int = 10
+        const val downloadAll: Int = 11
 
         private val prefDefault = hashMapOf(
             server to BuildConfig.defaultURL,

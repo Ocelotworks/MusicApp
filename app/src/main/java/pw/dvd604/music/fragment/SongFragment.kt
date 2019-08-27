@@ -22,6 +22,7 @@ import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
 import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
 
@@ -92,6 +93,17 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         songData = songs
         context?.let {
             songList.adapter = SongAdapter(it, songs)
+        }
+
+        checkDownloadAllSongs()
+    }
+
+    private fun checkDownloadAllSongs() {
+        if (Settings.getBoolean(Settings.downloadAll, false)) {
+            for (song in songData) {
+                Util.downloader.addToQueue(song)
+            }
+            Util.downloader.doQueue()
         }
     }
 
