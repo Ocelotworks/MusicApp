@@ -22,6 +22,7 @@ import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.download.BitmapAsync
+import java.io.File
 
 
 class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarChangeListener {
@@ -30,9 +31,13 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
     private var http: HTTP? = null
     private var controllerCallback: MediaControllerCompat.Callback = ControllerCallback(this)
     private var shuffleMode: Boolean = Settings.getBoolean(Settings.shuffle, true)
-    private var stopUpdatingSeek : Boolean = false
+    private var stopUpdatingSeek: Boolean = false
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         // Inflate the layout for this fragment
         val v = inflater.inflate(R.layout.fragment_playing, container, false)
         http = HTTP(context)
@@ -66,7 +71,8 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
 
     override fun onStop() {
         super.onStop()
-        MediaControllerCompat.getMediaController(this.activity as Activity)?.unregisterCallback(controllerCallback)
+        MediaControllerCompat.getMediaController(this.activity as Activity)
+            ?.unregisterCallback(controllerCallback)
         mediaBrowser.disconnect()
     }
 
@@ -80,15 +86,23 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
     private fun updateUI(metadata: MediaMetadataCompat?) {
         songName.text = metadata?.description?.title
         songAuthor.text = metadata?.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
-        songDuration.text = Util.prettyTime(metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION))
+        songDuration.text =
+            Util.prettyTime(metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION))
 
         metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)?.let {
             songProgress.max = it.toInt()
         }
 
-        songProgessText.text = Util.prettyTime(metadata?.getLong("progress")!!/1000)
+        songProgessText.text = Util.prettyTime(metadata?.getLong("progress")!! / 1000)
         songProgress.progress = metadata.getLong("progress").toInt() / 1000
-        BitmapAsync(this).execute(metadata.description?.iconUri.toString())
+
+        val filePath = Util.albumURLToAlbumPath(metadata.description?.iconUri.toString())
+
+        if (File(filePath).exists()) {
+
+        } else {
+            BitmapAsync(this).execute(metadata.description?.iconUri.toString())
+        }
     }
 
     fun postImage(bmp: Bitmap?) {
@@ -131,7 +145,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
-        activity?.mediaController?.transportControls?.seekTo(seekBar?.progress!!.toLong())
+        activity?.mediaController?.transportControls?.seekTo(seekBar?.progress!! * 1000.toLong())
         stopUpdatingSeek = false
     }
 
@@ -154,7 +168,10 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
                 )
 
                 // Save the controller
-                MediaControllerCompat.setMediaController(nowPlayingFragment.activity as Activity, mediaController)
+                MediaControllerCompat.setMediaController(
+                    nowPlayingFragment.activity as Activity,
+                    mediaController
+                )
             }
 
             // Finish building the UI
@@ -171,13 +188,14 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
 
     }
 
-    class ControllerCallback(private val nowPlayingFragment: NowPlayingFragment) : MediaControllerCompat.Callback() {
+    class ControllerCallback(private val nowPlayingFragment: NowPlayingFragment) :
+        MediaControllerCompat.Callback() {
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             nowPlayingFragment.updateUI(metadata)
         }
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
-            if(nowPlayingFragment.stopUpdatingSeek) {
+            if (nowPlayingFragment.stopUpdatingSeek) {
                 state?.position?.let {
                     nowPlayingFragment.songProgress.progress = it.toInt()
                 }

@@ -311,5 +311,10 @@ class Util {
         fun albumToPath(song: Song): String {
             return "${Settings.getSetting(Settings.storage)!!}/album/${song.id}"
         }
+
+        fun albumURLToAlbumPath(url: String): String {
+            val id = url.substring(url.lastIndexOf('/') + 1, url.length)
+            return "${Settings.getSetting(Settings.storage)!!}/album/${id}"
+        }
     }
 }

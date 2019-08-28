@@ -332,7 +332,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         override fun onSeekTo(pos: Long) {
             super.onSeekTo(pos)
             service.player.pause()
-            service.player.seekTo(pos.toInt() * 1000)
+            service.player.seekTo(pos.toInt())
         }
 
         override fun onSkipToPrevious() {
