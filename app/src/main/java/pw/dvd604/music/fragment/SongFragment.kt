@@ -181,8 +181,12 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
 
         when (item.title) {
             "Download" -> {
-                Util.downloader.addToQueue(song)
-                Util.downloader.doQueue()
+                if (song.type == SongDataType.SONG) {
+                    Util.downloader.addToQueue(song)
+                    Util.downloader.doQueue()
+                } else {
+                    http?.getReq(HTTP.getDetailedData(song), SongListRequest(::setContextSongs))
+                }
             }
             "Add to queue" -> {
                 (activity as MainActivity).report("Not yet implemented", true)
@@ -204,7 +208,12 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         return true
     }
 
-
+    private fun setContextSongs(songs: ArrayList<Song>) {
+        for (s in songs) {
+            Util.downloader.addToQueue(s)
+        }
+        Util.downloader.doQueue()
+    }
     //HTTP req listeners below
 
     class SearchListener(private val songFragment: SongFragment) : Response.Listener<String> {

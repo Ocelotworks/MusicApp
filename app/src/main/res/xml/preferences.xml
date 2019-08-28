@@ -48,6 +48,11 @@
                 android:summary="Downloads played album art to reduce data usage"
                 android:title="Keep album art stored locally" />
 
+        <SwitchPreferenceCompat
+                android:defaultValue="1"
+                android:key="shuffleOffline"
+                android:title="Shuffle only downloaded songs" />
+
         <EditTextPreference
                 android:defaultValue="/sdcard/petify"
                 android:key="storage"

@@ -3,9 +3,8 @@ package pw.dvd604.music.util.download
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
+import android.net.NetworkInfo
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -57,12 +56,13 @@ class Downloader(val context: Context) {
     fun doQueue() {
         if (!currentlyDownloading) {
             currentlyDownloading = true
-            buildNotification()
             downloadTempQueue = duplicateArraylist(downloadQueue)
+            buildNotification()
             Thread {
                 for (song in downloadQueue) {
                     while (downloadingCount > 3 || pauseDownload()) {/*Wait*/
                     }
+                    Util.log(this, "Starting")
                     DownloaderAsync(song, ::onUpdate, ::onComplete).execute()
                     downloadingCount++
 
@@ -74,14 +74,17 @@ class Downloader(val context: Context) {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun pauseDownload(): Boolean {
-        val cm = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+        val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
 
-        //val mobile = cm.getNetworkCapabilities(cm.activeNetwork).hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
-        val wifi = cm.getNetworkCapabilities(cm.activeNetwork)
-            .hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+        val isWiFi: Boolean = activeNetwork?.type == ConnectivityManager.TYPE_WIFI
 
-        return !wifi
+
+        return !(isWiFi && isConnected) //TODO: Fix this to not be depreciated. Nice android docs though
+        // [https://developer.android.com/training/monitoring-device-state/connectivity-monitoring]
     }
 
     private fun duplicateArraylist(downloadQueue: ArrayList<Song>): ArrayList<Song> {
@@ -134,7 +137,7 @@ class Downloader(val context: Context) {
     }
 
     private fun buildList(): String {
-        var list: String = ""
+        var list = ""
 
         for (s in downloadTempQueue) {
             list += s.generateText() + "\n"

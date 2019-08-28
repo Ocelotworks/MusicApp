@@ -21,6 +21,7 @@ class Settings {
         const val downloadAll = "downloadAll"
         const val update = "autoUpdate"
         const val buildName = "buildName"
+        const val shuffleOffline = "shuffleOffline"
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             server to BuildConfig.defaultURL,
@@ -34,7 +35,8 @@ class Settings {
             downloadAll to false,
             update to true,
             buildName to "release",
-            shuffle to true
+            shuffle to true,
+            shuffleOffline to true
         )
 
         private var prefs: SharedPreferences? = null
