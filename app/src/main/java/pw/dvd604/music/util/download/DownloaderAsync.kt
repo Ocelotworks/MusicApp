@@ -2,6 +2,7 @@ package pw.dvd604.music.util.download
 
 import android.os.AsyncTask
 import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.adapter.data.SongDataType
 import pw.dvd604.music.util.Util
 import java.io.BufferedInputStream
 import java.io.FileOutputStream
@@ -10,14 +11,20 @@ import java.net.URLConnection
 
 class DownloaderAsync(
     val song: Song,
-    val callback: (song: Song, progress: Int) -> Unit,
-    val completeCallback: (song: Song) -> Unit
+    private val callback: ((song: Song, progress: Int) -> Unit)?,
+    private val completeCallback: ((song: Song) -> Unit)?,
+    private val type: SongDataType = SongDataType.SONG
 ) :
     AsyncTask<Void, Int, Void>() {
 
     override fun doInBackground(vararg params: Void?): Void? {
         //Open the connection to the song
-        val url = URL(Util.songToUrl(song))
+        val url = if (type == SongDataType.SONG) {
+            URL(Util.songToUrl(song))
+        } else {
+            URL(Util.songToAlbumURL(song))
+        }
+
         val connection: URLConnection = url.openConnection()
         connection.connect()
 
@@ -25,7 +32,14 @@ class DownloaderAsync(
         val fileLength = connection.contentLength
 
         val downStream = BufferedInputStream(url.openStream(), 8192)
-        val outStream = FileOutputStream(Util.songToPath(song))
+
+        val outStream = FileOutputStream(
+            if (type == SongDataType.SONG) {
+                Util.songToPath(song)
+            } else {
+                Util.albumToPath(song)
+            }
+        )
 
         var data = ByteArray(8192)
         var downloadedBytes = 0
@@ -56,13 +70,13 @@ class DownloaderAsync(
 
     override fun onProgressUpdate(vararg values: Int?) {
         super.onProgressUpdate(*values)
-        callback(song, values[0]!!)
+        callback?.let { it(song, values[0]!!) }
     }
 
     override fun onPostExecute(result: Void?) {
         super.onPostExecute(result)
         Util.log(this, "Done downloading")
-        completeCallback(song)
+        completeCallback?.let { it(song) }
     }
 
 }

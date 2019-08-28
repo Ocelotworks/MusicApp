@@ -223,7 +223,7 @@ class Util {
          * While this doesn't support offline storage at the minute, it will in future
          * @param song The requested song
          * @return String, the album art URL**/
-        private fun songToAlbumURL(song: Song): String? {
+        fun songToAlbumURL(song: Song): String? {
             return "${Settings.getSetting(Settings.server)}/album/${song.album}"
         }
 
@@ -302,6 +302,14 @@ class Util {
          * @return String, the path to the song**/
         fun songToPath(song: Song): String {
             return "${Settings.getSetting(Settings.storage)!!}/${song.id}"
+        }
+
+        /**Takes a Song object, and returns the POTENTIAL local path based off song ID
+         * This isn't a given that the file will exist, only that it might be there, or it should be but in this path
+         * @param song The song to generate the path from
+         * @return String, the path to the song**/
+        fun albumToPath(song: Song): String {
+            return "${Settings.getSetting(Settings.storage)!!}/album/${song.id}"
         }
     }
 }

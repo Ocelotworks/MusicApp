@@ -8,6 +8,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.adapter.data.SongDataType
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
 import java.io.File
@@ -54,6 +55,10 @@ class Downloader {
             buildNotification()
             for (song in downloadQueue) {
                 DownloaderAsync(song, ::onUpdate, ::onComplete).execute()
+
+                if (Settings.getBoolean(Settings.offlineAlbum, false)) {
+                    DownloaderAsync(song, null, null, SongDataType.ALBUM).execute()
+                }
                 downloadQueue.remove(song)
             }
         }
