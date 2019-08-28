@@ -8,30 +8,19 @@ import pw.dvd604.music.BuildConfig
 
 class Settings {
     companion object {
-        private val prefKeys = hashMapOf(
-            1 to "address",
-            2 to "download",
-            3 to "albumart",
-            4 to "aggressiveReporting",
-            5 to "usageReporting",
-            6 to "crashReporting",
-            7 to "storage",
-            8 to "useIntents",
-            9 to "shuffle",
-            10 to "trackingID",
-            11 to "downloadAll"
-        )
-        const val server: Int = 1
-        const val offlineMusic: Int = 2
-        const val offlineAlbum: Int = 3
-        const val aggressiveReporting: Int = 4
-        const val usageReports: Int = 5
-        const val crashReports: Int = 6
-        const val storage: Int = 7
-        const val useIntents: Int = 8
-        const val shuffle: Int = 9
-        const val tracking: Int = 10
-        const val downloadAll: Int = 11
+        const val server = "address"
+        const val offlineMusic = "download"
+        const val offlineAlbum = "albumArt"
+        const val aggressiveReporting = "aggressiveReporting"
+        const val usageReports = "usageReporting"
+        const val crashReports = "crashReporting"
+        const val storage = "storage"
+        const val useIntents = "useIntents"
+        const val shuffle = "shuffle"
+        const val tracking = "trackingID"
+        const val downloadAll = "downloadAll"
+        const val update = "autoUpdate"
+        const val buildName = "buildName"
 
         private val prefDefault = hashMapOf(
             server to BuildConfig.defaultURL,
@@ -44,9 +33,9 @@ class Settings {
             prefs = PreferenceManager.getDefaultSharedPreferences(context)
         }
 
-        fun getSetting(name: Int, defaultValue: String = ""): String? {
+        fun getSetting(name: String, defaultValue: String = ""): String? {
             return prefs?.getString(
-                prefKeys[name], if (defaultValue == "") {
+                name, if (defaultValue == "") {
                     prefDefault[name]
                 } else {
                     defaultValue
@@ -54,23 +43,23 @@ class Settings {
             )
         }
 
-        fun setSetting(name: Int, value: String) {
-            prefs?.edit()?.putString(prefKeys[name], value)?.apply()
+        fun setSetting(name: String, value: String) {
+            prefs?.edit()?.putString(name, value)?.apply()
         }
 
-        fun getBoolean(setting: Int, b: Boolean = false): Boolean {
-            return prefs?.getBoolean(prefKeys[setting], b)!!
+        fun getBoolean(setting: String, b: Boolean = false): Boolean {
+            return prefs?.getBoolean(setting, b)!!
         }
 
-        fun putBoolean(name: Int, value: Boolean) {
-            prefs?.edit()?.putBoolean(prefKeys[name], value)?.apply()
+        fun putBoolean(name: String, value: Boolean) {
+            prefs?.edit()?.putBoolean(name, value)?.apply()
         }
 
-        fun putString(setting: Int, value: String?) {
-            prefs?.edit()?.putString(prefKeys[setting], value)?.apply()
+        fun putString(setting: String, value: String?) {
+            prefs?.edit()?.putString(setting, value)?.apply()
         }
 
-        fun getDefault(key: Int): Any? {
+        fun getDefault(key: String): Any? {
             return prefDefault[key]
         }
     }

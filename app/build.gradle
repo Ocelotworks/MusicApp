@@ -38,6 +38,7 @@ android {
             buildConfigField("String", "apiURL", apikeyProperties['apiURL'])
             buildConfigField("String", "defaultURL", apikeyProperties['defaultURL'])
             buildConfigField("int", "siteID", apikeyProperties['siteID'])
+            buildConfigField("String", "versionURL", apikeyProperties['versionURL'])
 
             javaCompileOptions {
                 annotationProcessorOptions {

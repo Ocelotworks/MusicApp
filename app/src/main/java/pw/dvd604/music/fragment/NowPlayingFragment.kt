@@ -3,6 +3,7 @@ package pw.dvd604.music.fragment
 import android.app.Activity
 import android.content.ComponentName
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.PorterDuff
 import android.media.AudioManager
 import android.os.Bundle
@@ -97,9 +98,11 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         songProgress.progress = metadata.getLong("progress").toInt() / 1000
 
         val filePath = Util.albumURLToAlbumPath(metadata.description?.iconUri.toString())
+        val file = File(filePath)
 
-        if (File(filePath).exists()) {
-
+        if (file.exists() && Settings.getBoolean(Settings.offlineAlbum, false)) {
+            this.view?.findViewById<ImageView>(R.id.songArt)
+                ?.setImageBitmap(BitmapFactory.decodeFile(file.absolutePath))
         } else {
             BitmapAsync(this).execute(metadata.description?.iconUri.toString())
         }
