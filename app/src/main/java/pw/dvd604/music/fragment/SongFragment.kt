@@ -6,9 +6,7 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.TextWatcher
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.AdapterView
 import android.widget.Button
 import android.widget.EditText
@@ -17,17 +15,17 @@ import com.android.volley.Response
 import kotlinx.android.synthetic.main.fragment_songs.*
 import org.json.JSONObject
 import pw.dvd604.music.MainActivity
+import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
 import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
 
-
 class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.OnItemClickListener {
-
     var searchMode: Int = R.id.btnTitle
     var http: HTTP? = null
     //Array of our songs
@@ -39,19 +37,30 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         R.id.btnGenre to "genres",
         R.id.btnAlbum to "albums"
     )
+    var createCount: Int = 0
+    var state: Bundle? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         // Inflate the layout for this fragment
-        val v = inflater.inflate(R.layout.fragment_songs, container, false)
+        val view = inflater.inflate(R.layout.fragment_songs, container, false)
 
-        //Tell the search text box to tell us when it's changed
-        v.findViewById<EditText>(R.id.songSearch).addTextChangedListener(this)
-        v.findViewById<ListView>(R.id.songList).onItemClickListener = this
+        view.let {
+            it.findViewById<EditText>(R.id.songSearch).addTextChangedListener(this)
+            it.findViewById<ListView>(R.id.songList).onItemClickListener = this
+            activity?.registerForContextMenu(it.findViewById(R.id.songList))
+        }
 
         http = HTTP(context)
-        pullSongs()
 
-        return v
+        if (createCount == 0) {
+            pullSongs()
+        }
+
+        state = savedInstanceState
+
+        createCount++
+
+        return view
     }
 
     fun changeTextColour(btn: Int) {
@@ -81,6 +90,23 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         context?.let {
             songList.adapter = SongAdapter(it, songs)
         }
+
+        checkDownloadAllSongs()
+    }
+
+    private fun checkDownloadAllSongs() {
+        if (Settings.getBoolean(Settings.downloadAll)) {
+            for (song in songData) {
+                Util.downloader.addToQueue(song)
+            }
+            Util.downloader.doQueue()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt("scrolly", songList.firstVisiblePosition)
+
+        super.onSaveInstanceState(outState)
     }
 
     override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -102,6 +128,8 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         val song : Song = songAdapter.getItemAtPosition(position)
         val activity = this.activity as MainActivity
 
+        MusicApplication.track("Song play", Util.songToJson(song).toString())
+
 
         if(song.type == SongDataType.SONG) {
             //activity.setSong(song)
@@ -109,6 +137,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
             bundle.putSerializable("song", song)
             MediaControllerCompat.getMediaController(activity)
                 .transportControls.prepareFromUri(Uri.parse(Util.songToUrl(song)), bundle)
+            Util.log(this, Util.songToUrl(song))
         } else {
             //Open sub song fragment
             (this.activity as MainActivity).createSubFragment(
@@ -122,6 +151,57 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
 
     fun reset() {
         this.view?.findViewById<EditText>(R.id.songSearch)?.text = SpannableStringBuilder("")
+    }
+
+    fun buildContext(
+        menu: ContextMenu,
+        v: View,
+        menuInfo: ContextMenu.ContextMenuInfo
+    ): ContextMenu {
+        val position: Int = (menuInfo as AdapterView.AdapterContextMenuInfo).position
+        val songAdapter = songList.adapter as SongAdapter
+        val song: Song = songAdapter.getItemAtPosition(position)
+
+        if (!Util.downloader.hasSong(song)) {
+            menu.add(0, v.id, 0, "Download")
+        } else {
+            menu.add(0, v.id, 0, "Remove from local storage")
+        }
+        menu.add(0, v.id, 0, "Add to queue")
+        menu.add(0, v.id, 0, "Go to album")
+        menu.add(0, v.id, 0, "Go to artist")
+        menu.add(0, v.id, 0, "Song info")
+        return menu
+    }
+
+    override fun onContextItemSelected(item: MenuItem?): Boolean {
+        val position: Int = (item?.menuInfo as AdapterView.AdapterContextMenuInfo).position
+        val songAdapter = songList.adapter as SongAdapter
+        val song: Song = songAdapter.getItemAtPosition(position)
+
+        when (item.title) {
+            "Download" -> {
+                Util.downloader.addToQueue(song)
+                Util.downloader.doQueue()
+            }
+            "Add to queue" -> {
+                (activity as MainActivity).report("Not yet implemented", true)
+            }
+            "Go to album" -> {
+                (activity as MainActivity).createSubFragment(HTTP.getAlbum(song.album), song.name)
+            }
+            "Go to artist" -> {
+                (activity as MainActivity).createSubFragment(
+                    HTTP.getArtist(song.artistID),
+                    song.author
+                )
+            }
+            "Song info" -> {
+                (activity as MainActivity).createDetailFragment(song)
+            }
+        }
+
+        return true
     }
 
 

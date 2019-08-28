@@ -1,4 +1,4 @@
-package pw.dvd604.music.util
+package pw.dvd604.music.util.download
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -18,6 +18,7 @@ class BitmapAsync(private val nowPlayingFragment: NowPlayingFragment?) : AsyncTa
             connection.doInput = true
             connection.connect()
             val input = connection.inputStream
+
             BitmapFactory.decodeStream(input)
         } catch (e: IOException) {
             // Log exception

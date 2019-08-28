@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content">
+        android:id="@+id/layoutList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
     <TextView
+            android:id="@+id/songText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
             android:text="Empty"
-            android:id="@+id/songText"
-            android:textSize="20sp"
             android:textColor="@color/colorMainText"
-            android:paddingBottom="16dp"/>
+            android:textSize="20sp" />
 </LinearLayout>

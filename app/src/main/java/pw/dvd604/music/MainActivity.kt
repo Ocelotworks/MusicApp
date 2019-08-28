@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
+import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -12,22 +13,24 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
-import pw.dvd604.music.fragment.NowPlayingFragment
-import pw.dvd604.music.fragment.SettingsFragment
-import pw.dvd604.music.fragment.SongFragment
-import pw.dvd604.music.fragment.SubSongFragment
+import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.fragment.*
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
+import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.download.Downloader
+import pw.dvd604.music.util.update.Updater
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
 
     var inSettings: Boolean = false
-    var inSubSong: Boolean = false
     private var nowPlayingFragment: NowPlayingFragment = NowPlayingFragment()
     private var songFragment: SongFragment = SongFragment()
     private lateinit var subSongFragment: SubSongFragment
+    private lateinit var detailFragment: SongDetailFragment
     private var menuItem: MenuItem? = null
     private val permissionsResult: Int = 1
     private var homeLab: Boolean = false
@@ -37,7 +40,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Settings.getSetting(server, "https://unacceptableuse.com/petify")?.let { HTTP.setup(it) }
+        Settings.getSetting(server)?.let { HTTP.setup(it) }
+        Util.downloader = Downloader(this.applicationContext)
 
         //Insert actual fragments into shell containers
         val fM = this.supportFragmentManager
@@ -52,6 +56,10 @@ class MainActivity : AppCompatActivity() {
         checkServerPrefs()
 
         startService(Intent(this, MediaService::class.java))
+
+        if (Settings.getBoolean(Settings.update)) {
+            Updater(this).checkUpdate()
+        }
     }
 
     override fun onDestroy() {
@@ -60,8 +68,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkServerPrefs() {
-        if (Settings.getSetting(server) == "https://unacceptableuse.com/petify") {
+        if (Settings.getSetting(server) == Settings.getDefault(server)) {
             //We're connecting to petify
+            homeLab = false
         } else {
             //We're on a home lab, disable all advanced functions
             homeLab = true
@@ -70,6 +79,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onClick(v: View) {
+        MusicApplication.track(
+            "Button Click",
+            Util.generatePayload(arrayOf("button"), arrayOf(Util.idToString(v.id)))
+        )
         when (v.id) {
             R.id.btnTitle,
             R.id.btnAlbum,
@@ -82,10 +95,12 @@ class MainActivity : AppCompatActivity() {
 
             R.id.btnPause -> {
                 val pbState = this.mediaController.playbackState?.state
-                if (pbState == PlaybackStateCompat.STATE_PLAYING) {
-                    mediaController.transportControls.pause()
-                } else {
-                    mediaController.transportControls.play()
+                if (pbState == PlaybackStateCompat.STATE_PAUSED or PlaybackStateCompat.STATE_PLAYING) {
+                    if (pbState == PlaybackStateCompat.STATE_PLAYING) {
+                        mediaController.transportControls.pause()
+                    } else {
+                        mediaController.transportControls.play()
+                    }
                 }
                 return
             }
@@ -116,16 +131,9 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             R.id.btnBack -> {
-                if (inSubSong) {
-                    val fM = this.supportFragmentManager
-                    val fT = fM.beginTransaction()
-                    fT.replace(R.id.slideContainer, songFragment)
-                    fT.commit()
-                    songFragment.reset()
-                    inSubSong = false
-                } else {
-                    report("Tried to back out of invalid fragement")
-                }
+                val fM = this.supportFragmentManager
+                fM.popBackStack()
+                //fT.commit()
             }
         }
     }
@@ -133,10 +141,25 @@ class MainActivity : AppCompatActivity() {
     fun createSubFragment(url: String, name: String) {
         val fM = this.supportFragmentManager
         val fT = fM.beginTransaction()
+
+        fM.saveFragmentInstanceState(songFragment)
+
         subSongFragment = SubSongFragment.create(url, name)
         fT.replace(R.id.slideContainer, subSongFragment)
+        fT.addToBackStack(null)
         fT.commit()
-        inSubSong = true
+    }
+
+    fun createDetailFragment(song: Song) {
+        val fM = this.supportFragmentManager
+        val fT = fM.beginTransaction()
+
+        fM.saveFragmentInstanceState(songFragment)
+
+        detailFragment = SongDetailFragment.create(song)
+        fT.replace(R.id.slideContainer, detailFragment)
+        fT.addToBackStack("subSong")
+        fT.commit()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -171,31 +194,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (inSettings) {
-            //If we're currently looking at the settings, replace the fragment back to the old now playing fragment
-            // and un-hide the menu item
-            val fM = this.supportFragmentManager
-            val fT = fM.beginTransaction()
+        when {
+            inSettings -> {
+                //If we're currently looking at the settings, replace the fragment back to the old now playing fragment
+                // and un-hide the menu item
+                val fM = this.supportFragmentManager
+                val fT = fM.beginTransaction()
 
-            fT.replace(R.id.fragmentContainer, nowPlayingFragment)
-            fT.commit()
-            inSettings = false
-            menuItem?.let {
-                it.isVisible = true
+                fT.replace(R.id.fragmentContainer, nowPlayingFragment)
+                fT.commit()
+                inSettings = false
+                menuItem?.let {
+                    it.isVisible = true
+                }
+                supportActionBar?.let {
+                    it.title = resources.getString(R.string.app_name)
+                }
+
+                report("Settings changes require an app restart to take effect", true)
             }
-            supportActionBar?.let {
-                it.title = resources.getString(R.string.app_name)
-            }
-        } else if (inSubSong) {
-            val fM = this.supportFragmentManager
-            val fT = fM.beginTransaction()
-            fT.replace(R.id.slideContainer, songFragment)
-            fT.commit()
-            songFragment.reset()
-            inSubSong = false
-        } else {
-            //Else let the system deal with the back button
-            super.onBackPressed()
+            else -> //Else let the system deal with the back button
+                super.onBackPressed()
         }
     }
 
@@ -207,10 +226,7 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.READ_EXTERNAL_STORAGE
         )
 
-        val check: Boolean = check(
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
+        val check: Boolean = check(permissions)
 
         if (!check) {
             ActivityCompat.requestPermissions(
@@ -221,7 +237,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun check(vararg perms: String): Boolean {
+    private fun check(perms: Array<String>): Boolean {
         var result = true
         for (perm in perms) {
             if (ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_DENIED)
@@ -232,7 +248,11 @@ class MainActivity : AppCompatActivity() {
 
     fun report(text: String, urgent: Boolean = false) {
         if (Settings.getBoolean(aggressiveReporting) || urgent) {
-            Snackbar.make(this.findViewById(R.id.fragmentContainer), text as CharSequence, Snackbar.LENGTH_SHORT)
+            Snackbar.make(
+                this.findViewById(R.id.fragmentContainer),
+                text as CharSequence,
+                Snackbar.LENGTH_SHORT
+            )
                 .show()
         }
     }
@@ -248,7 +268,7 @@ class MainActivity : AppCompatActivity() {
                     for (perm in grantResults) {
                         if (perm != PackageManager.PERMISSION_GRANTED) {
                             report("This app will not work without permissions", false)
-                            return
+                            exitProcess(-1)
                         }
                     }
                 }
@@ -259,4 +279,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    override fun onCreateContextMenu(
+        menu: ContextMenu, v: View,
+        menuInfo: ContextMenu.ContextMenuInfo
+    ) {
+        super.onCreateContextMenu(songFragment.buildContext(menu, v, menuInfo), v, menuInfo)
+    }
+
+    override fun onContextItemSelected(item: MenuItem?): Boolean {
+        return songFragment.onContextItemSelected(item)
+    }
+
 }
