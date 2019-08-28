@@ -20,6 +20,7 @@ import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.update.Updater
 import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
@@ -54,6 +55,10 @@ class MainActivity : AppCompatActivity() {
         checkServerPrefs()
 
         startService(Intent(this, MediaService::class.java))
+
+        if (Settings.getBoolean(Settings.update)) {
+            Updater(this).checkUpdate()
+        }
     }
 
     override fun onDestroy() {

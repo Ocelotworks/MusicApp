@@ -15,4 +15,6 @@
     <string name="homelabError">This feature is only enabled when playing from Petify</string>
     <string name="channel_name_progress">Download Progress</string>
     <string name="channel_description_progress">Lorem Ipsum</string>
+    <string name="channel_name_update">Update</string>
+    <string name="channel_description_update">Lorem Ipsum</string>
 </resources>

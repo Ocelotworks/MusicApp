@@ -31,7 +31,7 @@ class MusicApplication : Application() {
 
         Settings.init(this)
 
-        if (Settings.getBoolean(Settings.usageReports, true)) {
+        if (Settings.getBoolean(Settings.usageReports)) {
             tracker = TrackerBuilder.createDefault(BuildConfig.apiURL, BuildConfig.siteID)
                 .build(Matomo.getInstance(this))
             tracker?.userId = Util.getTrackingID()
@@ -45,7 +45,7 @@ class MusicApplication : Application() {
         }
 
 
-        if (Settings.getBoolean(Settings.crashReports, true)) {
+        if (Settings.getBoolean(Settings.crashReports)) {
             Sentry.init(
                 BuildConfig.sentryKey,
                 AndroidSentryClientFactory(this)

@@ -39,6 +39,7 @@ android {
             buildConfigField("String", "defaultURL", apikeyProperties['defaultURL'])
             buildConfigField("int", "siteID", apikeyProperties['siteID'])
             buildConfigField("String", "versionURL", apikeyProperties['versionURL'])
+            buildConfigField("String", "versionURLRoot", apikeyProperties['versionURLRoot'])
 
             javaCompileOptions {
                 annotationProcessorOptions {
@@ -81,13 +82,6 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    def room_version = "2.2.0-alpha02"
-
-    implementation "androidx.room:room-runtime:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
-    // For Kotlin use kapt instead of annotationProcessor
-    implementation "androidx.room:room-ktx:$room_version"
-
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.1'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1"
 
@@ -95,6 +89,4 @@ dependencies {
     implementation 'org.slf4j:slf4j-nop:1.7.25'
 
     implementation 'org.matomo.sdk:tracker:4.1.0'
-
-
 }

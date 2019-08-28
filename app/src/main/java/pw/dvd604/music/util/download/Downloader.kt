@@ -56,7 +56,7 @@ class Downloader {
             for (song in downloadQueue) {
                 DownloaderAsync(song, ::onUpdate, ::onComplete).execute()
 
-                if (Settings.getBoolean(Settings.offlineAlbum, false)) {
+                if (Settings.getBoolean(Settings.offlineAlbum)) {
                     DownloaderAsync(song, null, null, SongDataType.ALBUM).execute()
                 }
                 downloadQueue.remove(song)

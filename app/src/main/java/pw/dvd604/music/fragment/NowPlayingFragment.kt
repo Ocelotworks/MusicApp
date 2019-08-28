@@ -31,7 +31,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
     private lateinit var mediaBrowser: MediaBrowserCompat
     private var http: HTTP? = null
     private var controllerCallback: MediaControllerCompat.Callback = ControllerCallback(this)
-    private var shuffleMode: Boolean = Settings.getBoolean(Settings.shuffle, true)
+    private var shuffleMode: Boolean = Settings.getBoolean(Settings.shuffle)
     private var stopUpdatingSeek: Boolean = false
 
     override fun onCreateView(
@@ -100,7 +100,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         val filePath = Util.albumURLToAlbumPath(metadata.description?.iconUri.toString())
         val file = File(filePath)
 
-        if (file.exists() && Settings.getBoolean(Settings.offlineAlbum, false)) {
+        if (file.exists() && Settings.getBoolean(Settings.offlineAlbum)) {
             this.view?.findViewById<ImageView>(R.id.songArt)
                 ?.setImageBitmap(BitmapFactory.decodeFile(file.absolutePath))
         } else {

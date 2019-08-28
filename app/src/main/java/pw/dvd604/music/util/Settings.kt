@@ -22,9 +22,19 @@ class Settings {
         const val update = "autoUpdate"
         const val buildName = "buildName"
 
-        private val prefDefault = hashMapOf(
+        private val prefDefault: HashMap<String, Any> = hashMapOf(
             server to BuildConfig.defaultURL,
-            storage to "${Environment.getExternalStorageDirectory().path}/petify"
+            storage to "${Environment.getExternalStorageDirectory().path}/petify",
+            offlineMusic to true,
+            offlineAlbum to true,
+            aggressiveReporting to true,
+            usageReports to true,
+            crashReports to true,
+            useIntents to false,
+            downloadAll to false,
+            update to true,
+            buildName to "release",
+            shuffle to true
         )
 
         private var prefs: SharedPreferences? = null
@@ -36,7 +46,7 @@ class Settings {
         fun getSetting(name: String, defaultValue: String = ""): String? {
             return prefs?.getString(
                 name, if (defaultValue == "") {
-                    prefDefault[name]
+                    prefDefault[name] as String
                 } else {
                     defaultValue
                 }
@@ -47,8 +57,8 @@ class Settings {
             prefs?.edit()?.putString(name, value)?.apply()
         }
 
-        fun getBoolean(setting: String, b: Boolean = false): Boolean {
-            return prefs?.getBoolean(setting, b)!!
+        fun getBoolean(setting: String): Boolean {
+            return prefs?.getBoolean(setting, prefDefault[setting] as Boolean)!!
         }
 
         fun putBoolean(name: String, value: Boolean) {

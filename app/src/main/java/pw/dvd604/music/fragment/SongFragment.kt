@@ -99,7 +99,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
     }
 
     private fun checkDownloadAllSongs() {
-        if (Settings.getBoolean(Settings.downloadAll, false)) {
+        if (Settings.getBoolean(Settings.downloadAll)) {
             for (song in songData) {
                 Util.downloader.addToQueue(song)
             }
