@@ -27,8 +27,7 @@ class Util {
         var songQueue: ArrayList<Song>? = null
         /**Instance of the Downloader**/
         @SuppressLint("StaticFieldLeak") //TODO: Fix this better later
-        var downloader: Downloader =
-            Downloader()
+        lateinit var downloader: Downloader
 
         fun getApplication(activity: Activity): MusicApplication {
             return activity.application as MusicApplication

@@ -13,7 +13,7 @@ import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
 import java.io.File
 
-class Downloader {
+class Downloader(val context: Context) {
 
     private val downloadQueue = ArrayList<Song>()
     private val downloadStates = HashMap<Song, Boolean>(0)
@@ -21,10 +21,9 @@ class Downloader {
     private val notificationId: Int = 696901
     private var progress: Int = 0
     private var currentlyDownloading: Boolean = false
-    lateinit var context: Context
 
     init {
-        val file = File(Settings.getSetting(Settings.storage)!!)
+        val file = File("${Settings.getSetting(Settings.storage)}/album/")
         file.mkdirs()
 
         createNotificationChannel()
@@ -68,6 +67,8 @@ class Downloader {
         downloadStates[song] = false
         progress++
 
+        buildNotification()
+
         if (downloadQueue.size == 0) {
             currentlyDownloading = false
         }
@@ -78,7 +79,7 @@ class Downloader {
     }
 
     private fun buildNotification() {
-        var builder = NotificationCompat.Builder(context, channelId)
+        val builder = NotificationCompat.Builder(this.context, channelId)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Downloading songs!")
             .setContentText("Currently downloading")
@@ -89,9 +90,13 @@ class Downloader {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setProgress(downloadQueue.size, progress, false)
 
-        with(NotificationManagerCompat.from(context)) {
+        with(NotificationManagerCompat.from(this.context)) {
             // notificationId is a unique int for each notification that you must define
-            notify(notificationId, builder.build())
+            if (progress == downloadQueue.size) {
+                cancel(notificationId)
+            } else {
+                notify(notificationId, builder.build())
+            }
         }
     }
 
@@ -109,15 +114,15 @@ class Downloader {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = context.getString(R.string.channel_name_progress)
-            val descriptionText = context.getString(R.string.channel_description_progress)
+            val name = this.context.getString(R.string.channel_name_progress)
+            val descriptionText = this.context.getString(R.string.channel_description_progress)
             val importance = NotificationManager.IMPORTANCE_LOW
             val channel = NotificationChannel(channelId, name, importance).apply {
                 description = descriptionText
             }
             // Register the channel with the system
             val notificationManager: NotificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                this.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }

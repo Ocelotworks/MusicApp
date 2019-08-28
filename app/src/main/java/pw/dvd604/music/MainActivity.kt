@@ -20,6 +20,7 @@ import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.download.Downloader
 import pw.dvd604.music.util.update.Updater
 import kotlin.system.exitProcess
 
@@ -40,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         Settings.getSetting(server)?.let { HTTP.setup(it) }
-        Util.downloader.context = this.applicationContext
+        Util.downloader = Downloader(this.applicationContext)
 
         //Insert actual fragments into shell containers
         val fM = this.supportFragmentManager
