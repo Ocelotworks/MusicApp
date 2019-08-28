@@ -1,4 +1,4 @@
-package pw.dvd604.music.util
+package pw.dvd604.music.util.download
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

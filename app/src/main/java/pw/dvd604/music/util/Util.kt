@@ -12,6 +12,7 @@ import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
+import pw.dvd604.music.util.download.Downloader
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -26,7 +27,8 @@ class Util {
         var songQueue: ArrayList<Song>? = null
         /**Instance of the Downloader**/
         @SuppressLint("StaticFieldLeak") //TODO: Fix this better later
-        var downloader: Downloader = Downloader()
+        var downloader: Downloader =
+            Downloader()
 
         fun getApplication(activity: Activity): MusicApplication {
             return activity.application as MusicApplication

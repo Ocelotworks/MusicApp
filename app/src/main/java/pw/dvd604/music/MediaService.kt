@@ -17,11 +17,9 @@ import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
-import androidx.room.Room
 import com.android.volley.Response
 import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.util.AppDatabase
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
@@ -48,8 +46,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     private var currentSong: Song? = null
 
-    private lateinit var db: AppDatabase
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         androidx.media.session.MediaButtonReceiver.handleIntent(mediaSession, intent)
         return super.onStartCommand(intent, flags, startId)
@@ -57,11 +53,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     override fun onCreate() {
         super.onCreate()
-
-        db = Room.databaseBuilder(
-            this.applicationContext,
-            AppDatabase::class.java, "petify"
-        ).build()
 
         createNotificationChannel()
         http = HTTP(this)
@@ -370,7 +361,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     // Take the service out of the foreground
                     service.stopForeground(false)
                 }
-                service.db.close()
             }
 
             service.mediaSession.setPlaybackState(

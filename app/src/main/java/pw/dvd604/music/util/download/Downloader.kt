@@ -1,4 +1,4 @@
-package pw.dvd604.music.util
+package pw.dvd604.music.util.download
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,6 +8,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.util.Settings
+import pw.dvd604.music.util.Util
 import java.io.File
 
 class Downloader {

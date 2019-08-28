@@ -18,10 +18,10 @@ import android.widget.SeekBar
 import kotlinx.android.synthetic.main.fragment_playing.*
 import pw.dvd604.music.MediaService
 import pw.dvd604.music.R
-import pw.dvd604.music.util.BitmapAsync
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.download.BitmapAsync
 
 
 class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarChangeListener {

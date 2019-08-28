@@ -1,7 +1,8 @@
-package pw.dvd604.music.util
+package pw.dvd604.music.util.download
 
 import android.os.AsyncTask
 import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.util.Util
 import java.io.BufferedInputStream
 import java.io.FileOutputStream
 import java.net.URL
