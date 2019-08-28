@@ -5,6 +5,7 @@ import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
 import pw.dvd604.music.util.Util
 import java.io.BufferedInputStream
+import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
 import java.net.URLConnection
@@ -19,6 +20,10 @@ class DownloaderAsync(
 
     override fun doInBackground(vararg params: Void?): Void? {
         //Open the connection to the song
+        if (type == SongDataType.SONG) {
+            if (File(Util.songToPath(song)).exists()) return null
+        }
+
         val url = if (type == SongDataType.SONG) {
             URL(Util.songToUrl(song))
         } else {

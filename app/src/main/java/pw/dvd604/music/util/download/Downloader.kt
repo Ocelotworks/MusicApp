@@ -3,6 +3,9 @@ package pw.dvd604.music.util.download
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Context.CONNECTIVITY_SERVICE
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -13,14 +16,17 @@ import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
 import java.io.File
 
+
 class Downloader(val context: Context) {
 
     private val downloadQueue = ArrayList<Song>()
+    private var downloadTempQueue = ArrayList<Song>()
     private val downloadStates = HashMap<Song, Boolean>(0)
     private val channelId: String = "petify_download_channel"
     private val notificationId: Int = 696901
     private var progress: Int = 0
     private var currentlyDownloading: Boolean = false
+    private var downloadingCount: Int = 0
 
     init {
         val file = File("${Settings.getSetting(Settings.storage)}/album/")
@@ -52,24 +58,51 @@ class Downloader(val context: Context) {
         if (!currentlyDownloading) {
             currentlyDownloading = true
             buildNotification()
-            for (song in downloadQueue) {
-                DownloaderAsync(song, ::onUpdate, ::onComplete).execute()
+            downloadTempQueue = duplicateArraylist(downloadQueue)
+            Thread {
+                for (song in downloadQueue) {
+                    while (downloadingCount > 3 || pauseDownload()) {/*Wait*/
+                    }
+                    DownloaderAsync(song, ::onUpdate, ::onComplete).execute()
+                    downloadingCount++
 
-                if (Settings.getBoolean(Settings.offlineAlbum)) {
-                    DownloaderAsync(song, null, null, SongDataType.ALBUM).execute()
+                    if (Settings.getBoolean(Settings.offlineAlbum)) {
+                        DownloaderAsync(song, null, null, SongDataType.ALBUM).execute()
+                    }
                 }
-                downloadQueue.remove(song)
-            }
+            }.start()
         }
+    }
+
+    private fun pauseDownload(): Boolean {
+        val cm = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        //val mobile = cm.getNetworkCapabilities(cm.activeNetwork).hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+        val wifi = cm.getNetworkCapabilities(cm.activeNetwork)
+            .hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+
+        return !wifi
+    }
+
+    private fun duplicateArraylist(downloadQueue: ArrayList<Song>): ArrayList<Song> {
+        val list = ArrayList<Song>(0)
+        for (s in downloadQueue) {
+            list.add(s)
+        }
+        return list
     }
 
     private fun onComplete(song: Song) {
         downloadStates[song] = false
         progress++
+        downloadingCount--
+        downloadTempQueue.removeIf {
+            it.id == song.id
+        }
 
         buildNotification()
 
-        if (downloadQueue.size == 0) {
+        if (downloadTempQueue.size == 0) {
             currentlyDownloading = false
         }
     }
@@ -92,7 +125,7 @@ class Downloader(val context: Context) {
 
         with(NotificationManagerCompat.from(this.context)) {
             // notificationId is a unique int for each notification that you must define
-            if (progress == downloadQueue.size) {
+            if (downloadTempQueue.size == 0) {
                 cancel(notificationId)
             } else {
                 notify(notificationId, builder.build())
@@ -103,7 +136,7 @@ class Downloader(val context: Context) {
     private fun buildList(): String {
         var list: String = ""
 
-        for (s in downloadQueue) {
+        for (s in downloadTempQueue) {
             list += s.generateText() + "\n"
         }
 
