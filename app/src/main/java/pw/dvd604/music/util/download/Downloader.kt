@@ -56,7 +56,7 @@ class Downloader(val context: Context) {
     fun doQueue() {
         if (!currentlyDownloading) {
             currentlyDownloading = true
-            downloadTempQueue = duplicateArraylist(downloadQueue)
+            downloadTempQueue = duplicateArrayList(downloadQueue)
             buildNotification()
             Thread {
                 for (song in downloadQueue) {
@@ -87,7 +87,7 @@ class Downloader(val context: Context) {
         // [https://developer.android.com/training/monitoring-device-state/connectivity-monitoring]
     }
 
-    private fun duplicateArraylist(downloadQueue: ArrayList<Song>): ArrayList<Song> {
+    private fun duplicateArrayList(downloadQueue: ArrayList<Song>): ArrayList<Song> {
         val list = ArrayList<Song>(0)
         for (s in downloadQueue) {
             list.add(s)

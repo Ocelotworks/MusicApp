@@ -25,7 +25,8 @@ import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
 
-class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.OnItemClickListener {
+class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
+    AdapterView.OnItemClickListener {
     var searchMode: Int = R.id.btnTitle
     var http: HTTP? = null
     //Array of our songs
@@ -40,7 +41,11 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
     var createCount: Int = 0
     var state: Bundle? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_songs, container, false)
 
@@ -85,7 +90,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         http?.getReq(HTTP.getSong(), SongListRequest(::setSongs))
     }
 
-    fun setSongs(songs : ArrayList<Song>) {
+    fun setSongs(songs: ArrayList<Song>) {
         songData = songs
         context?.let {
             songList.adapter = SongAdapter(it, songs)
@@ -125,13 +130,13 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
 
     override fun onItemClick(adapter: AdapterView<*>?, v: View?, position: Int, id: Long) {
         val songAdapter = adapter?.adapter as SongAdapter
-        val song : Song = songAdapter.getItemAtPosition(position)
+        val song: Song = songAdapter.getItemAtPosition(position)
         val activity = this.activity as MainActivity
 
         MusicApplication.track("Song play", Util.songToJson(song).toString())
 
 
-        if(song.type == SongDataType.SONG) {
+        if (song.type == SongDataType.SONG) {
             //activity.setSong(song)
             val bundle = Bundle()
             bundle.putSerializable("song", song)
@@ -168,9 +173,11 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
             menu.add(0, v.id, 0, "Remove from local storage")
         }
         menu.add(0, v.id, 0, "Add to queue")
-        menu.add(0, v.id, 0, "Go to album")
-        menu.add(0, v.id, 0, "Go to artist")
-        menu.add(0, v.id, 0, "Song info")
+        if (song.type == SongDataType.SONG) {
+            menu.add(0, v.id, 0, "Go to album")
+            menu.add(0, v.id, 0, "Go to artist")
+            menu.add(0, v.id, 0, "Song info")
+        }
         return menu
     }
 
@@ -192,7 +199,10 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
                 (activity as MainActivity).report("Not yet implemented", true)
             }
             "Go to album" -> {
-                (activity as MainActivity).createSubFragment(HTTP.getAlbum(song.album), song.name)
+                (activity as MainActivity).createSubFragment(
+                    HTTP.getAlbum(song.album),
+                    song.name
+                )
             }
             "Go to artist" -> {
                 (activity as MainActivity).createSubFragment(
@@ -203,6 +213,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
             "Song info" -> {
                 (activity as MainActivity).createDetailFragment(song)
             }
+
         }
 
         return true
