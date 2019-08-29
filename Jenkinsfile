@@ -8,9 +8,7 @@ pipeline {
     }
     stage('Build') {
       steps {
-        sh '''./gradlew assembleDebug
-
-'''
+        sh './gradlew assembleDebug'
         archiveArtifacts(artifacts: '**/*.apk', onlyIfSuccessful: true)
       }
     }
