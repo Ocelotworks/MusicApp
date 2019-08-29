@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
     var inSettings: Boolean = false
     private var nowPlayingFragment: NowPlayingFragment = NowPlayingFragment()
-    private var songFragment: SongFragment = SongFragment()
+    var songFragment: SongFragment = SongFragment()
     private lateinit var subSongFragment: SubSongFragment
     private lateinit var detailFragment: SongDetailFragment
     private var menuItem: MenuItem? = null

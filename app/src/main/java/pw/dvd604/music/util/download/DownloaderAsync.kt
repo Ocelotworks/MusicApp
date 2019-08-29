@@ -18,57 +18,65 @@ class DownloaderAsync(
 ) :
     AsyncTask<Void, Int, Void>() {
 
+    var failed: Boolean = false
+
     override fun doInBackground(vararg params: Void?): Void? {
-        //Open the connection to the song
-        if (type == SongDataType.SONG) {
-            if (File(Util.songToPath(song)).exists()) return null
-        }
-
-        val url = if (type == SongDataType.SONG) {
-            URL(Util.songToUrl(song))
-        } else {
-            URL(Util.songToAlbumURL(song))
-        }
-
-        val connection: URLConnection = url.openConnection()
-        connection.connect()
-
-        //get the full size, and open streams to both file and server
-        val fileLength = connection.contentLength
-
-        val downStream = BufferedInputStream(url.openStream(), 8192)
-
-        val outStream = FileOutputStream(
+        try {
+            //Open the connection to the song
             if (type == SongDataType.SONG) {
-                Util.songToPath(song)
-            } else {
-                Util.albumToPath(song)
+                if (File(Util.songToPath(song)).exists()) return null
             }
-        )
 
-        var data = ByteArray(8192)
-        var downloadedBytes = 0
+            val url = if (type == SongDataType.SONG) {
+                URL(Util.songToUrl(song))
+            } else {
+                URL(Util.songToAlbumURL(song))
+            }
 
-        //Write the stream to the file from the server
-        do {
-            val bytesRead = downStream.read(data)
+            val connection: URLConnection = url.openConnection()
+            connection.connect()
 
-            if (bytesRead == -1) break
+            //get the full size, and open streams to both file and server
+            val fileLength = connection.contentLength
 
-            downloadedBytes += bytesRead
+            val downStream = BufferedInputStream(url.openStream(), 8192)
 
-            if (fileLength != -1)
-                publishProgress((downloadedBytes / fileLength) * 100)
+            val outStream = FileOutputStream(
+                if (type == SongDataType.SONG) {
+                    Util.songToPath(song)
+                } else {
+                    Util.albumToPath(song)
+                }
+            )
 
-            outStream.write(data, 0, bytesRead)
-            data = ByteArray(8192)
-        } while (bytesRead != -1)
+            var data = ByteArray(8192)
+            var downloadedBytes = 0
 
-        //Tidy up streams
-        outStream.flush()
+            //Write the stream to the file from the server
+            do {
+                val bytesRead = downStream.read(data)
 
-        outStream.close()
-        downStream.close()
+                if (bytesRead == -1) break
+
+                downloadedBytes += bytesRead
+
+                if (fileLength != -1)
+                    publishProgress((downloadedBytes / fileLength) * 100)
+
+                outStream.write(data, 0, bytesRead)
+                data = ByteArray(8192)
+            } while (bytesRead != -1)
+
+            //Tidy up streams
+            outStream.flush()
+
+            outStream.close()
+            downStream.close()
+        } catch (e: Exception) {
+            Util.log(this, "DownloaderAsync did that thing again")
+            Util.log(this, e.localizedMessage)
+            failed = true
+        }
 
         return null
     }
@@ -80,7 +88,7 @@ class DownloaderAsync(
 
     override fun onPostExecute(result: Void?) {
         super.onPostExecute(result)
-        Util.log(this, "Done downloading")
+        Util.log(this, "Done downloading, failed: $failed")
         completeCallback?.let { it(song) }
     }
 

@@ -36,8 +36,7 @@
                 android:key="download"
                 android:title="Enable offline play" />
 
-        <SwitchPreferenceCompat
-                android:defaultValue="0"
+        <Preference
                 android:key="downloadAll"
                 android:summary="Downloads all songs for offline play"
                 android:title="Download all songs" />

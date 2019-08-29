@@ -21,7 +21,6 @@ import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
 import pw.dvd604.music.util.HTTP
-import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
 
@@ -94,17 +93,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         songData = songs
         context?.let {
             songList.adapter = SongAdapter(it, songs)
-        }
-
-        checkDownloadAllSongs()
-    }
-
-    private fun checkDownloadAllSongs() {
-        if (Settings.getBoolean(Settings.downloadAll)) {
-            for (song in songData) {
-                Util.downloader.addToQueue(song)
-            }
-            Util.downloader.doQueue()
         }
     }
 
@@ -223,6 +211,20 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         for (s in songs) {
             Util.downloader.addToQueue(s)
         }
+        Util.downloader.doQueue()
+    }
+
+    fun downloadAll() {
+        Util.report("Checking previously downloaded songs", this.activity as MainActivity, true)
+        var i = 0
+        for (song in songData) {
+            if (!Util.downloader.hasSong(song)) {
+                Util.downloader.addToQueue(song)
+            } else {
+                i++
+            }
+        }
+        Util.report("Skipping $i songs. Starting download", this.activity as MainActivity, true)
         Util.downloader.doQueue()
     }
     //HTTP req listeners below

@@ -18,7 +18,6 @@ class Settings {
         const val useIntents = "useIntents"
         const val shuffle = "shuffle"
         const val tracking = "trackingID"
-        const val downloadAll = "downloadAll"
         const val update = "autoUpdate"
         const val buildName = "buildName"
         const val shuffleOffline = "shuffleOffline"
@@ -32,7 +31,6 @@ class Settings {
             usageReports to true,
             crashReports to true,
             useIntents to false,
-            downloadAll to false,
             update to true,
             buildName to "release",
             shuffle to true,

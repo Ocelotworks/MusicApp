@@ -8,6 +8,7 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import org.json.JSONObject
+import pw.dvd604.music.MainActivity
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
@@ -104,9 +105,9 @@ class Util {
         fun songToUrl(song: Song?): String {
             if (Settings.getBoolean(Settings.offlineMusic)) {
                 //Do offline stored check
-                //if ((ma.application as MusicApplication).downloader.hasSong(song) && !(ma.application as MusicApplication).downloader.isDownloading(song)) {
-                //     return songToPath(song!!)
-                // }
+                if (downloader.hasSong(song)) {
+                    return songToPath(song!!)
+                }
             }
             return "${Settings.getSetting(
                 Settings.server
@@ -314,6 +315,10 @@ class Util {
         fun albumURLToAlbumPath(url: String): String {
             val id = url.substring(url.lastIndexOf('/') + 1, url.length)
             return "${Settings.getSetting(Settings.storage)!!}/album/${id}"
+        }
+
+        fun report(s: String, activity: MainActivity, b: Boolean = false) {
+            activity.report(s, b)
         }
     }
 }
