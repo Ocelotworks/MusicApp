@@ -2,6 +2,16 @@
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
         android:theme="@style/AppTheme">
 
+
+    <PreferenceCategory android:title="General">
+        <EditTextPreference
+                android:dialogLayout="@layout/preference_multiline"
+                android:dialogMessage="@string/blacklist_message"
+                android:key="blacklist"
+                android:summary="Don't like rap? This is for you"
+                android:title="Content blacklist" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="Server setup">
 
         <EditTextPreference
