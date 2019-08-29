@@ -56,6 +56,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
         createNotificationChannel()
 
+        http = HTTP(this)
+
         afChangeListener = AudioFocusListener(this)
         player = MediaPlayer()
         player.setOnPreparedListener(this)
