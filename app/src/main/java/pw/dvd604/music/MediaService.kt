@@ -262,7 +262,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     }
                 }
                 "likesong" -> {
-                    service.http.getReq(HTTP.like(service.currentSong?.id), null)
+                    service.http.putReq(HTTP.like(service.currentSong?.id), JSONObject("{}"))
                 }
                 "setQueue" -> {
                     service.hasQueue = true

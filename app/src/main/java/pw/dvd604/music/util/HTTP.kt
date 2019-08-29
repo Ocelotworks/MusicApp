@@ -117,7 +117,7 @@ class HTTP(context: Context?) {
         queue.add(req)
     }
 
-    fun postReq(url: String, payload: JSONObject?) {
-        queue.add(JsonObjectRequest(Request.Method.POST, url, payload, null, null))
+    fun putReq(url: String, payload: JSONObject?) {
+        queue.add(JsonObjectRequest(Request.Method.PUT, url, payload, null, null))
     }
 }

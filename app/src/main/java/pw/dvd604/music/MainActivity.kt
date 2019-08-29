@@ -151,6 +151,7 @@ class MainActivity : AppCompatActivity() {
             R.id.btnStar -> {
                 if (!homeLab) {
                     mediaController.sendCommand("likesong", null, null)
+                    Util.report("Liked song!", this, true)
                 } else {
                     report(getString(R.string.homelabError), true)
                 }
