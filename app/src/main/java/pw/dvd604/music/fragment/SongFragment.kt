@@ -4,7 +4,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.session.MediaControllerCompat
 import android.text.Editable
-import android.text.SpannableStringBuilder
 import android.text.TextWatcher
 import android.view.*
 import android.widget.AdapterView
@@ -132,10 +131,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                 ), song.name
             )
         }
-    }
-
-    fun reset() {
-        this.view?.findViewById<EditText>(R.id.songSearch)?.text = SpannableStringBuilder("")
     }
 
     fun buildContext(

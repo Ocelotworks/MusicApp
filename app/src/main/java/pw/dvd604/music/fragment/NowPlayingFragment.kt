@@ -84,6 +84,9 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         mediaController.registerCallback(controllerCallback)
     }
 
+    var lastName: String = ""
+    var lastArtist: String = ""
+
     private fun updateUI(metadata: MediaMetadataCompat?) {
         songName.text = metadata?.description?.title
         songAuthor.text = metadata?.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
@@ -97,12 +100,20 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         songProgessText.text = Util.prettyTime(metadata?.getLong("progress")!! / 1000)
         songProgress.progress = metadata.getLong("progress").toInt() / 1000
 
+        //let the metadata update to here, including progress. Stop if it's not a new song
+        if (lastName == songName.text.toString() && lastArtist == songAuthor.text.toString()) return
+        //This is because the bitmap decoding code is heavy, and shouldn't be run every second
+
+        lastName = songName.text.toString()
+        lastArtist = songAuthor.text.toString()
+
         val filePath = Util.albumURLToAlbumPath(metadata.description?.iconUri.toString())
         val file = File(filePath)
 
+        Util.log(this, filePath)
+
         if (file.exists() && Settings.getBoolean(Settings.offlineAlbum)) {
-            this.view?.findViewById<ImageView>(R.id.songArt)
-                ?.setImageBitmap(BitmapFactory.decodeFile(file.absolutePath))
+            postImage(BitmapFactory.decodeFile(file.canonicalPath))
         } else {
             BitmapAsync(this).execute(metadata.description?.iconUri.toString())
         }
