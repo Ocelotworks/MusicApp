@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     var songFragment: SongFragment = SongFragment()
     private lateinit var subSongFragment: SubSongFragment
     private lateinit var detailFragment: SongDetailFragment
+    private var settingsFragment = SettingsFragment()
     private var menuItem: MenuItem? = null
     private val permissionsResult: Int = 1
     private var homeLab: Boolean = false
@@ -59,6 +60,8 @@ class MainActivity : AppCompatActivity() {
         checkServerPrefs()
 
         populateSongList()
+
+        settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
     }
 
     private fun populateSongList() {
@@ -202,7 +205,7 @@ class MainActivity : AppCompatActivity() {
             //and hiding the menu item
             val fM = this.supportFragmentManager
             val fT = fM.beginTransaction()
-            fT.replace(R.id.fragmentContainer, SettingsFragment())
+            fT.replace(R.id.fragmentContainer, settingsFragment)
             fT.commit()
             inSettings = true
             item.isVisible = false

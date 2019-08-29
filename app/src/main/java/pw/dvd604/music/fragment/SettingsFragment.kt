@@ -53,8 +53,11 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                         try {
                             val splitKey = entry.split(':')
                             val wholeKey = splitKey.subList(1, splitKey.size).joinToString()
-
                             val wholeValue = splitKey[0]
+
+                            if (sanityCheck(wholeKey, wholeValue)) {
+                                throw Exception()
+                            }
 
                             val sdtValue: SongDataType = Util.stringToDataType(wholeValue)
 
@@ -69,11 +72,19 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                             )
                         }
                     }
-
                     SongList.applyFilter()
                 }
             }
         }
+    }
+
+    private fun sanityCheck(vararg strings: String): Boolean {
+        for (s in strings) {
+            if (s == "") { //TODO: Add more strings here
+                return true
+            }
+        }
+        return false
     }
 
     override fun onResume() {

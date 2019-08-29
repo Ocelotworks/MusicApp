@@ -39,7 +39,7 @@ class Settings {
             blacklist to ""
         )
 
-        private var prefs: SharedPreferences? = null
+        var prefs: SharedPreferences? = null
 
         fun init(context: Context) {
             prefs = PreferenceManager.getDefaultSharedPreferences(context)
