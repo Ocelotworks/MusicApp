@@ -2,11 +2,13 @@ package pw.dvd604.music.util
 
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
+import java.io.File
 
 class SongList {
     companion object {
         var callback: ((data: ArrayList<Song>?) -> Unit)? = null
         var songList = ArrayList<Song>(0)
+        var downloadedSongs = ArrayList<Song>(0)
         var backupSongList = ArrayList<Song>(0)
         var albumMap = HashMap<String, String>(0)
         var genreMap = HashMap<String, String>(0)
@@ -20,6 +22,7 @@ class SongList {
 
         fun setSongsAndNotify(songs: ArrayList<Song>) {
             songList = songs
+            discoverDownloadedSongs()
             callback?.let { it(null) }
         }
 
@@ -63,6 +66,24 @@ class SongList {
                         songList.removeIf {song ->
                             song.artistID == id
                         }*/
+                    }
+                }
+            }
+        }
+
+        private fun discoverDownloadedSongs() {
+            val path = Settings.getSetting(Settings.storage)
+            path?.let {
+                val directory = File(it)
+
+                for (f in directory.listFiles()) {
+                    val songID = f.name
+                    val songObj = songList.filter { song ->
+                        song.id == songID
+                    }
+
+                    if (songList.size > 0) {
+                        downloadedSongs.addAll(songObj)
                     }
                 }
             }

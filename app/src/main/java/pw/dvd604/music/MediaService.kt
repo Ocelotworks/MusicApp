@@ -21,11 +21,14 @@ import com.android.volley.Response
 import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongList
+import pw.dvd604.music.util.SongList.Companion.downloadedSongs
 import pw.dvd604.music.util.Util
 import kotlin.random.Random
 
-class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
+class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener,
+    MediaPlayer.OnErrorListener,
     MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
 
     private val id: Int = 696969
@@ -98,7 +101,10 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         return BrowserRoot("root", null)
     }
 
-    override fun onLoadChildren(parentMediaId: String, result: Result<MutableList<MediaBrowserCompat.MediaItem>>) {
+    override fun onLoadChildren(
+        parentMediaId: String,
+        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
+    ) {
         val mediaList = ArrayList<MediaBrowserCompat.MediaItem>(0)
         for (song in songList) {
             mediaList.add(Util.songToMediaItem(song))
@@ -107,17 +113,30 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         result.sendResult(mediaList)
     }
 
+    var attempts = 0
+
     private fun nextSong() {
         if (!hasQueue) {
-            val currentSongIndex: Int = songList.indexOf(currentSong)
+            val list: ArrayList<Song> = if (Settings.getBoolean(Settings.shuffleOffline)) {
+                downloadedSongs
+            } else {
+                songList
+            }
+
+            val currentSongIndex: Int = if (list.indexOf(currentSong) == -1) {
+                0
+            } else {
+                list.indexOf(currentSong)
+            }
+
             val nextSongIndex: Int =
                 if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
-                    Random.nextInt(songList.size)
+                    Random.nextInt(list.size)
                 } else {
-                    (currentSongIndex + 1) % songList.size
+                    (currentSongIndex + 1) % list.size
                 }
 
-            val nextSong: Song = songList[nextSongIndex]
+            val nextSong: Song = list[nextSongIndex]
             val url: String = Util.songToUrl(nextSong)
 
             val bundle = Bundle()
@@ -129,7 +148,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             currentSong?.let { song ->
                 songQueue?.let { queue ->
 
-                    queuePosition = queue.indexOf(song) + 1
+                    queuePosition = queue.indexOf(song) + 1 + attempts
 
                     if (queuePosition > queue.size) {
                         hasQueue = false
@@ -138,8 +157,16 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                         return
                     }
 
-
                     val nextSong: Song = queue[queuePosition]
+
+                    if (Settings.getBoolean(Settings.shuffleOffline) && downloadedSongs.indexOf(
+                            nextSong
+                        ) == -1
+                    ) {
+                        attempts++
+                        nextSong()
+                        return
+                    }
 
                     val url: String = Util.songToUrl(nextSong)
 
@@ -195,7 +222,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         }
     }
 
-    class SessionCallbackReceiver(private val service: MediaService) : MediaSessionCompat.Callback(),
+    class SessionCallbackReceiver(private val service: MediaService) :
+        MediaSessionCompat.Callback(),
         Response.Listener<String> {
 
         override fun onResponse(response: String?) {
@@ -246,6 +274,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         override fun onPrepareFromUri(uri: Uri?, extras: Bundle?) {
             super.onPrepareFromUri(uri, extras)
             service.currentSong = extras?.getSerializable("song") as Song
+
             Util.addSongToStack(service.currentSong)
 
             service.mediaSession.setPlaybackState(
@@ -291,14 +320,15 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             )
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                service.audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
-                    setOnAudioFocusChangeListener(service.afChangeListener)
-                    setAudioAttributes(AudioAttributes.Builder().run {
-                        setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                service.audioFocusRequest =
+                    AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
+                        setOnAudioFocusChangeListener(service.afChangeListener)
+                        setAudioAttributes(AudioAttributes.Builder().run {
+                            setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            build()
+                        })
                         build()
-                    })
-                    build()
-                }
+                    }
 
                 val result = am.requestAudioFocus(service.audioFocusRequest)
                 if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
@@ -477,7 +507,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         }
     }
 
-    class AudioFocusListener(private val mediaService: MediaService) : AudioManager.OnAudioFocusChangeListener {
+    class AudioFocusListener(private val mediaService: MediaService) :
+        AudioManager.OnAudioFocusChangeListener {
         override fun onAudioFocusChange(focusChange: Int) {
             mediaService.getSystemService(Context.USER_SERVICE)
         }

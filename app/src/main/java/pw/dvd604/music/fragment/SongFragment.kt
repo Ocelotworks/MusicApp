@@ -116,7 +116,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
 
         MusicApplication.track("Song play", Util.songToJson(song).toString())
 
-
         if (song.type == SongDataType.SONG) {
             //activity.setSong(song)
             val bundle = Bundle()
