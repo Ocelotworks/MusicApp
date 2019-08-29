@@ -7,6 +7,7 @@ class SongList {
     companion object {
         var callback: ((data: ArrayList<Song>?) -> Unit)? = null
         var songList = ArrayList<Song>(0)
+        var backupSongList = ArrayList<Song>(0)
         var albumMap = HashMap<String, String>(0)
         var genreMap = HashMap<String, String>(0)
         var artistMap = HashMap<String, String>(0)
@@ -22,6 +23,14 @@ class SongList {
         }
 
         fun applyFilter(map: HashMap<String, SongDataType>) {
+            if (backupSongList.size == 0) {
+                //Copy the 'full' song list, pre-filter to a backing place
+                //This allows us to 'regenerate' the full song list without having to rerequest it from the server
+                //Accounts for filter entries being removed
+                backupSongList = Util.duplicateArrayList(songList)
+            } else {
+                songList = Util.duplicateArrayList(backupSongList)
+            }
             for ((k, v) in map) {
                 when (v) {
                     SongDataType.SONG -> {

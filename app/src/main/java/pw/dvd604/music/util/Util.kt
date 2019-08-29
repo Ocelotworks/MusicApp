@@ -349,5 +349,13 @@ class Util {
             fis.close()
             return builder.toString()
         }
+
+        fun duplicateArrayList(downloadQueue: ArrayList<Song>): ArrayList<Song> {
+            val list = ArrayList<Song>(0)
+            for (s in downloadQueue) {
+                list.add(s)
+            }
+            return list
+        }
     }
 }

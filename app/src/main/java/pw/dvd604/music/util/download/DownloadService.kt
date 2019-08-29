@@ -32,7 +32,7 @@ class DownloadService : Service() {
         startForeground(notificationId, buildNotification())
 
         queue = Util.downloader.downloadQueue
-        duplicateQueue = duplicateArrayList(queue)
+        duplicateQueue = Util.duplicateArrayList(queue)
 
         Thread {
             for (song in queue) {
@@ -140,11 +140,5 @@ class DownloadService : Service() {
         // [https://developer.android.com/training/monitoring-device-state/connectivity-monitoring]
     }
 
-    private fun duplicateArrayList(downloadQueue: ArrayList<Song>): ArrayList<Song> {
-        val list = ArrayList<Song>(0)
-        for (s in downloadQueue) {
-            list.add(s)
-        }
-        return list
-    }
+
 }
