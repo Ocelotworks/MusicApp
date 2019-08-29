@@ -54,6 +54,10 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
 
         checkServerPrefs()
+    }
+
+    override fun onStart() {
+        super.onStart()
 
         startService(Intent(this, MediaService::class.java))
 
