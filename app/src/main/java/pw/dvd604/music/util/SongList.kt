@@ -12,6 +12,7 @@ class SongList {
         var genreMap = HashMap<String, String>(0)
         var artistMap = HashMap<String, String>(0)
         var playlistMap = HashMap<String, String>(0)
+        var filterMap = HashMap<String, SongDataType>(0)
 
         fun generateMaps() {
 
@@ -22,7 +23,7 @@ class SongList {
             callback?.let { it(null) }
         }
 
-        fun applyFilter(map: HashMap<String, SongDataType>) {
+        fun applyFilter() {
             if (backupSongList.size == 0) {
                 //Copy the 'full' song list, pre-filter to a backing place
                 //This allows us to 'regenerate' the full song list without having to rerequest it from the server
@@ -31,7 +32,7 @@ class SongList {
             } else {
                 songList = Util.duplicateArrayList(backupSongList)
             }
-            for ((k, v) in map) {
+            for ((k, v) in filterMap) {
                 when (v) {
                     SongDataType.SONG -> {
                         songList.removeIf { song ->

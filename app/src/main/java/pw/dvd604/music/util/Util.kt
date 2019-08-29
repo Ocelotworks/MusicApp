@@ -357,5 +357,26 @@ class Util {
             }
             return list
         }
+
+        fun stringToDataType(value: String): SongDataType {
+            return when (value.toLowerCase(Locale.getDefault())) {
+                "artist" -> {
+                    SongDataType.ARTIST
+                }
+                "song" -> {
+                    SongDataType.SONG
+                }
+                "playlist" -> {
+                    SongDataType.PLAYLIST
+                }
+                "album" -> {
+                    SongDataType.ALBUM
+                }
+                "genre" -> {
+                    SongDataType.GENRE
+                }
+                else -> SongDataType.SONG
+            }
+        }
     }
 }
