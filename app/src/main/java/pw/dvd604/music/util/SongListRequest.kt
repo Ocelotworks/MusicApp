@@ -4,7 +4,10 @@ import com.android.volley.Response
 import org.json.JSONArray
 import pw.dvd604.music.adapter.data.Song
 
-class SongListRequest(val callback: (songList : ArrayList<Song>) -> Unit) : Response.Listener<String> {
+class SongListRequest(
+    val callback: (songList: ArrayList<Song>) -> Unit,
+    val responseCallback: ((response: String?) -> Unit)? = null
+) : Response.Listener<String> {
 
     private val songs = ArrayList<Song>()
 
@@ -17,6 +20,10 @@ class SongListRequest(val callback: (songList : ArrayList<Song>) -> Unit) : Resp
             songs.add(song)
         }
         callback(songs)
+
+        responseCallback?.let {
+            it(response)
+        }
     }
 
 }

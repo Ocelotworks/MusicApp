@@ -8,6 +8,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONObject
+import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
 
 class HTTP(context: Context?) {
@@ -84,6 +85,29 @@ class HTTP(context: Context?) {
         fun like(id: String?): String {
             return "$address/song/$id/vote/like"
         }
+
+        fun getDetailedData(song: Song): String? {
+            val typeString: String = when (song.type) {
+                SongDataType.ALBUM -> {
+                    "/album/"
+                }
+                SongDataType.ARTIST -> {
+                    "/artist/"
+                }
+                SongDataType.PLAYLIST -> {
+                    "/playlist/"
+                }
+                SongDataType.GENRE -> {
+                    "/genre/"
+                }
+                else -> {
+                    //This shouldn't ever occur
+                    "/song/"
+                }
+            }
+
+            return "$address$songAPI$typeString${song.id}"
+        }
     }
 
     private val queue: RequestQueue = Volley.newRequestQueue(context)
@@ -93,7 +117,7 @@ class HTTP(context: Context?) {
         queue.add(req)
     }
 
-    fun postReq(url: String, payload: JSONObject?) {
-        queue.add(JsonObjectRequest(Request.Method.POST, url, payload, null, null))
+    fun putReq(url: String, payload: JSONObject?) {
+        queue.add(JsonObjectRequest(Request.Method.PUT, url, payload, null, null))
     }
 }

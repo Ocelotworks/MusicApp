@@ -18,9 +18,10 @@ class Settings {
         const val useIntents = "useIntents"
         const val shuffle = "shuffle"
         const val tracking = "trackingID"
-        const val downloadAll = "downloadAll"
         const val update = "autoUpdate"
         const val buildName = "buildName"
+        const val shuffleOffline = "shuffleOffline"
+        const val blacklist = "blacklist"
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             server to BuildConfig.defaultURL,
@@ -31,13 +32,14 @@ class Settings {
             usageReports to true,
             crashReports to true,
             useIntents to false,
-            downloadAll to false,
             update to true,
             buildName to "release",
-            shuffle to true
+            shuffle to true,
+            shuffleOffline to true,
+            blacklist to ""
         )
 
-        private var prefs: SharedPreferences? = null
+        var prefs: SharedPreferences? = null
 
         fun init(context: Context) {
             prefs = PreferenceManager.getDefaultSharedPreferences(context)

@@ -15,11 +15,9 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.fragment.*
-import pw.dvd604.music.util.HTTP
-import pw.dvd604.music.util.Settings
+import pw.dvd604.music.util.*
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
-import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.download.Downloader
 import pw.dvd604.music.util.update.Updater
 import kotlin.system.exitProcess
@@ -28,12 +26,14 @@ class MainActivity : AppCompatActivity() {
 
     var inSettings: Boolean = false
     private var nowPlayingFragment: NowPlayingFragment = NowPlayingFragment()
-    private var songFragment: SongFragment = SongFragment()
+    var songFragment: SongFragment = SongFragment()
     private lateinit var subSongFragment: SubSongFragment
     private lateinit var detailFragment: SongDetailFragment
+    private var settingsFragment = SettingsFragment()
     private var menuItem: MenuItem? = null
     private val permissionsResult: Int = 1
     private var homeLab: Boolean = false
+    private lateinit var http: HTTP
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,10 +50,40 @@ class MainActivity : AppCompatActivity() {
         fT.add(R.id.slideContainer, songFragment)
         fT.commit()
 
+        http = HTTP(this)
+
+        SongList.callback = songFragment::setSongs
+
         //Check permissions
         checkPermissions()
 
         checkServerPrefs()
+
+        populateSongList()
+
+        settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
+    }
+
+    private fun populateSongList() {
+        val fileContents = Util.readFromFile(this, "songList")
+
+        if (fileContents != null) {
+            SongListRequest(::setSongs).onResponse(fileContents)
+        }
+
+        http.getReq(HTTP.getSong(), SongListRequest(::setSongs, ::writeSongs))
+    }
+
+    private fun writeSongs(response: String?) {
+        Util.writeToFile(this, "songList", response!!)
+    }
+
+    private fun setSongs(songs: ArrayList<Song>) {
+        SongList.setSongsAndNotify(songs)
+    }
+
+    override fun onStart() {
+        super.onStart()
 
         startService(Intent(this, MediaService::class.java))
 
@@ -121,6 +151,7 @@ class MainActivity : AppCompatActivity() {
             R.id.btnStar -> {
                 if (!homeLab) {
                     mediaController.sendCommand("likesong", null, null)
+                    Util.report("Liked song!", this, true)
                 } else {
                     report(getString(R.string.homelabError), true)
                 }
@@ -175,7 +206,7 @@ class MainActivity : AppCompatActivity() {
             //and hiding the menu item
             val fM = this.supportFragmentManager
             val fT = fM.beginTransaction()
-            fT.replace(R.id.fragmentContainer, SettingsFragment())
+            fT.replace(R.id.fragmentContainer, settingsFragment)
             fT.commit()
             inSettings = true
             item.isVisible = false

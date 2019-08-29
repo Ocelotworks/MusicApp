@@ -4,7 +4,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.session.MediaControllerCompat
 import android.text.Editable
-import android.text.SpannableStringBuilder
 import android.text.TextWatcher
 import android.view.*
 import android.widget.AdapterView
@@ -21,11 +20,12 @@ import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
 import pw.dvd604.music.util.HTTP
-import pw.dvd604.music.util.Settings
+import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
 
-class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.OnItemClickListener {
+class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
+    AdapterView.OnItemClickListener {
     var searchMode: Int = R.id.btnTitle
     var http: HTTP? = null
     //Array of our songs
@@ -37,10 +37,13 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         R.id.btnGenre to "genres",
         R.id.btnAlbum to "albums"
     )
-    var createCount: Int = 0
     var state: Bundle? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_songs, container, false)
 
@@ -52,13 +55,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
 
         http = HTTP(context)
 
-        if (createCount == 0) {
-            pullSongs()
-        }
-
         state = savedInstanceState
-
-        createCount++
 
         return view
     }
@@ -81,25 +78,13 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         }
     }
 
-    private fun pullSongs() {
-        http?.getReq(HTTP.getSong(), SongListRequest(::setSongs))
-    }
-
-    fun setSongs(songs : ArrayList<Song>) {
-        songData = songs
-        context?.let {
-            songList.adapter = SongAdapter(it, songs)
-        }
-
-        checkDownloadAllSongs()
-    }
-
-    private fun checkDownloadAllSongs() {
-        if (Settings.getBoolean(Settings.downloadAll)) {
-            for (song in songData) {
-                Util.downloader.addToQueue(song)
+    fun setSongs(data: ArrayList<Song>? = null) {
+        context?.let { con ->
+            if (data != null) {
+                songList.adapter = SongAdapter(con, data)
+            } else {
+                songList.adapter = SongAdapter(con, SongList.songList)
             }
-            Util.downloader.doQueue()
         }
     }
 
@@ -114,7 +99,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
     override fun afterTextChanged(text: Editable?) {
         text?.let {
             if (it.isEmpty()) {
-                pullSongs()
+                setSongs()
                 return
             }
             http?.getReq(HTTP.search(it.toString()), SearchListener(this))
@@ -125,13 +110,12 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
 
     override fun onItemClick(adapter: AdapterView<*>?, v: View?, position: Int, id: Long) {
         val songAdapter = adapter?.adapter as SongAdapter
-        val song : Song = songAdapter.getItemAtPosition(position)
+        val song: Song = songAdapter.getItemAtPosition(position)
         val activity = this.activity as MainActivity
 
         MusicApplication.track("Song play", Util.songToJson(song).toString())
 
-
-        if(song.type == SongDataType.SONG) {
+        if (song.type == SongDataType.SONG) {
             //activity.setSong(song)
             val bundle = Bundle()
             bundle.putSerializable("song", song)
@@ -149,10 +133,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
         }
     }
 
-    fun reset() {
-        this.view?.findViewById<EditText>(R.id.songSearch)?.text = SpannableStringBuilder("")
-    }
-
     fun buildContext(
         menu: ContextMenu,
         v: View,
@@ -168,9 +148,11 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
             menu.add(0, v.id, 0, "Remove from local storage")
         }
         menu.add(0, v.id, 0, "Add to queue")
-        menu.add(0, v.id, 0, "Go to album")
-        menu.add(0, v.id, 0, "Go to artist")
-        menu.add(0, v.id, 0, "Song info")
+        if (song.type == SongDataType.SONG) {
+            menu.add(0, v.id, 0, "Go to album")
+            menu.add(0, v.id, 0, "Go to artist")
+            menu.add(0, v.id, 0, "Song info")
+        }
         return menu
     }
 
@@ -181,14 +163,21 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
 
         when (item.title) {
             "Download" -> {
-                Util.downloader.addToQueue(song)
-                Util.downloader.doQueue()
+                if (song.type == SongDataType.SONG) {
+                    Util.downloader.addToQueue(song)
+                    Util.downloader.doQueue()
+                } else {
+                    http?.getReq(HTTP.getDetailedData(song), SongListRequest(::setContextSongs))
+                }
             }
             "Add to queue" -> {
                 (activity as MainActivity).report("Not yet implemented", true)
             }
             "Go to album" -> {
-                (activity as MainActivity).createSubFragment(HTTP.getAlbum(song.album), song.name)
+                (activity as MainActivity).createSubFragment(
+                    HTTP.getAlbum(song.album),
+                    song.name
+                )
             }
             "Go to artist" -> {
                 (activity as MainActivity).createSubFragment(
@@ -199,12 +188,32 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher, AdapterView.
             "Song info" -> {
                 (activity as MainActivity).createDetailFragment(song)
             }
+
         }
 
         return true
     }
 
+    private fun setContextSongs(songs: ArrayList<Song>) {
+        for (s in songs) {
+            Util.downloader.addToQueue(s)
+        }
+        Util.downloader.doQueue()
+    }
 
+    fun downloadAll() {
+        Util.report("Checking previously downloaded songs", this.activity as MainActivity, true)
+        var i = 0
+        for (song in songData) {
+            if (!Util.downloader.hasSong(song)) {
+                Util.downloader.addToQueue(song)
+            } else {
+                i++
+            }
+        }
+        Util.report("Skipping $i songs. Starting download", this.activity as MainActivity, true)
+        Util.downloader.doQueue()
+    }
     //HTTP req listeners below
 
     class SearchListener(private val songFragment: SongFragment) : Response.Listener<String> {

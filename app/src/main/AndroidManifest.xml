@@ -27,12 +27,19 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".MediaService" android:exported="false">
+        <service
+                android:name=".MediaService"
+                android:exported="true"
+                tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
+        <service
+                android:name=".util.download.DownloadService"
+                android:exported="false" />
+
         <receiver android:name="androidx.media.session.MediaButtonReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
