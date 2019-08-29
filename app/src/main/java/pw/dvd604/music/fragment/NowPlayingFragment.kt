@@ -43,7 +43,6 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         val v = inflater.inflate(R.layout.fragment_playing, container, false)
         http = HTTP(context)
 
-        shuffleMode(false, v)
         v.findViewById<SeekBar>(R.id.songProgress).setOnSeekBarChangeListener(this)
         return v
     }
@@ -125,8 +124,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
 
     fun shuffleMode(change: Boolean = true, v: View? = null) {
         if (change) {
-            shuffleMode = !shuffleMode
-            Settings.putBoolean(Settings.shuffle, shuffleMode)
+            Settings.putBoolean(Settings.shuffle, !shuffleMode)
         }
         val view: View? = if (this.view != null) {
             this.view
@@ -190,6 +188,8 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
 
             // Finish building the UI
             nowPlayingFragment.buildTransportControls()
+
+            nowPlayingFragment.shuffleMode(false, null)
         }
 
         override fun onConnectionSuspended() {
