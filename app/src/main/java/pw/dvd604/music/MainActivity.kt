@@ -15,11 +15,9 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.fragment.*
-import pw.dvd604.music.util.HTTP
-import pw.dvd604.music.util.Settings
+import pw.dvd604.music.util.*
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
-import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.download.Downloader
 import pw.dvd604.music.util.update.Updater
 import kotlin.system.exitProcess
@@ -34,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private var menuItem: MenuItem? = null
     private val permissionsResult: Int = 1
     private var homeLab: Boolean = false
+    private lateinit var http: HTTP
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,10 +49,34 @@ class MainActivity : AppCompatActivity() {
         fT.add(R.id.slideContainer, songFragment)
         fT.commit()
 
+        http = HTTP(this)
+
+        SongList.callback = songFragment::setSongs
+
         //Check permissions
         checkPermissions()
 
         checkServerPrefs()
+
+        populateSongList()
+    }
+
+    private fun populateSongList() {
+        val fileContents = Util.readFromFile(this, "songList")
+
+        if (fileContents != null) {
+            SongListRequest(::setSongs).onResponse(fileContents)
+        }
+
+        http.getReq(HTTP.getSong(), SongListRequest(::setSongs, ::writeSongs))
+    }
+
+    private fun writeSongs(response: String?) {
+        Util.writeToFile(this, "songList", response!!)
+    }
+
+    private fun setSongs(songs: ArrayList<Song>) {
+        SongList.setSongsAndNotify(songs)
     }
 
     override fun onStart() {

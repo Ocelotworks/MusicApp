@@ -21,7 +21,7 @@ import com.android.volley.Response
 import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.HTTP
-import pw.dvd604.music.util.SongListRequest
+import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
 import kotlin.random.Random
 
@@ -32,7 +32,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private val channelId: String = "petifyNot"
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
     private lateinit var http: HTTP
-    private var songList = ArrayList<Song>(0)
+    private var songList = SongList.songList
     private var hasQueue: Boolean = false
     private var songQueue: ArrayList<Song>? = null
     private var queuePosition: Int = 0
@@ -55,8 +55,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         super.onCreate()
 
         createNotificationChannel()
-        http = HTTP(this)
-        http.getReq(HTTP.getSong(), SongListRequest(::setSongs))
 
         afChangeListener = AudioFocusListener(this)
         player = MediaPlayer()
@@ -92,11 +90,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             setSessionToken(sessionToken)
         }
         mediaSession.setCallback(SessionCallbackReceiver(this))
-    }
-
-
-    private fun setSongs(songs: ArrayList<Song>) {
-        songList = songs
     }
 
     override fun onGetRoot(p0: String, p1: Int, p2: Bundle?): BrowserRoot? {

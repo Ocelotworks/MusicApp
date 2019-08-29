@@ -2,6 +2,7 @@ package pw.dvd604.music.util
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
@@ -14,8 +15,11 @@ import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
 import pw.dvd604.music.util.download.Downloader
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.util.*
 import kotlin.collections.ArrayList
+
 
 class Util {
 
@@ -319,6 +323,31 @@ class Util {
 
         fun report(s: String, activity: MainActivity, b: Boolean = false) {
             activity.report(s, b)
+        }
+
+        fun writeToFile(context: Context, file: String, text: String) {
+            context.openFileOutput(file, Context.MODE_PRIVATE).use {
+                it.write(text.toByteArray())
+            }
+        }
+
+        fun readFromFile(context: Context, file: String): String? {
+            if (!context.getFileStreamPath(file).exists()) return null
+
+            val fis = context.openFileInput(file)
+            val inputStreamReader = InputStreamReader(fis)
+            val bufferedReader = BufferedReader(inputStreamReader)
+            val builder = StringBuilder()
+
+            do {
+                val line: String? = bufferedReader.readLine()
+                builder.append(line)
+            } while (line != null)
+
+            bufferedReader.close()
+            inputStreamReader.close()
+            fis.close()
+            return builder.toString()
         }
     }
 }

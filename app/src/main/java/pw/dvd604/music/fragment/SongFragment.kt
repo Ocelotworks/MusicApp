@@ -21,6 +21,7 @@ import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
 import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
 
@@ -37,7 +38,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         R.id.btnGenre to "genres",
         R.id.btnAlbum to "albums"
     )
-    var createCount: Int = 0
     var state: Bundle? = null
 
     override fun onCreateView(
@@ -56,13 +56,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
 
         http = HTTP(context)
 
-        if (createCount == 0) {
-            pullSongs()
-        }
-
         state = savedInstanceState
-
-        createCount++
 
         return view
     }
@@ -85,14 +79,13 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         }
     }
 
-    private fun pullSongs() {
-        http?.getReq(HTTP.getSong(), SongListRequest(::setSongs))
-    }
-
-    fun setSongs(songs: ArrayList<Song>) {
-        songData = songs
-        context?.let {
-            songList.adapter = SongAdapter(it, songs)
+    fun setSongs(data: ArrayList<Song>? = null) {
+        context?.let { con ->
+            if (data != null) {
+                songList.adapter = SongAdapter(con, data)
+            } else {
+                songList.adapter = SongAdapter(con, SongList.songList)
+            }
         }
     }
 
@@ -107,7 +100,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     override fun afterTextChanged(text: Editable?) {
         text?.let {
             if (it.isEmpty()) {
-                pullSongs()
+                setSongs()
                 return
             }
             http?.getReq(HTTP.search(it.toString()), SearchListener(this))
