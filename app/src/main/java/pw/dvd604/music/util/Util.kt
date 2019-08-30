@@ -319,21 +319,40 @@ class Util {
             return "${Settings.getSetting(Settings.storage)!!}/album/${song.id}"
         }
 
+        /**Takes the URL to an album artwork image, extracts the ID and generates a local path instead
+         * Used when song objects aren't available, such as when song data is sent from service to activity in song meta data
+         * @param url The artwork URL
+         * @return String, the local path**/
         fun albumURLToAlbumPath(url: String): String {
             val id = url.substring(url.lastIndexOf('/') + 1, url.length)
             return "${Settings.getSetting(Settings.storage)!!}/album/${id}"
         }
 
+        /**Extension function of the [MainActivity.report] function. Makes a snackbar text, which may or not be 'urgent'
+         * If not urgent, the user will only see it if they have aggressive error reporting enabled
+         * @param s The text to display
+         * @param activity The reference to main activity. This is required as snackbar needs a view to latch to
+         * @param b The urgency of the message - defaults to false**/
         fun report(s: String, activity: MainActivity, b: Boolean = false) {
             activity.report(s, b)
         }
 
+        /**Write text to a private file in /data/data/pw.dvd604.music
+         * Used to store offline song lists
+         * @param context Used to open the file
+         * @param file The filename as a string
+         * @param text the contents to write to the file**/
         fun writeToFile(context: Context, file: String, text: String) {
             context.openFileOutput(file, Context.MODE_PRIVATE).use {
                 it.write(text.toByteArray())
             }
         }
 
+        /**The opposite of [writeToFile]
+         * Takes a context and file name, and returns the file contents as a long, possibly null string
+         * @param context Context to open file from
+         * @param file The filename
+         * @return String, nullable file contents**/
         fun readFromFile(context: Context, file: String): String? {
             if (!context.getFileStreamPath(file).exists()) return null
 
@@ -353,14 +372,23 @@ class Util {
             return builder.toString()
         }
 
-        fun duplicateArrayList(downloadQueue: ArrayList<Song>): ArrayList<Song> {
-            val list = ArrayList<Song>(0)
-            for (s in downloadQueue) {
+        /**Takes an [ArrayList] of type [T], iterates through creating a new, and distinctly different [ArrayList] of the same Type [T]
+         * Which is then returned. Used to ensure that changes to ArrayList A are not carried over to ArrayList B by previously setting them equal
+         * @param array ArrayList to copy
+         * @return ArrayList<T>, new ArrayList with same contents**/
+        fun <T : Any> duplicateArrayList(array: ArrayList<T>): ArrayList<T> {
+            val list = ArrayList<T>(0)
+            for (s in array) {
                 list.add(s)
             }
             return list
         }
 
+        /**Takes a string, such as "artist", and returns the correct [SongDataType]. Used in the user entered blacklist settings to
+         * convert a string to something the app can process
+         * If the string is not recognised, [SongDataType.SONG] is returned
+         * @param value Type string
+         * @return SongDataType, the correct song data type**/
         fun stringToDataType(value: String): SongDataType {
             return when (value.toLowerCase(Locale.getDefault())) {
                 "artist" -> {
@@ -382,6 +410,12 @@ class Util {
             }
         }
 
+        /**Used everywhere a notification should be made. A system requirement to give users control over notification importance.
+         * @param context The context to create the notification channel with
+         * @param channelId The Channel Id
+         * @param name The name of the channel
+         * @param descriptionText Channel description
+         * @param importance Defaults to [NotificationManager.IMPORTANCE_LOW]**/
         fun createNotificationChannel(
             context: Context,
             channelId: String,
