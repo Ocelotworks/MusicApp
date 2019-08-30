@@ -19,4 +19,6 @@
     <string name="channel_description_update">Lorem Ipsum</string>
     <string name="blacklist_message">Enter type:term to exclude that content\ngenre:rap or playlist:bad songs for example</string>
     <string name="preference_multiline_hint">One entry per line</string>
+    <string name="notification_update_title">Update available!</string>
+    <string name="notification_update_text">An update for Petify is available</string>
 </resources>

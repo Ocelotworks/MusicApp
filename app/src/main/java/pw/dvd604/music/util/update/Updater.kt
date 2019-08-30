@@ -16,6 +16,7 @@ import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.R
 import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
+import pw.dvd604.music.util.Util
 
 
 class Updater(val context: Context) : Response.Listener<String> {
@@ -43,7 +44,7 @@ class Updater(val context: Context) : Response.Listener<String> {
                 buildNotification(json.getInt(Settings.getSetting(Settings.buildName)))
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Util.log(this, "Incorrect build name given")
         }
 
     }
@@ -59,8 +60,8 @@ class Updater(val context: Context) : Response.Listener<String> {
 
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("Update available!")
-            .setContentText("An update for Petify is available")
+            .setContentTitle(context.getString(R.string.notification_update_title))
+            .setContentText(context.getString(R.string.notification_update_text))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setContentIntent(pendingIntent)
 
