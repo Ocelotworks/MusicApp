@@ -18,11 +18,8 @@ import androidx.media.MediaBrowserServiceCompat
 import com.android.volley.Response
 import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.util.HTTP
-import pw.dvd604.music.util.Settings
-import pw.dvd604.music.util.SongList
+import pw.dvd604.music.util.*
 import pw.dvd604.music.util.SongList.Companion.downloadedSongs
-import pw.dvd604.music.util.Util
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.random.Random
@@ -64,7 +61,14 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             getString(R.string.channel_description)
         )
 
+        Util.log(this, "Started Service")
+
         http = HTTP(this)
+
+        if (SongList.songList.isEmpty()) {
+            //Probably bound by an external media controller
+            http.getReq(HTTP.getSong(), SongListRequest(::setSongs))
+        }
 
         afChangeListener = AudioFocusListener(this)
         player = MediaPlayer()
@@ -102,6 +106,10 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             setSessionToken(sessionToken)
         }
         mediaSession.setCallback(SessionCallbackReceiver(this))
+    }
+
+    private fun setSongs(arrayList: ArrayList<Song>) {
+        SongList.setSongsAndNotify(arrayList)
     }
 
     override fun onGetRoot(p0: String, p1: Int, p2: Bundle?): BrowserRoot? {
@@ -272,9 +280,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                         .contains(query.toLowerCase(Locale.getDefault()))
                 }
 
-                Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
-
                 if (songs.isEmpty()) return
+
+                Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
 
                 Util.log(this, "preparing")
 
