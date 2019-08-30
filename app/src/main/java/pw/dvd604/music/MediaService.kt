@@ -1,7 +1,5 @@
 package pw.dvd604.music
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
@@ -57,7 +55,12 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     override fun onCreate() {
         super.onCreate()
 
-        createNotificationChannel()
+        Util.createNotificationChannel(
+            this,
+            channelId,
+            getString(R.string.channel_name),
+            getString(R.string.channel_description)
+        )
 
         http = HTTP(this)
 
@@ -203,23 +206,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     override fun onSeekComplete(mp: MediaPlayer?) {
         mp?.start()
-    }
-
-    private fun createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.channel_name)
-            val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(channelId, name, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
     }
 
     class SessionCallbackReceiver(private val service: MediaService) :

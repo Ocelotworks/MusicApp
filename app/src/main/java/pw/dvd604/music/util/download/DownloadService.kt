@@ -1,14 +1,11 @@
 package pw.dvd604.music.util.download
 
 import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
-import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -28,7 +25,13 @@ class DownloadService : Service() {
     private var duplicateQueue: ArrayList<Song> = ArrayList(0)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        createNotificationChannel()
+        Util.createNotificationChannel(
+            this,
+            channelId,
+            this.getString(R.string.channel_name_progress),
+            this.getString(R.string.channel_description_progress)
+        )
+
         startForeground(notificationId, buildNotification())
 
         queue = Util.downloader.downloadQueue
@@ -99,23 +102,6 @@ class DownloadService : Service() {
         return builder.build()
     }
 
-    private fun createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = this.getString(R.string.channel_name_progress)
-            val descriptionText = this.getString(R.string.channel_description_progress)
-            val importance = NotificationManager.IMPORTANCE_LOW
-            val channel = NotificationChannel(channelId, name, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system
-            val notificationManager: NotificationManager =
-                this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
     private fun buildList(): String {
         var list = ""
 
@@ -125,7 +111,6 @@ class DownloadService : Service() {
 
         return list
     }
-
 
     @Suppress("DEPRECATION")
     private fun pauseDownload(): Boolean {
