@@ -3,12 +3,12 @@ pipeline {
   stages {
     stage('Compile') {
       steps {
-        sh './gradlew compileDebugSources'
+        sh 'gradle compileDebugSources'
       }
     }
     stage('Build') {
       steps {
-        sh './gradlew assembleDebug'
+        sh 'gradle assembleDebug'
         archiveArtifacts(artifacts: '**/*.apk', onlyIfSuccessful: true)
       }
     }
