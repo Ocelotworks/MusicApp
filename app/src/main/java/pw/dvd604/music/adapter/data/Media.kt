@@ -3,23 +3,21 @@ package pw.dvd604.music.adapter.data
 import java.io.Serializable
 
 
-enum class SongDataType {
+enum class MediaType {
     SONG, ARTIST, GENRE, ALBUM, PLAYLIST
 }
 
 /**
- * The 'Song' datatype
- * Despite the name, Song is, in fact, the container for most data coming from the server
- * This is a remnant of early versions of the Petify app, and will likely  be overhauled in the near future
+ * The 'Media' datatype
  **/
-data class Song(
+data class Media(
     var name: String,
     var author: String,
     var id: String,
     var album: String = "",
     var genre: String = "",
     var artistID: String = "",
-    val type: SongDataType = SongDataType.SONG
+    val type: MediaType = MediaType.SONG
 ) : Serializable {
 
     companion object {
@@ -28,7 +26,7 @@ data class Song(
 
     fun generateText(): String {
 
-        val separator: String = if (type != SongDataType.SONG) {
+        val separator: String = if (type != MediaType.SONG) {
             " "
         } else {
             " - "

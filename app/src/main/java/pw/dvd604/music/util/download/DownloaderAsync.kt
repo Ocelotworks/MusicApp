@@ -1,8 +1,8 @@
 package pw.dvd604.music.util.download
 
 import android.os.AsyncTask
-import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.adapter.data.SongDataType
+import pw.dvd604.music.adapter.data.Media
+import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.util.Util
 import java.io.BufferedInputStream
 import java.io.File
@@ -11,10 +11,10 @@ import java.net.URL
 import java.net.URLConnection
 
 class DownloaderAsync(
-    val song: Song,
-    private val callback: ((song: Song, progress: Int) -> Unit)?,
-    private val completeCallback: ((song: Song) -> Unit)?,
-    private val type: SongDataType = SongDataType.SONG
+    val media: Media,
+    private val callback: ((media: Media, progress: Int) -> Unit)?,
+    private val completeCallback: ((media: Media) -> Unit)?,
+    private val type: MediaType = MediaType.SONG
 ) :
     AsyncTask<Void, Int, Void>() {
 
@@ -22,15 +22,15 @@ class DownloaderAsync(
 
     override fun doInBackground(vararg params: Void?): Void? {
         try {
-            //Open the connection to the song
-            if (type == SongDataType.SONG) {
-                if (File(Util.songToPath(song)).exists()) return null
+            //Open the connection to the media
+            if (type == MediaType.SONG) {
+                if (File(Util.songToPath(media)).exists()) return null
             }
 
-            val url = if (type == SongDataType.SONG) {
-                URL(Util.songToUrl(song))
+            val url = if (type == MediaType.SONG) {
+                URL(Util.songToUrl(media))
             } else {
-                URL(Util.songToAlbumURL(song))
+                URL(Util.songToAlbumURL(media))
             }
 
             val connection: URLConnection = url.openConnection()
@@ -42,10 +42,10 @@ class DownloaderAsync(
             val downStream = BufferedInputStream(url.openStream(), 8192)
 
             val outStream = FileOutputStream(
-                if (type == SongDataType.SONG) {
-                    Util.songToPath(song)
+                if (type == MediaType.SONG) {
+                    Util.songToPath(media)
                 } else {
-                    Util.albumToPath(song)
+                    Util.albumToPath(media)
                 }
             )
 
@@ -83,13 +83,13 @@ class DownloaderAsync(
 
     override fun onProgressUpdate(vararg values: Int?) {
         super.onProgressUpdate(*values)
-        callback?.let { it(song, values[0]!!) }
+        callback?.let { it(media, values[0]!!) }
     }
 
     override fun onPostExecute(result: Void?) {
         super.onPostExecute(result)
         Util.log(this, "Done downloading, failed: $failed")
-        completeCallback?.let { it(song) }
+        completeCallback?.let { it(media) }
     }
 
 }

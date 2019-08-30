@@ -1,35 +1,35 @@
 package pw.dvd604.music.util
 
-import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.adapter.data.SongDataType
+import pw.dvd604.music.adapter.data.Media
+import pw.dvd604.music.adapter.data.MediaType
 import java.io.File
 
 class SongList {
     companion object {
-        var callback: ((data: ArrayList<Song>?) -> Unit)? = null
-        var songList = ArrayList<Song>(0)
-        var downloadedSongs = ArrayList<Song>(0)
-        var backupSongList = ArrayList<Song>(0)
+        var callback: ((data: ArrayList<Media>?) -> Unit)? = null
+        var songList = ArrayList<Media>(0)
+        var downloadedSongs = ArrayList<Media>(0)
+        var backupSongList = ArrayList<Media>(0)
         var albumMap = HashMap<String, String>(0)
         var genreMap = HashMap<String, String>(0)
         var artistMap = HashMap<String, String>(0)
         var playlistMap = HashMap<String, String>(0)
-        var filterMap = HashMap<String, SongDataType>(0)
+        var filterMap = HashMap<String, MediaType>(0)
 
         fun generateMaps() {
 
         }
 
-        fun setSongsAndNotify(songs: ArrayList<Song>) {
-            songList = songs
+        fun setSongsAndNotify(media: ArrayList<Media>) {
+            songList = media
             discoverDownloadedSongs()
             callback?.let { it(null) }
         }
 
         fun applyFilter() {
             if (backupSongList.size == 0) {
-                //Copy the 'full' song list, pre-filter to a backing place
-                //This allows us to 'regenerate' the full song list without having to rerequest it from the server
+                //Copy the 'full' media list, pre-filter to a backing place
+                //This allows us to 'regenerate' the full media list without having to rerequest it from the server
                 //Accounts for filter entries being removed
                 backupSongList = Util.duplicateArrayList(songList)
             } else {
@@ -37,34 +37,34 @@ class SongList {
             }
             for ((k, v) in filterMap) {
                 when (v) {
-                    SongDataType.SONG -> {
+                    MediaType.SONG -> {
                         songList.removeIf { song ->
                             song.name.contains(k)
                         }
                     }
-                    SongDataType.ARTIST -> {
+                    MediaType.ARTIST -> {
                         val id = artistMap[k]
                         songList.removeIf { song ->
                             song.artistID == id
                         }
                     }
-                    SongDataType.GENRE -> {
+                    MediaType.GENRE -> {
                         val id = genreMap[k]
                         songList.removeIf { song ->
                             song.genre == id
                         }
                     }
-                    SongDataType.ALBUM -> {
+                    MediaType.ALBUM -> {
                         val id = albumMap[k]
                         songList.removeIf { song ->
                             song.album == id
                         }
                     }
-                    SongDataType.PLAYLIST -> {
+                    MediaType.PLAYLIST -> {
                         //TODO: Implement this
                         /*val id = playlistMap[k]
-                        songList.removeIf {song ->
-                            song.artistID == id
+                        mediaList.removeIf {media ->
+                            media.artistID == id
                         }*/
                     }
                 }

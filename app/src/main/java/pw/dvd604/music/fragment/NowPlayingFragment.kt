@@ -99,7 +99,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         songProgessText.text = Util.prettyTime(metadata?.getLong("progress")!! / 1000)
         songProgress.progress = metadata.getLong("progress").toInt() / 1000
 
-        //let the metadata update to here, including progress. Stop if it's not a new song
+        //let the metadata update to here, including progress. Stop if it's not a new media
         if (lastName == songName.text.toString() && lastArtist == songAuthor.text.toString()) return
         //This is because the bitmap decoding code is heavy, and shouldn't be run every second
 

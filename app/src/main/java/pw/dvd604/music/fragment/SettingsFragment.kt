@@ -6,7 +6,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
-import pw.dvd604.music.adapter.data.SongDataType
+import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
@@ -59,7 +59,7 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                                 throw Exception()
                             }
 
-                            val sdtValue: SongDataType = Util.stringToDataType(wholeValue)
+                            val sdtValue: MediaType = Util.stringToDataType(wholeValue)
 
                             SongList.filterMap[wholeKey] = sdtValue
 

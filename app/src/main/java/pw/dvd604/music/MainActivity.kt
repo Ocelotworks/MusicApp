@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
-import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.fragment.*
 import pw.dvd604.music.util.*
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun populateSongList() {
-        val fileContents = Util.readFromFile(this, "songList")
+        val fileContents = Util.readFromFile(this, "mediaList")
 
         if (fileContents != null) {
             SongListRequest(::setSongs).onResponse(fileContents)
@@ -74,11 +74,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun writeSongs(response: String?) {
-        Util.writeToFile(this, "songList", response!!)
+        Util.writeToFile(this, "mediaList", response!!)
     }
 
-    private fun setSongs(songs: ArrayList<Song>) {
-        SongList.setSongsAndNotify(songs)
+    private fun setSongs(media: ArrayList<Media>) {
+        SongList.setSongsAndNotify(media)
     }
 
     override fun onStart() {
@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity() {
             R.id.btnStar -> {
                 if (!homeLab) {
                     mediaController.sendCommand("likesong", null, null)
-                    Util.report("Liked song!", this, true)
+                    Util.report("Liked media!", this, true)
                 } else {
                     report(getString(R.string.homelabError), true)
                 }
@@ -180,13 +180,13 @@ class MainActivity : AppCompatActivity() {
         fT.commit()
     }
 
-    fun createDetailFragment(song: Song) {
+    fun createDetailFragment(media: Media) {
         val fM = this.supportFragmentManager
         val fT = fM.beginTransaction()
 
         fM.saveFragmentInstanceState(songFragment)
 
-        detailFragment = SongDetailFragment.create(song)
+        detailFragment = SongDetailFragment.create(media)
         fT.replace(R.id.slideContainer, detailFragment)
         fT.addToBackStack("subSong")
         fT.commit()

@@ -10,8 +10,8 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import pw.dvd604.music.R
-import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.adapter.data.SongDataType
+import pw.dvd604.music.adapter.data.Media
+import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
 
@@ -21,8 +21,8 @@ class DownloadService : Service() {
     private var progress: Int = 0
     private val channelId: String = getString(R.string.petify_download_channel)
     private val notificationId: Int = 696901
-    private var queue: ArrayList<Song> = ArrayList(0)
-    private var duplicateQueue: ArrayList<Song> = ArrayList(0)
+    private var queue: ArrayList<Media> = ArrayList(0)
+    private var duplicateQueue: ArrayList<Media> = ArrayList(0)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Util.createNotificationChannel(
@@ -46,7 +46,7 @@ class DownloadService : Service() {
                 downloadingCount++
 
                 if (Settings.getBoolean(Settings.offlineAlbum)) {
-                    DownloaderAsync(song, null, null, SongDataType.ALBUM).execute()
+                    DownloaderAsync(song, null, null, MediaType.ALBUM).execute()
                 }
             }
         }.start()
@@ -58,11 +58,11 @@ class DownloadService : Service() {
         return null
     }
 
-    private fun onComplete(song: Song) {
+    private fun onComplete(media: Media) {
         progress++
         downloadingCount--
         duplicateQueue.removeIf {
-            it.id == song.id
+            it.id == media.id
         }
 
         buildNotification(true)
@@ -72,8 +72,8 @@ class DownloadService : Service() {
         }
     }
 
-    private fun onUpdate(song: Song, progress: Int) {
-        Util.log(this, "${song.generateText()} progress: $progress%")
+    private fun onUpdate(media: Media, progress: Int) {
+        Util.log(this, "${media.generateText()} progress: $progress%")
     }
 
     private fun buildNotification(notify: Boolean = false): Notification? {

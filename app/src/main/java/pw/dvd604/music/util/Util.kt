@@ -13,8 +13,8 @@ import android.util.Log
 import org.json.JSONObject
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
-import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.adapter.data.SongDataType
+import pw.dvd604.music.adapter.data.Media
+import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.util.download.Downloader
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -25,18 +25,18 @@ import kotlin.collections.ArrayList
 class Util {
 
     companion object {
-        /**Used to generate song metadata from the MediaService**/
+        /**Used to generate media metadata from the MediaService**/
         private var tempMetadataCompat: MediaMetadataCompat.Builder? = null
         /**Used to track the previous songs played**/
-        private val previousSongs = ArrayList<Song>(0)
-        /**Used to track the songQueue**/
-        var songQueue: ArrayList<Song>? = null
+        private val previousSongs = ArrayList<Media>(0)
+        /**Used to track the mediaQueue**/
+        var mediaQueue: ArrayList<Media>? = null
         /**Instance of the Downloader**/
         @SuppressLint("StaticFieldLeak") //TODO: Fix this better later
         lateinit var downloader: Downloader
 
-        /**Creates a human readable string representing song duration
-         * @param seconds The length of song in seconds in a non-nullable Int
+        /**Creates a human readable string representing media duration
+         * @param seconds The length of media in seconds in a non-nullable Int
          * @return String**/
         fun prettyTime(seconds: Int): String {
             val mins: Int = (seconds % 3600 / 60)
@@ -45,8 +45,8 @@ class Util {
             return "${if (mins < 10) "0" else ""}$mins:${if (secs < 10) "0" else ""}$secs"
         }
 
-        /**Creates a human readable string representing song duration. If the seconds value is null, returns "00:00"
-         * @param seconds The length of song in seconds in a nullable Long
+        /**Creates a human readable string representing media duration. If the seconds value is null, returns "00:00"
+         * @param seconds The length of media in seconds in a nullable Long
          * @return String**/
         fun prettyTime(seconds: Long?): String {
             val secondsInt: Int? = seconds?.toInt()
@@ -60,12 +60,12 @@ class Util {
             }
         }
 
-        /**Creates a Song object from a JSON string
+        /**Creates a Media object from a JSON string
          * @param [json] The json object
-         * @return Song**/
-        fun jsonToSong(json: JSONObject): Song {
+         * @return Media**/
+        fun jsonToSong(json: JSONObject): Media {
             return try {
-                Song(
+                Media(
                     json.getString("title"),
                     json.getString("name"),
                     json.getString("song_id"),
@@ -74,7 +74,7 @@ class Util {
                     json.getString("artist_id")
                 )
             } catch (e: Exception) {
-                Song(
+                Media(
                     json.getString("title"),
                     json.getString("artist"),
                     json.getString("id"),
@@ -85,47 +85,47 @@ class Util {
             }
         }
 
-        /**Creates a JSON object from a Song
-         * @param [song] The song to create the json from
+        /**Creates a JSON object from a Media
+         * @param [media] The media to create the json from
          * @return JSONObject**/
-        fun songToJson(song: Song): JSONObject? {
+        fun songToJson(media: Media): JSONObject? {
             return JSONObject()
-                .put("title", song.name)
-                .put("name", song.author)
-                .put("song_id", song.id)
-                .put("album", song.album)
-                .put("genre", song.genre)
-                .put("artist_id", song.artistID)
+                .put("title", media.name)
+                .put("name", media.author)
+                .put("song_id", media.id)
+                .put("album", media.album)
+                .put("genre", media.genre)
+                .put("artist_id", media.artistID)
         }
 
-        /**Returns the location of the media file for a given song
+        /**Returns the location of the media file for a given media
          * Supports offline play, where the local directory is returned, and online play,
          * where the online URL is returned. This online play respects the user defined server URL
-         * @param song The song to get the location for
-         * @return String, The URL of the song, local or server-based**/
-        fun songToUrl(song: Song?): String {
+         * @param media The media to get the location for
+         * @return String, The URL of the media, local or server-based**/
+        fun songToUrl(media: Media?): String {
             if (Settings.getBoolean(Settings.offlineMusic)) {
                 //Do offline stored check
-                if (downloader.hasSong(song)) {
-                    return songToPath(song!!)
+                if (downloader.hasSong(media)) {
+                    return songToPath(media!!)
                 }
             }
             return "${Settings.getSetting(
                 Settings.server
-            )}/song/${song?.id}"
+            )}/media/${media?.id}"
         }
 
-        /**Takes a given Song, and creates a MediaBroswerCompat MediaItem.
+        /**Takes a given Media, and creates a MediaBroswerCompat MediaItem.
          * This is used for populating the MediaService, and allowing external MediaControllers to parse what music we have
-         * @param song The song to create the media item from
-         * @return MediaItem, The Android MediaItem based off the Song**/
-        fun songToMediaItem(song: Song): MediaBrowserCompat.MediaItem {
+         * @param media The media to create the media item from
+         * @return MediaItem, The Android MediaItem based off the Media**/
+        fun songToMediaItem(media: Media): MediaBrowserCompat.MediaItem {
             val descriptionBuilder = MediaDescriptionCompat.Builder().apply {
-                setTitle(song.name)
-                setDescription(song.author)
-                setMediaUri(Uri.parse(songToUrl(song)))
-                setIconUri(Uri.parse(songToAlbumURL(song)))
-                setMediaId(song.id)
+                setTitle(media.name)
+                setDescription(media.author)
+                setMediaUri(Uri.parse(songToUrl(media)))
+                setIconUri(Uri.parse(songToAlbumURL(media)))
+                setMediaId(media.id)
             }
             return MediaBrowserCompat.MediaItem(
                 descriptionBuilder.build(),
@@ -172,19 +172,19 @@ class Util {
             }
         }
 
-        /**Takes a Song, and returns the Song metadata, including title, artist, genre, and art location.
-         * Has some trickery to do with song duration too, by storing the unbuilt metadata, before returning the metadata.
+        /**Takes a Media, and returns the Media metadata, including title, artist, genre, and art location.
+         * Has some trickery to do with media duration too, by storing the unbuilt metadata, before returning the metadata.
          * This allows [addMetadata] and [addMetadataProgress] to return the same basic metadata as this method, while adding additional information.
          * Probably not the best way to do it, but things are constantly getting changed
-         * @param song The song to build the metadata from
+         * @param media The media to build the metadata from
          * @param builder Whether or not this should potentially destroy the metadata by building it
          * @return MetaData, if [builder] is true, and null if [builder] is false**/
-        fun songToMetadata(song: Song, builder: Boolean = false): MediaMetadataCompat? {
+        fun songToMetadata(media: Media, builder: Boolean = false): MediaMetadataCompat? {
             val metaData = MediaMetadataCompat.Builder()
-                .putText(MediaMetadataCompat.METADATA_KEY_TITLE, song.name)
-                .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, song.author)
-                .putText(MediaMetadataCompat.METADATA_KEY_GENRE, song.genre)
-                .putText(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, songToAlbumURL(song))
+                .putText(MediaMetadataCompat.METADATA_KEY_TITLE, media.name)
+                .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, media.author)
+                .putText(MediaMetadataCompat.METADATA_KEY_GENRE, media.genre)
+                .putText(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, songToAlbumURL(media))
             tempMetadataCompat = metaData
             if (!builder)
                 return metaData.build()
@@ -192,8 +192,8 @@ class Util {
         }
 
         /**@see songToMetadata
-         * @param duration The song Duration
-         * @return Completed song metadata**/
+         * @param duration The media Duration
+         * @return Completed media metadata**/
         fun addMetadata(duration: Int?): MediaMetadataCompat {
             duration?.let { durationNN ->
                 tempMetadataCompat?.putLong(
@@ -208,8 +208,8 @@ class Util {
         }
 
         /**@see songToMetadata
-         * @param duration The song progess
-         * @return Completed song metadata**/
+         * @param duration The media progess
+         * @return Completed media metadata**/
         fun addMetadataProgress(duration: Int?): MediaMetadataCompat {
             duration?.let { durationNN ->
                 tempMetadataCompat?.putLong("progress", durationNN.toLong())
@@ -220,23 +220,23 @@ class Util {
             return MediaMetadataCompat.Builder().build()
         }
 
-        /**Creates a URL pointing to the song album art.
+        /**Creates a URL pointing to the media album art.
          * While this doesn't support offline storage at the minute, it will in future
-         * @param song The requested song
+         * @param media The requested media
          * @return String, the album art URL**/
-        fun songToAlbumURL(song: Song): String? {
-            return "${Settings.getSetting(Settings.server)}/album/${song.album}"
+        fun songToAlbumURL(media: Media): String? {
+            return "${Settings.getSetting(Settings.server)}/album/${media.album}"
         }
 
-        /**Adds a song to the last played list
-         * @param song The last played song**/
-        fun addSongToStack(song: Song?) {
-            song?.let { previousSongs.add(it) }
+        /**Adds a media to the last played list
+         * @param media The last played media**/
+        fun addSongToStack(media: Media?) {
+            media?.let { previousSongs.add(it) }
         }
 
-        /**Pops the last played song from the stack, deletes it, and returns it here
-         * @return Song, the last played song**/
-        fun popSongStack(): Song {
+        /**Pops the last played media from the stack, deletes it, and returns it here
+         * @return Media, the last played media**/
+        fun popSongStack(): Media {
             previousSongs.removeAt(previousSongs.size - 1)
             return previousSongs[previousSongs.size - 1]
         }
@@ -254,24 +254,24 @@ class Util {
             return uuid ?: ""
         }
 
-        /**Takes an internal Android view ID, and returns a [SongDataType] from it.
-         * Used when a search button is pressed to tell the app which type of song
+        /**Takes an internal Android view ID, and returns a [MediaType] from it.
+         * Used when a search button is pressed to tell the app which type of media
          * 'container' we should be asking the server for.
          * @param viewID The ID of the search filter button
-         * @return SongDataType, the Song object type which corresponds to that button**/
-        fun viewIDToDataType(viewID: Int): SongDataType {
+         * @return MediaType, the Media object type which corresponds to that button**/
+        fun viewIDToDataType(viewID: Int): MediaType {
             return when (viewID) {
                 R.id.btnGenre -> {
-                    SongDataType.GENRE
+                    MediaType.GENRE
                 }
                 R.id.btnArtist -> {
-                    SongDataType.ARTIST
+                    MediaType.ARTIST
                 }
                 R.id.btnAlbum -> {
-                    SongDataType.ALBUM
+                    MediaType.ALBUM
                 }
                 else -> {
-                    SongDataType.SONG
+                    MediaType.SONG
                 }
             }
         }
@@ -297,24 +297,24 @@ class Util {
             Log.e(any::class.java.name, s)
         }
 
-        /**Takes a Song object, and returns the POTENTIAL local path based off song ID
+        /**Takes a Media object, and returns the POTENTIAL local path based off media ID
          * This isn't a given that the file will exist, only that it might be there, or it should be but in this path
-         * @param song The song to generate the path from
-         * @return String, the path to the song**/
-        fun songToPath(song: Song): String {
-            return "${Settings.getSetting(Settings.storage)!!}/${song.id}"
+         * @param media The media to generate the path from
+         * @return String, the path to the media**/
+        fun songToPath(media: Media): String {
+            return "${Settings.getSetting(Settings.storage)!!}/${media.id}"
         }
 
-        /**Takes a Song object, and returns the POTENTIAL local path based off song ID
+        /**Takes a Media object, and returns the POTENTIAL local path based off media ID
          * This isn't a given that the file will exist, only that it might be there, or it should be but in this path
-         * @param song The song to generate the path from
-         * @return String, the path to the song**/
-        fun albumToPath(song: Song): String {
-            return "${Settings.getSetting(Settings.storage)!!}/album/${song.id}"
+         * @param media The media to generate the path from
+         * @return String, the path to the media**/
+        fun albumToPath(media: Media): String {
+            return "${Settings.getSetting(Settings.storage)!!}/album/${media.id}"
         }
 
         /**Takes the URL to an album artwork image, extracts the ID and generates a local path instead
-         * Used when song objects aren't available, such as when song data is sent from service to activity in song meta data
+         * Used when media objects aren't available, such as when media data is sent from service to activity in media meta data
          * @param url The artwork URL
          * @return String, the local path**/
         fun albumURLToAlbumPath(url: String): String {
@@ -332,7 +332,7 @@ class Util {
         }
 
         /**Write text to a private file in /data/data/pw.dvd604.music
-         * Used to store offline song lists
+         * Used to store offline media lists
          * @param context Used to open the file
          * @param file The filename as a string
          * @param text the contents to write to the file**/
@@ -378,29 +378,29 @@ class Util {
             return list
         }
 
-        /**Takes a string, such as "artist", and returns the correct [SongDataType]. Used in the user entered blacklist settings to
+        /**Takes a string, such as "artist", and returns the correct [MediaType]. Used in the user entered blacklist settings to
          * convert a string to something the app can process
-         * If the string is not recognised, [SongDataType.SONG] is returned
+         * If the string is not recognised, [MediaType.SONG] is returned
          * @param value Type string
-         * @return SongDataType, the correct song data type**/
-        fun stringToDataType(value: String): SongDataType {
+         * @return MediaType, the correct media data type**/
+        fun stringToDataType(value: String): MediaType {
             return when (value.toLowerCase(Locale.getDefault())) {
                 "artist" -> {
-                    SongDataType.ARTIST
+                    MediaType.ARTIST
                 }
-                "song" -> {
-                    SongDataType.SONG
+                "media" -> {
+                    MediaType.SONG
                 }
                 "playlist" -> {
-                    SongDataType.PLAYLIST
+                    MediaType.PLAYLIST
                 }
                 "album" -> {
-                    SongDataType.ALBUM
+                    MediaType.ALBUM
                 }
                 "genre" -> {
-                    SongDataType.GENRE
+                    MediaType.GENRE
                 }
-                else -> SongDataType.SONG
+                else -> MediaType.SONG
             }
         }
 

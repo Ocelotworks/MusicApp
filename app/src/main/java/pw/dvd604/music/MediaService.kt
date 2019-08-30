@@ -19,15 +19,13 @@ import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.android.volley.Response
 import org.json.JSONObject
-import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.util.*
 import pw.dvd604.music.util.SongList.Companion.downloadedSongs
 import pw.dvd604.music.util.download.Downloader
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.random.Random
-
-
 
 class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener,
     MediaPlayer.OnErrorListener,
@@ -39,7 +37,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private lateinit var http: HTTP
     private var songList = SongList.songList
     private var hasQueue: Boolean = false
-    private var songQueue: ArrayList<Song>? = null
+    private var mediaQueue: ArrayList<Media>? = null
     private var queuePosition: Int = 0
 
     private lateinit var afChangeListener: AudioManager.OnAudioFocusChangeListener
@@ -49,7 +47,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     private lateinit var audioFocusRequest: AudioFocusRequest
 
-    private var currentSong: Song? = null
+    private var currentMedia: Media? = null
 
     val intentFilter = IntentFilter()
 
@@ -123,7 +121,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     private fun populateSongList() {
-        val fileContents = Util.readFromFile(this, "songList")
+        val fileContents = Util.readFromFile(this, "mediaList")
 
         if (fileContents != null) {
             SongListRequest(::setSongs).onResponse(fileContents)
@@ -135,7 +133,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         noisyAudioStreamReceiver.unregister(this)
     }
 
-    private fun setSongs(arrayList: ArrayList<Song>) {
+    private fun setSongs(arrayList: ArrayList<Media>) {
         SongList.setSongsAndNotify(arrayList)
     }
 
@@ -185,16 +183,16 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     private fun nextSong() {
         if (!hasQueue) {
-            val list: ArrayList<Song> = if (Settings.getBoolean(Settings.shuffleOffline)) {
+            val list: ArrayList<Media> = if (Settings.getBoolean(Settings.shuffleOffline)) {
                 downloadedSongs
             } else {
                 songList
             }
 
-            val currentSongIndex: Int = if (list.indexOf(currentSong) == -1) {
+            val currentSongIndex: Int = if (list.indexOf(currentMedia) == -1) {
                 0
             } else {
-                list.indexOf(currentSong)
+                list.indexOf(currentMedia)
             }
 
             val nextSongIndex: Int =
@@ -204,28 +202,28 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     (currentSongIndex + 1) % list.size
                 }
 
-            val nextSong: Song = list[nextSongIndex]
-            val url: String = Util.songToUrl(nextSong)
+            val nextMedia: Media = list[nextSongIndex]
+            val url: String = Util.songToUrl(nextMedia)
 
             mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
         } else {
-            //If there is a song queue loaded
-            currentSong?.let { song ->
-                songQueue?.let { queue ->
+            //If there is a media queue loaded
+            currentMedia?.let { song ->
+                mediaQueue?.let { queue ->
 
                     queuePosition = queue.indexOf(song) + 1 + attempts
 
                     if (queuePosition > queue.size) {
                         hasQueue = false
-                        songQueue = null
+                        mediaQueue = null
                         nextSong()
                         return
                     }
 
-                    val nextSong: Song = queue[queuePosition]
+                    val nextMedia: Media = queue[queuePosition]
 
                     if (Settings.getBoolean(Settings.shuffleOffline) && downloadedSongs.indexOf(
-                            nextSong
+                            nextMedia
                         ) == -1
                     ) {
                         attempts++
@@ -233,7 +231,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                         return
                     }
 
-                    val url: String = Util.songToUrl(nextSong)
+                    val url: String = Util.songToUrl(nextMedia)
 
                     mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
                 }
@@ -242,8 +240,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     private fun prevSong() {
-        val nextSong: Song = Util.popSongStack()
-        val url: String = Util.songToUrl(nextSong)
+        val nextMedia: Media = Util.popSongStack()
+        val url: String = Util.songToUrl(nextMedia)
 
         mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
     }
@@ -304,11 +302,11 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     }
                 }
                 "likesong" -> {
-                    service.http.putReq(HTTP.like(service.currentSong?.id), JSONObject("{}"))
+                    service.http.putReq(HTTP.like(service.currentMedia?.id), JSONObject("{}"))
                 }
                 "setQueue" -> {
                     service.hasQueue = true
-                    service.songQueue = Util.songQueue
+                    service.mediaQueue = Util.mediaQueue
                 }
             }
         }
@@ -339,16 +337,16 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         override fun onPrepareFromUri(uri: Uri?, extras: Bundle?) {
             super.onPrepareFromUri(uri, extras)
 
-            if (extras?.getSerializable("song") != null) {
-                service.currentSong = extras.getSerializable("song") as Song
+            if (extras?.getSerializable("media") != null) {
+                service.currentMedia = extras.getSerializable("media") as Media
             } else {
                 val splitURL = uri.toString().split('/')
-                service.currentSong = SongList.songList.filter {
+                service.currentMedia = SongList.songList.filter {
                     it.id == splitURL[splitURL.size - 1]
                 }[0]
             }
 
-            Util.addSongToStack(service.currentSong)
+            Util.addSongToStack(service.currentMedia)
 
             service.mediaSession.setPlaybackState(
                 PlaybackStateCompat.Builder().setState(
@@ -358,7 +356,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 ).build()
             )
 
-            service.http.getReq(HTTP.songInfo(service.currentSong!!.id), this)
+            service.http.getReq(HTTP.songInfo(service.currentMedia!!.id), this)
 
             service.player.stop()
             service.player.reset()
@@ -376,7 +374,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             }
 
 
-            service.currentSong?.let {
+            service.currentMedia?.let {
                 service.mediaSession.setMetadata(Util.songToMetadata(it))
             }
         }

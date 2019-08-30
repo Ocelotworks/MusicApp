@@ -48,8 +48,8 @@
 
         <Preference
                 android:key="downloadAll"
-                android:summary="Downloads all songs for offline play"
-                android:title="Download all songs" />
+                android:summary="Downloads all media for offline play"
+                android:title="Download all media" />
 
         <SwitchPreferenceCompat
                 android:defaultValue="1"
@@ -60,7 +60,7 @@
         <SwitchPreferenceCompat
                 android:defaultValue="1"
                 android:key="shuffleOffline"
-                android:title="Shuffle only downloaded songs" />
+                android:title="Shuffle only downloaded media" />
 
         <EditTextPreference
                 android:defaultValue="/sdcard/petify"
