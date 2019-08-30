@@ -429,5 +429,14 @@ class Util {
                 notificationManager.createNotificationChannel(channel)
             }
         }
+
+        fun idToSong(id: String): Media? {
+            val list = SongList.songList.filter { it.id == id }
+            return if (list.isNotEmpty()) {
+                list[0]
+            } else {
+                null
+            }
+        }
     }
 }

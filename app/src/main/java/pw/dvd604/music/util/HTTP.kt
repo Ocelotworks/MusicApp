@@ -19,7 +19,7 @@ class HTTP(context: Context?) {
             address = addr
         }
 
-        private const val songAPI: String = "/api/media"
+        private const val songAPI: String = "/api/song"
         private const val searchAPI: String = "/search/query/"
         private const val queueAPI: String = "/templates/songs/shuffleQueue"
 

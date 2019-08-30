@@ -23,8 +23,6 @@ import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.util.*
 import pw.dvd604.music.util.SongList.Companion.downloadedSongs
 import pw.dvd604.music.util.download.Downloader
-import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.random.Random
 
 class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener,
@@ -137,7 +135,11 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         SongList.setSongsAndNotify(arrayList)
     }
 
-    override fun onGetRoot(p0: String, p1: Int, p2: Bundle?): BrowserRoot? {
+    override fun onGetRoot(
+        clientPackageName: String,
+        clientUid: Int,
+        rootHints: Bundle?
+    ): BrowserRoot? {
         val rootExtras = Bundle().apply {
             putBoolean(MEDIA_SEARCH_SUPPORTED, true)
         }
@@ -148,14 +150,18 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         parentMediaId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        val mediaList = ArrayList<MediaBrowserCompat.MediaItem>(0)
-        for (song in SongList.songList) {
-            mediaList.add(Util.songToMediaItem(song))
+        when (parentMediaId) {
+            "root" -> {
+                val mediaList = ArrayList<MediaBrowserCompat.MediaItem>(0)
+                for (song in SongList.songList) {
+                    mediaList.add(Util.songToMediaItem(song))
+                }
+
+                Util.log(this, "returning 50 children")
+
+                result.sendResult(mediaList.subList(0, 50))
+            }
         }
-
-        Util.log(this, "returning ${SongList.songList.size} children")
-
-        result.sendResult(mediaList.subList(0, 10))
     }
 
     override fun onSearch(
@@ -164,10 +170,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
         Util.log(this, "Got search $query")
-        val songs = SongList.songList.filter {
-            it.name.toLowerCase(Locale.getDefault())
-                .contains(query.toLowerCase(Locale.getDefault()))
-        }
+        val songs = SearchHandler.search(query)
 
         if (songs.isEmpty()) result.sendResult(null)
 
@@ -175,6 +178,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         for (song in songs) {
             mediaList.add(Util.songToMediaItem(song))
         }
+
+        Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
 
         result.sendResult(mediaList)
     }
@@ -314,20 +319,15 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         override fun onPlayFromSearch(query: String?, extras: Bundle?) {
             Util.log(this, "Got search $query")
 
-            query?.let {
-                val songs = SongList.songList.filter {
-                    it.name.toLowerCase(Locale.getDefault())
-                        .contains(query.toLowerCase(Locale.getDefault()))
-                }
+            val songs = SearchHandler.search(query)
 
-                if (songs.isEmpty()) service.nextSong()
+            if (songs.isEmpty()) service.nextSong()
 
-                Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
+            Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
 
-                Util.log(this, "preparing")
+            Util.log(this, "preparing")
 
-                onPrepareFromUri(Uri.parse(Util.songToUrl(songs[0])), null)
-            }
+            onPrepareFromUri(Uri.parse(Util.songToUrl(songs[0])), null)
         }
 
         override fun onPrepareFromSearch(query: String?, extras: Bundle?) {
