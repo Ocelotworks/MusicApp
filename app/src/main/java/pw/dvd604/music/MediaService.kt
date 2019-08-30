@@ -1,7 +1,9 @@
 package pw.dvd604.music
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -24,6 +26,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.random.Random
 
+
 class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener,
     MediaPlayer.OnErrorListener,
     MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
@@ -38,7 +41,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private var queuePosition: Int = 0
 
     private lateinit var afChangeListener: AudioManager.OnAudioFocusChangeListener
-    //private val myNoisyAudioStreamReceiver = BecomingNoisyReceiver()
+    private val noisyAudioStreamReceiver = BecomingNoisyReceiver(this)
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var player: MediaPlayer
 
@@ -60,6 +63,10 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             getString(R.string.channel_name),
             getString(R.string.channel_description)
         )
+
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+        this.registerReceiver(noisyAudioStreamReceiver, intentFilter)
 
         Util.log(this, "Started Service")
 
@@ -408,18 +415,18 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             val am = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             // Abandon audio focus
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                if (service::audioFocusRequest.isInitialized) {
+                if (service::audioFocusRequest.isInitialized)
                     am.abandonAudioFocusRequest(service.audioFocusRequest)
-                    //unregisterReceiver(myNoisyAudioStreamReceiver)
-                    // Stop the service
-                    service.stopSelf()
-                    // Set the session inactive  (and update metadata and state)
-                    service.mediaSession.isActive = false
-                    // stop the player (custom call)
-                    service.player.stop()
-                    // Take the service out of the foreground
-                    service.stopForeground(false)
-                }
+                service.unregisterReceiver(service.noisyAudioStreamReceiver)
+                // Stop the service
+                service.stopSelf()
+                // Set the session inactive  (and update metadata and state)
+                service.mediaSession.isActive = false
+                // stop the player (custom call)
+                service.player.stop()
+                // Take the service out of the foreground
+                service.stopForeground(true)
+
             }
 
             service.mediaSession.setPlaybackState(
@@ -445,7 +452,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 ).build()
             )
             // unregister BECOME_NOISY BroadcastReceiver
-            //unregisterReceiver(myNoisyAudioStreamReceiver)
+            service.unregisterReceiver(service.noisyAudioStreamReceiver)
             // Take the service out of the foreground, retain the notification
             service.stopForeground(false)
         }
@@ -547,14 +554,24 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             when (focusChange) {
                 AudioManager.AUDIOFOCUS_GAIN -> {
                     if (!mediaService.player.isPlaying) {
-                        mediaService.player.start()
+                        mediaService.mediaSession.controller.transportControls.play()
                     }
                 }
                 AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
                     if (!mediaService.player.isPlaying) {
-                        mediaService.player.pause()
+                        mediaService.mediaSession.controller.transportControls.pause()
                     }
                 }
+            }
+        }
+    }
+
+    class BecomingNoisyReceiver(private val service: MediaService) : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val action = intent?.action
+
+            if (action?.compareTo(AudioManager.ACTION_AUDIO_BECOMING_NOISY) == 0) {
+                service.mediaSession.controller.transportControls.pause()
             }
         }
     }
