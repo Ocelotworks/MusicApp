@@ -23,6 +23,8 @@ import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.SongList.Companion.downloadedSongs
 import pw.dvd604.music.util.Util
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.random.Random
 
 class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener,
@@ -89,6 +91,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                             or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
                             or PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE
                             or PlaybackStateCompat.ACTION_SEEK_TO
+                            or PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
+                            or PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH
                 )
 
             setPlaybackState(stateBuilder.build())
@@ -257,9 +261,44 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             }
         }
 
+        override fun onPlayFromSearch(query: String?, extras: Bundle?) {
+            super.onPlayFromSearch(query, extras)
+
+            Util.log(this, "Got search $query")
+
+            query?.let {
+                val songs = SongList.songList.filter {
+                    it.name.toLowerCase(Locale.getDefault())
+                        .contains(query.toLowerCase(Locale.getDefault()))
+                }
+
+                Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
+
+                if (songs.isEmpty()) return
+
+                Util.log(this, "preparing")
+
+                onPrepareFromUri(Uri.parse(Util.songToUrl(songs[0])), null)
+            }
+        }
+
+        override fun onPrepareFromSearch(query: String?, extras: Bundle?) {
+            super.onPrepareFromSearch(query, extras)
+
+            onPlayFromSearch(query, extras)
+        }
+
         override fun onPrepareFromUri(uri: Uri?, extras: Bundle?) {
             super.onPrepareFromUri(uri, extras)
-            service.currentSong = extras?.getSerializable("song") as Song
+
+            if (extras != null) {
+                service.currentSong = extras.getSerializable("song") as Song
+            } else {
+                val splitURL = uri.toString().split('/')
+                service.currentSong = SongList.songList.filter {
+                    it.id == splitURL[splitURL.size - 1]
+                }[0]
+            }
 
             Util.addSongToStack(service.currentSong)
 
@@ -289,7 +328,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             }
 
 
-            service.mediaSession.setMetadata(Util.songToMetadata(extras.getSerializable("song") as Song))
+            service.currentSong?.let {
+                service.mediaSession.setMetadata(Util.songToMetadata(it))
+            }
         }
 
         override fun onPlay() {
@@ -330,7 +371,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 val handler = Handler(Looper.getMainLooper())
                 handler.post(SeekRunnable(service, handler))
             }
-
         }
 
         class SeekRunnable(private val service: MediaService, val handler: Handler) : Runnable {

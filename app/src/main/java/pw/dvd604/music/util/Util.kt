@@ -1,7 +1,6 @@
 package pw.dvd604.music.util
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -13,7 +12,6 @@ import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import org.json.JSONObject
 import pw.dvd604.music.MainActivity
-import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.adapter.data.SongDataType
@@ -36,10 +34,6 @@ class Util {
         /**Instance of the Downloader**/
         @SuppressLint("StaticFieldLeak") //TODO: Fix this better later
         lateinit var downloader: Downloader
-
-        fun getApplication(activity: Activity): MusicApplication {
-            return activity.application as MusicApplication
-        }
 
         /**Creates a human readable string representing song duration
          * @param seconds The length of song in seconds in a non-nullable Int
@@ -248,7 +242,7 @@ class Util {
         }
 
         /**Only using when tracking is enabled.
-         * Creates a random UUID, as per Google recommendation, and returns it, while writing it to the shard prefs.
+         * Creates a random UUID, as per Google recommendation, and returns it, while writing it to the shared prefs.
          * If there is a UUID in the shard prefs, it returns that instead. This way, a device will only have one generated tracking ID
          * This allows the UUID to be changed, but this is unlikely to happen, as anyone who is likely to change the ID
          * is more than likely to disable tracking
