@@ -117,10 +117,10 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
 
         if (song.type == SongDataType.SONG) {
             //activity.setSong(song)
-            val bundle = Bundle()
-            bundle.putSerializable("song", song)
+            //val bundle = Bundle()
+            //bundle.putSerializable("song", song)
             MediaControllerCompat.getMediaController(activity)
-                .transportControls.prepareFromUri(Uri.parse(Util.songToUrl(song)), bundle)
+                .transportControls.prepareFromUri(Uri.parse(Util.songToUrl(song)), null)
             Util.log(this, Util.songToUrl(song))
         } else {
             //Open sub song fragment

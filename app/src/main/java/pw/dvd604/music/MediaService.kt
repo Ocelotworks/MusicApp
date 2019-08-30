@@ -22,9 +22,11 @@ import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Song
 import pw.dvd604.music.util.*
 import pw.dvd604.music.util.SongList.Companion.downloadedSongs
+import pw.dvd604.music.util.download.Downloader
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.random.Random
+
 
 
 class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener,
@@ -32,7 +34,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
 
     private val id: Int = 696969
-    private val channelId: String = "petifyNot"
+    private lateinit var channelId: String
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
     private lateinit var http: HTTP
     private var songList = SongList.songList
@@ -49,6 +51,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     private var currentSong: Song? = null
 
+    val intentFilter = IntentFilter()
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         androidx.media.session.MediaButtonReceiver.handleIntent(mediaSession, intent)
         return super.onStartCommand(intent, flags, startId)
@@ -57,6 +61,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     override fun onCreate() {
         super.onCreate()
 
+        channelId = getString(R.string.petify_music_channel)
         Util.createNotificationChannel(
             this,
             channelId,
@@ -64,25 +69,26 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             getString(R.string.channel_description)
         )
 
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
-        this.registerReceiver(noisyAudioStreamReceiver, intentFilter)
-
         Util.log(this, "Started Service")
 
         http = HTTP(this)
 
         if (SongList.songList.isEmpty()) {
-            //Probably bound by an external media controller
-            http.getReq(HTTP.getSong(), SongListRequest(::setSongs))
+            Util.log(this, "Probably bound by an external media controller")
+            Util.downloader = Downloader(this.applicationContext)
+            populateSongList()
         }
 
+        intentFilter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+
         afChangeListener = AudioFocusListener(this)
-        player = MediaPlayer()
-        player.setOnPreparedListener(this)
-        player.setOnErrorListener(this)
-        player.setOnCompletionListener(this)
-        player.setOnSeekCompleteListener(this)
+
+        player = MediaPlayer().apply {
+            setOnPreparedListener(this@MediaService)
+            setOnErrorListener(this@MediaService)
+            setOnCompletionListener(this@MediaService)
+            setOnSeekCompleteListener(this@MediaService)
+        }
 
         // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, "petify").apply {
@@ -104,6 +110,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                             or PlaybackStateCompat.ACTION_SEEK_TO
                             or PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
                             or PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH
+                            or PlaybackStateCompat.ACTION_PREPARE
                 )
 
             setPlaybackState(stateBuilder.build())
@@ -115,12 +122,28 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         mediaSession.setCallback(SessionCallbackReceiver(this))
     }
 
+    private fun populateSongList() {
+        val fileContents = Util.readFromFile(this, "songList")
+
+        if (fileContents != null) {
+            SongListRequest(::setSongs).onResponse(fileContents)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        noisyAudioStreamReceiver.unregister(this)
+    }
+
     private fun setSongs(arrayList: ArrayList<Song>) {
         SongList.setSongsAndNotify(arrayList)
     }
 
     override fun onGetRoot(p0: String, p1: Int, p2: Bundle?): BrowserRoot? {
-        return BrowserRoot("root", null)
+        val rootExtras = Bundle().apply {
+            putBoolean(MEDIA_SEARCH_SUPPORTED, true)
+        }
+        return BrowserRoot("root", rootExtras)
     }
 
     override fun onLoadChildren(
@@ -132,10 +155,33 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             mediaList.add(Util.songToMediaItem(song))
         }
 
+        Util.log(this, "returning ${SongList.songList.size} children")
+
+        result.sendResult(mediaList.subList(0, 10))
+    }
+
+    override fun onSearch(
+        query: String,
+        extras: Bundle?,
+        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
+    ) {
+        Util.log(this, "Got search $query")
+        val songs = SongList.songList.filter {
+            it.name.toLowerCase(Locale.getDefault())
+                .contains(query.toLowerCase(Locale.getDefault()))
+        }
+
+        if (songs.isEmpty()) result.sendResult(null)
+
+        val mediaList = ArrayList<MediaBrowserCompat.MediaItem>(0)
+        for (song in songs) {
+            mediaList.add(Util.songToMediaItem(song))
+        }
+
         result.sendResult(mediaList)
     }
 
-    var attempts = 0
+    private var attempts = 0
 
     private fun nextSong() {
         if (!hasQueue) {
@@ -161,10 +207,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             val nextSong: Song = list[nextSongIndex]
             val url: String = Util.songToUrl(nextSong)
 
-            val bundle = Bundle()
-            bundle.putSerializable("song", nextSong)
-
-            mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), bundle)
+            mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
         } else {
             //If there is a song queue loaded
             currentSong?.let { song ->
@@ -192,10 +235,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
                     val url: String = Util.songToUrl(nextSong)
 
-                    val bundle = Bundle()
-                    bundle.putSerializable("song", nextSong)
-
-                    mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), bundle)
+                    mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
                 }
             }
         }
@@ -205,10 +245,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         val nextSong: Song = Util.popSongStack()
         val url: String = Util.songToUrl(nextSong)
 
-        val bundle = Bundle()
-        bundle.putSerializable("song", nextSong)
-
-        mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), bundle)
+        mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
     }
 
     override fun onCompletion(mp: MediaPlayer?) {
@@ -277,8 +314,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         }
 
         override fun onPlayFromSearch(query: String?, extras: Bundle?) {
-            super.onPlayFromSearch(query, extras)
-
             Util.log(this, "Got search $query")
 
             query?.let {
@@ -287,7 +322,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                         .contains(query.toLowerCase(Locale.getDefault()))
                 }
 
-                if (songs.isEmpty()) return
+                if (songs.isEmpty()) service.nextSong()
 
                 Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
 
@@ -298,15 +333,13 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         }
 
         override fun onPrepareFromSearch(query: String?, extras: Bundle?) {
-            super.onPrepareFromSearch(query, extras)
-
             onPlayFromSearch(query, extras)
         }
 
         override fun onPrepareFromUri(uri: Uri?, extras: Bundle?) {
             super.onPrepareFromUri(uri, extras)
 
-            if (extras != null) {
+            if (extras?.getSerializable("song") != null) {
                 service.currentSong = extras.getSerializable("song") as Song
             } else {
                 val splitURL = uri.toString().split('/')
@@ -361,6 +394,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 ).build()
             )
 
+
+            service.noisyAudioStreamReceiver.register(service, service.intentFilter)
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 service.audioFocusRequest =
                     AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
@@ -388,7 +424,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             }
         }
 
-        class SeekRunnable(private val service: MediaService, val handler: Handler) : Runnable {
+        class SeekRunnable(private val service: MediaService, private val handler: Handler) :
+            Runnable {
             override fun run() {
                 service.mediaSession.setMetadata(Util.addMetadataProgress(service.player.currentPosition))
                 handler.postDelayed(this, 1000)
@@ -417,7 +454,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (service::audioFocusRequest.isInitialized)
                     am.abandonAudioFocusRequest(service.audioFocusRequest)
-                service.unregisterReceiver(service.noisyAudioStreamReceiver)
+                service.noisyAudioStreamReceiver.unregister(service)
                 // Stop the service
                 service.stopSelf()
                 // Set the session inactive  (and update metadata and state)
@@ -452,7 +489,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 ).build()
             )
             // unregister BECOME_NOISY BroadcastReceiver
-            service.unregisterReceiver(service.noisyAudioStreamReceiver)
+            service.noisyAudioStreamReceiver.unregister(service)
             // Take the service out of the foreground, retain the notification
             service.stopForeground(false)
         }
@@ -567,6 +604,43 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     class BecomingNoisyReceiver(private val service: MediaService) : BroadcastReceiver() {
+        var registered: Boolean = false
+
+        /**
+         * register receiver
+         * @param context - Context
+         * @param filter - Intent Filter
+         * @return see Context.registerReceiver(BroadcastReceiver,IntentFilter)
+         */
+        fun register(context: Context, filter: IntentFilter): Intent? {
+            try {
+                return if (!registered)
+                    context.registerReceiver(this, filter)
+                else
+                    null
+            } finally {
+                registered = true
+            }
+        }
+
+        /**
+         * unregister received
+         * @param context - context
+         * @return true if was registered else false
+         */
+        fun unregister(context: Context): Boolean {
+            // additional work match on context before unregister
+            // eg store weak ref in register then compare in unregister
+            // if match same instance
+            return registered && unregisterInternal(context)
+        }
+
+        private fun unregisterInternal(context: Context): Boolean {
+            context.unregisterReceiver(this)
+            registered = false
+            return true
+        }
+
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
@@ -574,5 +648,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 service.mediaSession.controller.transportControls.pause()
             }
         }
+    }
+
+    companion object {
+        private const val MEDIA_SEARCH_SUPPORTED = "android.media.browse.SEARCH_SUPPORTED"
     }
 }

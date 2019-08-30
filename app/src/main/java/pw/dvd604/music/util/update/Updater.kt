@@ -18,7 +18,7 @@ import pw.dvd604.music.util.Util
 
 class Updater(val context: Context) : Response.Listener<String> {
 
-    private val channelId: String = "petify_update_channel"
+    private val channelId: String = context.getString(R.string.petify_update_channel)
     private val notificationId: Int = 696902
 
     init {

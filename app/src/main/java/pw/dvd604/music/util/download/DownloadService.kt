@@ -19,7 +19,7 @@ class DownloadService : Service() {
 
     private var downloadingCount: Int = 0
     private var progress: Int = 0
-    private val channelId: String = "petify_download_channel"
+    private val channelId: String = getString(R.string.petify_download_channel)
     private val notificationId: Int = 696901
     private var queue: ArrayList<Song> = ArrayList(0)
     private var duplicateQueue: ArrayList<Song> = ArrayList(0)

@@ -1,7 +1,6 @@
 package pw.dvd604.music
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
@@ -85,7 +84,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        startService(Intent(this, MediaService::class.java))
+        //startForegroundService(Intent(this, MediaService::class.java))
 
         if (Settings.getBoolean(Settings.update)) {
             Updater(this).checkUpdate()
