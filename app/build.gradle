@@ -29,7 +29,7 @@ android {
 
         defaultConfig {
             applicationId "pw.dvd604.music"
-            minSdkVersion 24
+            minSdkVersion 26
             targetSdkVersion 28
             versionCode code
             versionName "2." + code
