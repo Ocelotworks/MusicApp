@@ -113,7 +113,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
         val mediaList = ArrayList<MediaBrowserCompat.MediaItem>(0)
-        for (song in songList) {
+        for (song in SongList.songList) {
             mediaList.add(Util.songToMediaItem(song))
         }
 
