@@ -3,6 +3,9 @@ package pw.dvd604.music.util
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
 import java.io.File
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class SongList {
     companion object {
@@ -17,7 +20,7 @@ class SongList {
             arrayList: ArrayList<Media>
         ) {
             for (media in arrayList) {
-                translationMap[media.name] = media.id
+                translationMap[media.name.toLowerCase(Locale.getDefault())] = media.id
             }
         }
 
@@ -37,26 +40,30 @@ class SongList {
                 songList = Util.duplicateArrayList(backupSongList)
             }
             for ((k, v) in filterMap) {
+                val key = k.toLowerCase(Locale.getDefault())
                 when (v) {
                     MediaType.SONG -> {
                         songList.removeIf { song ->
-                            song.name.contains(k)
+                            song.name.toLowerCase(Locale.getDefault()).contains(key)
                         }
                     }
                     MediaType.ARTIST -> {
-                        val id = translationMap[k]
+                        val id = translationMap[key]
+                        val size = songList.size
                         songList.removeIf { song ->
                             song.artistID == id
                         }
+                        val newSize = songList.size
+                        Util.log(this, "Deleted ${size - newSize} songs for artist $key")
                     }
                     MediaType.GENRE -> {
-                        val id = translationMap[k]
+                        val id = translationMap[key]
                         songList.removeIf { song ->
                             song.genre == id
                         }
                     }
                     MediaType.ALBUM -> {
-                        val id = translationMap[k]
+                        val id = translationMap[key]
                         songList.removeIf { song ->
                             song.album == id
                         }
@@ -70,6 +77,7 @@ class SongList {
                     }
                 }
             }
+            callback?.let { it(null) }
         }
 
         private fun discoverDownloadedSongs() {

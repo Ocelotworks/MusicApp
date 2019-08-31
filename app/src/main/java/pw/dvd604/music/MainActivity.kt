@@ -64,10 +64,11 @@ class MainActivity : AppCompatActivity() {
 
         checkServerPrefs()
 
-        populateSongList()
-        populateFilterMaps()
-
-        settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
+        Thread {
+            populateSongList()
+            populateFilterMaps()
+            settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
+        }.start()
     }
 
     override fun onStart() {
@@ -81,7 +82,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun populateFilterMaps() {
-        for (type in MediaType.values()) {
+        for (type in MediaType.getNonSong()) {
             val fileContents = Util.readFromFile(this, "${Util.dataTypeToString(type)}List")
 
             if (fileContents != null) {
@@ -96,8 +97,12 @@ class MainActivity : AppCompatActivity() {
         Util.writeToFile(this, "${Util.dataTypeToString(mediaType)}List", response)
     }
 
-    private fun setFilter(arrayList: ArrayList<Media>) {
-        SongList.generateMaps(arrayList)
+    private fun setFilter(arrayList: ArrayList<Media>, mediaType: MediaType, broken: Boolean) {
+        if (!broken) {
+            SongList.generateMaps(arrayList)
+        } else {
+            Util.deleteFile(this, "${Util.dataTypeToString(mediaType)}List")
+        }
     }
 
     private fun populateSongList() {

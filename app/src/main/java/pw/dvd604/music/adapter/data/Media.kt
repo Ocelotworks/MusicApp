@@ -4,7 +4,13 @@ import java.io.Serializable
 
 
 enum class MediaType {
-    SONG, ARTIST, GENRE, ALBUM, PLAYLIST
+    SONG, ARTIST, GENRE, ALBUM, PLAYLIST;
+
+    companion object {
+        fun getNonSong(): Array<MediaType> {
+            return arrayOf(ARTIST, GENRE, ALBUM, PLAYLIST)
+        }
+    }
 }
 
 /**

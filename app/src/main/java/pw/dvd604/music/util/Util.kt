@@ -366,6 +366,11 @@ class Util {
             return builder.toString()
         }
 
+        fun deleteFile(context: Context, file: String) {
+            if (context.getFileStreamPath(file).exists())
+                context.getFileStreamPath(file).delete()
+        }
+
         /**Takes an [ArrayList] of type [T], iterates through creating a new, and distinctly different [ArrayList] of the same Type [T]
          * Which is then returned. Used to ensure that changes to ArrayList A are not carried over to ArrayList B by previously setting them equal
          * @param array ArrayList to copy

@@ -18,6 +18,7 @@ import android.widget.ImageView
 import android.widget.SeekBar
 import kotlinx.android.synthetic.main.fragment_playing.*
 import pw.dvd604.music.MediaService
+import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
@@ -55,8 +56,6 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
             ConnectionCallback(this),
             null // optional Bundle
         )
-
-
     }
 
     override fun onStart() {
@@ -105,6 +104,8 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
 
         lastName = songName.text.toString()
         lastArtist = songAuthor.text.toString()
+
+        MusicApplication.track("Media play", "$lastName - $lastArtist")
 
         val filePath = Util.albumURLToAlbumPath(metadata.description?.iconUri.toString())
         val file = File(filePath)
