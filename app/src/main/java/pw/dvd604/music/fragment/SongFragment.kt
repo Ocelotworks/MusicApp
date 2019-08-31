@@ -19,10 +19,10 @@ import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
-import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.SongList
-import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.network.HTTP
+import pw.dvd604.music.util.network.SongListRequest
 
 class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     AdapterView.OnItemClickListener {
@@ -167,7 +167,10 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                     Util.downloader.addToQueue(media)
                     Util.downloader.doQueue()
                 } else {
-                    http?.getReq(HTTP.getDetailedData(media), SongListRequest(::setContextSongs))
+                    http?.getReq(
+                        HTTP.getDetailedData(media),
+                        SongListRequest(::setContextSongs)
+                    )
                 }
             }
             "Add to queue" -> {

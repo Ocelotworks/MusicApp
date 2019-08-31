@@ -1,4 +1,4 @@
-package pw.dvd604.music.util
+package pw.dvd604.music.util.network
 
 import android.content.Context
 import com.android.volley.Request
@@ -10,6 +10,7 @@ import com.android.volley.toolbox.Volley
 import org.json.JSONObject
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
+import pw.dvd604.music.util.Util
 
 class HTTP(context: Context?) {
 
@@ -33,6 +34,10 @@ class HTTP(context: Context?) {
 
         fun getSong(): String {
             return address + songAPI
+        }
+
+        fun getAllMedia(value: MediaType): String {
+            return "$address/api/${Util.dataTypeToString(value)}"
         }
 
         fun getDetailedSong(id: String, type: MediaType): String {

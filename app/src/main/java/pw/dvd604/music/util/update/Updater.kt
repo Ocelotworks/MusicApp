@@ -11,9 +11,9 @@ import com.android.volley.Response
 import org.json.JSONObject
 import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.R
-import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.network.HTTP
 
 
 class Updater(val context: Context) : Response.Listener<String> {

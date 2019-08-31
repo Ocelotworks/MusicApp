@@ -12,8 +12,8 @@ import com.android.volley.Response
 import org.json.JSONObject
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Media
-import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.network.HTTP
 
 class SongDetailFragment : Fragment(), Response.Listener<String> {
     companion object {
@@ -39,7 +39,8 @@ class SongDetailFragment : Fragment(), Response.Listener<String> {
 
         val song = this.arguments?.getSerializable("media") as Media
 
-        HTTP(this.context).getReq(HTTP.songDetail(song.id), this)
+        HTTP(this.context)
+            .getReq(HTTP.songDetail(song.id), this)
 
         this.view?.findViewById<TextView>(R.id.subSongTitle)?.text = song.generateText()
     }

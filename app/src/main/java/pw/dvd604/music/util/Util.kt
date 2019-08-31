@@ -385,22 +385,22 @@ class Util {
          * @return MediaType, the correct media data type**/
         fun stringToDataType(value: String): MediaType {
             return when (value.toLowerCase(Locale.getDefault())) {
-                "artist" -> {
-                    MediaType.ARTIST
-                }
-                "media" -> {
-                    MediaType.SONG
-                }
-                "playlist" -> {
-                    MediaType.PLAYLIST
-                }
-                "album" -> {
-                    MediaType.ALBUM
-                }
-                "genre" -> {
-                    MediaType.GENRE
-                }
+                "artist" -> MediaType.ARTIST
+                "media" -> MediaType.SONG
+                "playlist" -> MediaType.PLAYLIST
+                "album" -> MediaType.ALBUM
+                "genre" -> MediaType.GENRE
                 else -> MediaType.SONG
+            }
+        }
+
+        fun dataTypeToString(value: MediaType): String {
+            return when (value) {
+                MediaType.SONG -> "song"
+                MediaType.ARTIST -> "artist"
+                MediaType.GENRE -> "genre"
+                MediaType.ALBUM -> "album"
+                MediaType.PLAYLIST -> "playlist"
             }
         }
 
@@ -437,6 +437,15 @@ class Util {
             } else {
                 null
             }
+        }
+
+        fun jsonToGenericMedia(json: JSONObject, type: MediaType): Media {
+            return Media(
+                name = json.getString("name"),
+                author = "",
+                id = json.getString("id"),
+                type = type
+            )
         }
     }
 }

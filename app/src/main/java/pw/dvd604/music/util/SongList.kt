@@ -10,14 +10,15 @@ class SongList {
         var songList = ArrayList<Media>(0)
         var downloadedSongs = ArrayList<Media>(0)
         var backupSongList = ArrayList<Media>(0)
-        var albumMap = HashMap<String, String>(0)
-        var genreMap = HashMap<String, String>(0)
-        var artistMap = HashMap<String, String>(0)
-        var playlistMap = HashMap<String, String>(0)
+        var translationMap = HashMap<String, String>(0)
         var filterMap = HashMap<String, MediaType>(0)
 
-        fun generateMaps() {
-
+        fun generateMaps(
+            arrayList: ArrayList<Media>
+        ) {
+            for (media in arrayList) {
+                translationMap[media.name] = media.id
+            }
         }
 
         fun setSongsAndNotify(media: ArrayList<Media>) {
@@ -43,26 +44,26 @@ class SongList {
                         }
                     }
                     MediaType.ARTIST -> {
-                        val id = artistMap[k]
+                        val id = translationMap[k]
                         songList.removeIf { song ->
                             song.artistID == id
                         }
                     }
                     MediaType.GENRE -> {
-                        val id = genreMap[k]
+                        val id = translationMap[k]
                         songList.removeIf { song ->
                             song.genre == id
                         }
                     }
                     MediaType.ALBUM -> {
-                        val id = albumMap[k]
+                        val id = translationMap[k]
                         songList.removeIf { song ->
                             song.album == id
                         }
                     }
                     MediaType.PLAYLIST -> {
-                        //TODO: Implement this
-                        /*val id = playlistMap[k]
+                        // val id = translationMap[k]
+                        /*
                         mediaList.removeIf {media ->
                             media.artistID == id
                         }*/

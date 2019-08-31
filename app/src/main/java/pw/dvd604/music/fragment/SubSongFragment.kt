@@ -12,9 +12,9 @@ import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Media
-import pw.dvd604.music.util.HTTP
-import pw.dvd604.music.util.SongListRequest
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.network.HTTP
+import pw.dvd604.music.util.network.SongListRequest
 
 class SubSongFragment : Fragment(), AdapterView.OnItemClickListener {
 
@@ -48,7 +48,10 @@ class SubSongFragment : Fragment(), AdapterView.OnItemClickListener {
         subSongList.onItemClickListener = this
 
         http = HTTP(this.context)
-        http?.getReq(data?.getString("url"), SongListRequest(::setSongs))
+        http?.getReq(
+            data?.getString("url"),
+            SongListRequest(::setSongs)
+        )
     }
 
     private fun setSongs(media: ArrayList<Media>) {

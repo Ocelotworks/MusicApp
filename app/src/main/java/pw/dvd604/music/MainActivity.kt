@@ -13,11 +13,17 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import pw.dvd604.music.adapter.data.Media
+import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.fragment.*
-import pw.dvd604.music.util.*
+import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
+import pw.dvd604.music.util.SongList
+import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.download.Downloader
+import pw.dvd604.music.util.network.FilterMapRequest
+import pw.dvd604.music.util.network.HTTP
+import pw.dvd604.music.util.network.SongListRequest
 import pw.dvd604.music.util.update.Updater
 import kotlin.system.exitProcess
 
@@ -59,26 +65,9 @@ class MainActivity : AppCompatActivity() {
         checkServerPrefs()
 
         populateSongList()
+        populateFilterMaps()
 
         settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
-    }
-
-    private fun populateSongList() {
-        val fileContents = Util.readFromFile(this, "mediaList")
-
-        if (fileContents != null) {
-            SongListRequest(::setSongs).onResponse(fileContents)
-        }
-
-        http.getReq(HTTP.getSong(), SongListRequest(::setSongs, ::writeSongs))
-    }
-
-    private fun writeSongs(response: String?) {
-        Util.writeToFile(this, "mediaList", response!!)
-    }
-
-    private fun setSongs(media: ArrayList<Media>) {
-        SongList.setSongsAndNotify(media)
     }
 
     override fun onStart() {
@@ -89,6 +78,47 @@ class MainActivity : AppCompatActivity() {
         if (Settings.getBoolean(Settings.update)) {
             Updater(this).checkUpdate()
         }
+    }
+
+    private fun populateFilterMaps() {
+        for (type in MediaType.values()) {
+            val fileContents = Util.readFromFile(this, "${Util.dataTypeToString(type)}List")
+
+            if (fileContents != null) {
+                FilterMapRequest(::setFilter, type).onResponse(fileContents)
+            }
+
+            http.getReq(HTTP.getAllMedia(type), FilterMapRequest(::setFilter, type, ::writeFilter))
+        }
+    }
+
+    private fun writeFilter(response: String, mediaType: MediaType) {
+        Util.writeToFile(this, "${Util.dataTypeToString(mediaType)}List", response)
+    }
+
+    private fun setFilter(arrayList: ArrayList<Media>) {
+        SongList.generateMaps(arrayList)
+    }
+
+    private fun populateSongList() {
+        val fileContents = Util.readFromFile(this, "songList")
+
+        if (fileContents != null) {
+            SongListRequest(::setSongs).onResponse(fileContents)
+        }
+
+        http.getReq(
+            HTTP.getSong(),
+            SongListRequest(::setSongs, ::writeSongs)
+        )
+    }
+
+    private fun writeSongs(response: String?) {
+        Util.writeToFile(this, "mediaList", response!!)
+    }
+
+    private fun setSongs(media: ArrayList<Media>) {
+        SongList.setSongsAndNotify(media)
     }
 
     override fun onDestroy() {
