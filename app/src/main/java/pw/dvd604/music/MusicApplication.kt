@@ -1,6 +1,8 @@
 package pw.dvd604.music
 
+import android.app.Activity
 import android.app.Application
+import android.os.Bundle
 import io.sentry.Sentry
 import io.sentry.android.AndroidSentryClientFactory
 import org.matomo.sdk.Matomo
@@ -12,8 +14,7 @@ import pw.dvd604.music.util.Util
 import kotlin.system.exitProcess
 
 
-class MusicApplication : Application() {
-
+class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
     companion object {
         private var tracker: Tracker? = null
 
@@ -28,7 +29,6 @@ class MusicApplication : Application() {
         super.onCreate()
 
         //here is where we initialise everything that needs a context, but we want to keep out of the main activity for neatness sake
-
         Settings.init(this)
 
         if (Settings.getBoolean(Settings.usageReports)) {
@@ -42,6 +42,8 @@ class MusicApplication : Application() {
                     arrayOf("start", BuildConfig.BUILD_TYPE)
                 )
             )
+
+            this.registerActivityLifecycleCallbacks(this)
         }
 
 
@@ -59,5 +61,36 @@ class MusicApplication : Application() {
                 exitProcess(2)
             }
         }
+    }
+
+    override fun onActivityPaused(activity: Activity?) {
+        track("Activity Event", Util.generatePayload(arrayOf("event"), arrayOf("Activity Paused")))
+    }
+
+    override fun onActivityResumed(activity: Activity?) {
+        track("Activity Event", Util.generatePayload(arrayOf("event"), arrayOf("Activity Resumed")))
+    }
+
+    override fun onActivityStarted(activity: Activity?) {
+        track("Activity Event", Util.generatePayload(arrayOf("event"), arrayOf("Activity Started")))
+    }
+
+    override fun onActivityDestroyed(activity: Activity?) {
+        track(
+            "Activity Event",
+            Util.generatePayload(arrayOf("event"), arrayOf("Activity Detroyed"))
+        )
+    }
+
+    override fun onActivitySaveInstanceState(activity: Activity?, outState: Bundle?) {
+        track("Activity Event", Util.generatePayload(arrayOf("event"), arrayOf("Activity SIS'd")))
+    }
+
+    override fun onActivityStopped(activity: Activity?) {
+        track("Activity Event", Util.generatePayload(arrayOf("event"), arrayOf("Activity Stopped")))
+    }
+
+    override fun onActivityCreated(activity: Activity?, savedInstanceState: Bundle?) {
+        track("Activity Event", Util.generatePayload(arrayOf("event"), arrayOf("Activity Created")))
     }
 }
