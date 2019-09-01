@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        this.mediaController.transportControls.stop()
+        this.mediaController?.transportControls?.stop()
     }
 
     private fun populateFilterMaps() {
