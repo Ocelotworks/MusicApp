@@ -78,8 +78,10 @@ class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
     override fun onActivityDestroyed(activity: Activity?) {
         track(
             "Activity Event",
-            Util.generatePayload(arrayOf("event"), arrayOf("Activity Detroyed"))
+            Util.generatePayload(arrayOf("event"), arrayOf("Activity Destroyed"))
         )
+
+        this@MusicApplication.unregisterActivityLifecycleCallbacks(this)
     }
 
     override fun onActivitySaveInstanceState(activity: Activity?, outState: Bundle?) {

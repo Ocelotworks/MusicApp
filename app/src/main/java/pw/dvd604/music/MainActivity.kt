@@ -81,6 +81,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        this.mediaController.transportControls.stop()
+    }
+
     private fun populateFilterMaps() {
         for (type in MediaType.getNonSong()) {
             val fileContents = Util.readFromFile(this, "${Util.dataTypeToString(type)}List")
@@ -124,11 +129,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setSongs(media: ArrayList<Media>) {
         SongList.setSongsAndNotify(media)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        this.mediaController.transportControls.stop()
     }
 
     private fun checkServerPrefs() {

@@ -18,6 +18,7 @@ class HTTP(context: Context?) {
         var address: String? = null
         fun setup(addr: String) {
             address = addr
+            Util.log(this, addr)
         }
 
         private const val songAPI: String = "/api/song"

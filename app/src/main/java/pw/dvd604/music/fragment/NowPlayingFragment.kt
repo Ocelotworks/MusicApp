@@ -17,9 +17,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.SeekBar
 import kotlinx.android.synthetic.main.fragment_playing.*
-import pw.dvd604.music.MediaService
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
+import pw.dvd604.music.service.MediaService
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.download.BitmapAsync
@@ -56,10 +56,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
             ConnectionCallback(this),
             null // optional Bundle
         )
-    }
 
-    override fun onStart() {
-        super.onStart()
         mediaBrowser.connect()
     }
 
@@ -68,8 +65,8 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         volumeControlStream = AudioManager.STREAM_MUSIC
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
+        super.onDestroy()
         MediaControllerCompat.getMediaController(this.activity as Activity)
             ?.unregisterCallback(controllerCallback)
         mediaBrowser.disconnect()
