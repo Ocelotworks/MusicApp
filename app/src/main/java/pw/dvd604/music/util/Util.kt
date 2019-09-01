@@ -112,7 +112,7 @@ class Util {
             }
             return "${Settings.getSetting(
                 Settings.server
-            )}/media/${media?.id}"
+            )}/song/${media?.id}"
         }
 
         /**Takes a given Media, and creates a MediaBroswerCompat MediaItem.
