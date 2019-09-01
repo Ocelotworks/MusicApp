@@ -326,7 +326,10 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
             val songs = SearchHandler.search(query)
 
-            if (songs.isEmpty()) service.nextSong()
+            if (songs.isEmpty()) {
+                service.nextSong()
+                return
+            }
 
             Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
 
