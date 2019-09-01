@@ -263,7 +263,7 @@ class AudioFocusListener(private val mediaService: MediaService) :
                 }
             }
             AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                if (!mediaService.player.isPlaying) {
+                if (mediaService.player.isPlaying) {
                     mediaService.mediaSession.controller.transportControls.pause()
                 }
             }
