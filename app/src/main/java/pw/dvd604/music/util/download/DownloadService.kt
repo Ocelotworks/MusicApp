@@ -19,12 +19,14 @@ class DownloadService : Service() {
 
     private var downloadingCount: Int = 0
     private var progress: Int = 0
-    private val channelId: String = getString(R.string.petify_download_channel)
+    private lateinit var channelId: String
     private val notificationId: Int = 696901
     private var queue: ArrayList<Media> = ArrayList(0)
     private var duplicateQueue: ArrayList<Media> = ArrayList(0)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        channelId = getString(R.string.petify_download_channel)
+
         Util.createNotificationChannel(
             this,
             channelId,

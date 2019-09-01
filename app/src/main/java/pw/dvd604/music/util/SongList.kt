@@ -39,6 +39,7 @@ class SongList {
             } else {
                 songList = Util.duplicateArrayList(backupSongList)
             }
+            val oldSize = songList.size
             for ((k, v) in filterMap) {
                 val key = k.toLowerCase(Locale.getDefault())
                 when (v) {
@@ -49,21 +50,16 @@ class SongList {
                     }
                     MediaType.ARTIST -> {
                         val id = translationMap[key]
-                        val size = songList.size
                         songList.removeIf { song ->
                             song.artistID == id
                         }
-                        val newSize = songList.size
-                        Util.log(this, "Deleted ${size - newSize} songs for artist $key")
+
                     }
                     MediaType.GENRE -> {
                         val id = translationMap[key]
-                        val size = songList.size
                         songList.removeIf { song ->
                             song.genre == id
                         }
-                        val newSize = songList.size
-                        Util.log(this, "Deleted ${size - newSize} songs for genre $key")
                     }
                     MediaType.ALBUM -> {
                         val id = translationMap[key]
@@ -80,6 +76,8 @@ class SongList {
                     }
                 }
             }
+            val newSize = songList.size
+            Util.log(this, "Deleted ${oldSize - newSize} songs for filters")
             callback?.let { it(null) }
         }
 
