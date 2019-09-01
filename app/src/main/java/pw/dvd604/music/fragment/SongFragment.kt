@@ -37,7 +37,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         R.id.btnGenre to "genres",
         R.id.btnAlbum to "albums"
     )
-    var state: Bundle? = null
+    private var state: Bundle? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -243,6 +243,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                             songJSON.getString("name"),
                             "",
                             songJSON.getString("id"),
+                            "",
                             "",
                             "",
                             "",

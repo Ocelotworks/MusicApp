@@ -58,9 +58,12 @@ class SongList {
                     }
                     MediaType.GENRE -> {
                         val id = translationMap[key]
+                        val size = songList.size
                         songList.removeIf { song ->
                             song.genre == id
                         }
+                        val newSize = songList.size
+                        Util.log(this, "Deleted ${size - newSize} songs for genre $key")
                     }
                     MediaType.ALBUM -> {
                         val id = translationMap[key]

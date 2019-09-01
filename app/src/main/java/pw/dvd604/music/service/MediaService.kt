@@ -121,7 +121,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         }
         mediaSession.setCallback(SessionCallbackReceiver(this))
 
-        buildNotification()
+        //buildNotification()
     }
 
     fun buildNotification() {

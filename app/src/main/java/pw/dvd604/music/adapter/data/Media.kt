@@ -17,12 +17,13 @@ enum class MediaType {
  * The 'Media' datatype
  **/
 data class Media(
-    var name: String,
-    var author: String,
-    var id: String,
-    var album: String = "",
-    var genre: String = "",
-    var artistID: String = "",
+    val name: String,
+    val author: String,
+    val id: String,
+    val album: String = "",
+    val genre: String = "",
+    val artistID: String = "",
+    val hash: String = "",
     val type: MediaType = MediaType.SONG
 ) : Serializable {
 

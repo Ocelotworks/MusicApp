@@ -67,7 +67,12 @@ class MainActivity : AppCompatActivity() {
         Thread {
             populateSongList()
             populateFilterMaps()
-            settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
+
+            try {
+                settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
+            } catch (e: Exception) {
+                Util.log(this, "Settings threw an exception. Likely first run")
+            }
         }.start()
     }
 
@@ -108,6 +113,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             Util.deleteFile(this, "${Util.dataTypeToString(mediaType)}List")
         }
+
+        SongList.applyFilter()
     }
 
     private fun populateSongList() {

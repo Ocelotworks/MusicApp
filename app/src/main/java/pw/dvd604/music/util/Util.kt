@@ -70,8 +70,10 @@ class Util {
                     json.getString("name"),
                     json.getString("song_id"),
                     json.getString("album"),
-                    "",
-                    json.getString("artist_id")
+                    json.getString("genre"),
+                    json.getString("artist_id"),
+                    json.getString("hash"),
+                    MediaType.SONG
                 )
             } catch (e: Exception) {
                 Media(
@@ -251,7 +253,7 @@ class Util {
             val uuid = Settings.getSetting(Settings.tracking, UUID.randomUUID().toString())
             Settings.putString(Settings.tracking, uuid)
 
-            return uuid ?: ""
+            return uuid
         }
 
         /**Takes an internal Android view ID, and returns a [MediaType] from it.
@@ -302,7 +304,7 @@ class Util {
          * @param media The media to generate the path from
          * @return String, the path to the media**/
         fun songToPath(media: Media): String {
-            return "${Settings.getSetting(Settings.storage)!!}/${media.id}"
+            return "${Settings.getSetting(Settings.storage)}/${media.id}"
         }
 
         /**Takes a Media object, and returns the POTENTIAL local path based off media ID
@@ -310,7 +312,7 @@ class Util {
          * @param media The media to generate the path from
          * @return String, the path to the media**/
         fun albumToPath(media: Media): String {
-            return "${Settings.getSetting(Settings.storage)!!}/album/${media.id}"
+            return "${Settings.getSetting(Settings.storage)}/album/${media.id}"
         }
 
         /**Takes the URL to an album artwork image, extracts the ID and generates a local path instead
@@ -319,7 +321,7 @@ class Util {
          * @return String, the local path**/
         fun albumURLToAlbumPath(url: String): String {
             val id = url.substring(url.lastIndexOf('/') + 1, url.length)
-            return "${Settings.getSetting(Settings.storage)!!}/album/${id}"
+            return "${Settings.getSetting(Settings.storage)}/album/${id}"
         }
 
         /**Extension function of the [MainActivity.report] function. Makes a snackbar text, which may or not be 'urgent'
