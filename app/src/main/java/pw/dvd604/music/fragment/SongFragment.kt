@@ -23,6 +23,7 @@ import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.network.HTTP
 import pw.dvd604.music.util.network.SongListRequest
+import java.io.File
 
 class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     AdapterView.OnItemClickListener {
@@ -171,6 +172,18 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                         HTTP.getDetailedData(media),
                         SongListRequest(::setContextSongs)
                     )
+                }
+
+                MusicApplication.track("Media Download", media.generateText())
+            }
+            "Remove from local storage" -> {
+                if (Util.downloader.hasSong(media)) {
+                    val file = File(Util.songToPath(media))
+                    file.delete()
+
+                    Util.report("Deleted song!", this.activity as MainActivity, true)
+
+                    MusicApplication.track("Media Delete", media.generateText())
                 }
             }
             "Add to queue" -> {
