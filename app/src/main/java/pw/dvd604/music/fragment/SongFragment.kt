@@ -28,8 +28,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     AdapterView.OnItemClickListener {
     var searchMode: Int = R.id.btnTitle
     var http: HTTP? = null
-    //Array of our songs
-    var songData = ArrayList<Media>(0)
     //Search modes are how we translate button IDs to JSON array names
     var searchModes = hashMapOf(
         R.id.btnTitle to "songs",
@@ -209,7 +207,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     fun downloadAll() {
         Util.report("Checking previously downloaded songs", this.activity as MainActivity, true)
         var i = 0
-        for (song in songData) {
+        for (song in SongList.songList) {
             if (!Util.downloader.hasSong(song)) {
                 Util.downloader.addToQueue(song)
             } else {
@@ -224,7 +222,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     class SearchListener(private val songFragment: SongFragment) : Response.Listener<String> {
         override fun onResponse(response: String?) {
             val data = ArrayList<Media>()
-            songFragment.songData.clear()
             val json = JSONObject(response)
             val array = json.getJSONArray(songFragment.searchModes[songFragment.searchMode])
 

@@ -81,7 +81,7 @@ class SongList {
             callback?.let { it(null) }
         }
 
-        private fun discoverDownloadedSongs() {
+        fun discoverDownloadedSongs() {
             val path = Settings.getSetting(Settings.storage)
             path?.let {
                 val directory = File(it)
