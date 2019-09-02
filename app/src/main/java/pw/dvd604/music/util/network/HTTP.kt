@@ -1,4 +1,4 @@
-package pw.dvd604.music.util
+package pw.dvd604.music.util.network
 
 import android.content.Context
 import com.android.volley.Request
@@ -8,8 +8,9 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONObject
-import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.adapter.data.SongDataType
+import pw.dvd604.music.adapter.data.Media
+import pw.dvd604.music.adapter.data.MediaType
+import pw.dvd604.music.util.Util
 
 class HTTP(context: Context?) {
 
@@ -17,6 +18,7 @@ class HTTP(context: Context?) {
         var address: String? = null
         fun setup(addr: String) {
             address = addr
+            Util.log(this, addr)
         }
 
         private const val songAPI: String = "/api/song"
@@ -35,23 +37,27 @@ class HTTP(context: Context?) {
             return address + songAPI
         }
 
-        fun getDetailedSong(id: String, type: SongDataType): String {
+        fun getAllMedia(value: MediaType): String {
+            return "$address/api/${Util.dataTypeToString(value)}"
+        }
+
+        fun getDetailedSong(id: String, type: MediaType): String {
             val typeString: String = when (type) {
-                SongDataType.ALBUM -> {
+                MediaType.ALBUM -> {
                     "/album/"
                 }
-                SongDataType.ARTIST -> {
+                MediaType.ARTIST -> {
                     "/artist/"
                 }
-                SongDataType.PLAYLIST -> {
+                MediaType.PLAYLIST -> {
                     "/playlist/"
                 }
-                SongDataType.GENRE -> {
+                MediaType.GENRE -> {
                     "/genre/"
                 }
                 else -> {
                     //This shouldn't ever occur
-                    "/song/"
+                    "/media/"
                 }
             }
 
@@ -83,30 +89,30 @@ class HTTP(context: Context?) {
         }
 
         fun like(id: String?): String {
-            return "$address/song/$id/vote/like"
+            return "$address/media/$id/vote/like"
         }
 
-        fun getDetailedData(song: Song): String? {
-            val typeString: String = when (song.type) {
-                SongDataType.ALBUM -> {
+        fun getDetailedData(media: Media): String? {
+            val typeString: String = when (media.type) {
+                MediaType.ALBUM -> {
                     "/album/"
                 }
-                SongDataType.ARTIST -> {
+                MediaType.ARTIST -> {
                     "/artist/"
                 }
-                SongDataType.PLAYLIST -> {
+                MediaType.PLAYLIST -> {
                     "/playlist/"
                 }
-                SongDataType.GENRE -> {
+                MediaType.GENRE -> {
                     "/genre/"
                 }
                 else -> {
                     //This shouldn't ever occur
-                    "/song/"
+                    "/media/"
                 }
             }
 
-            return "$address$songAPI$typeString${song.id}"
+            return "$address$songAPI$typeString${media.id}"
         }
     }
 

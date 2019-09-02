@@ -17,12 +17,13 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.SeekBar
 import kotlinx.android.synthetic.main.fragment_playing.*
-import pw.dvd604.music.MediaService
+import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
-import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.service.MediaService
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.download.BitmapAsync
+import pw.dvd604.music.util.network.HTTP
 import java.io.File
 
 
@@ -56,11 +57,6 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
             null // optional Bundle
         )
 
-
-    }
-
-    override fun onStart() {
-        super.onStart()
         mediaBrowser.connect()
     }
 
@@ -69,8 +65,8 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         volumeControlStream = AudioManager.STREAM_MUSIC
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
+        super.onDestroy()
         MediaControllerCompat.getMediaController(this.activity as Activity)
             ?.unregisterCallback(controllerCallback)
         mediaBrowser.disconnect()
@@ -99,12 +95,14 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         songProgessText.text = Util.prettyTime(metadata?.getLong("progress")!! / 1000)
         songProgress.progress = metadata.getLong("progress").toInt() / 1000
 
-        //let the metadata update to here, including progress. Stop if it's not a new song
+        //let the metadata update to here, including progress. Stop if it's not a new media
         if (lastName == songName.text.toString() && lastArtist == songAuthor.text.toString()) return
         //This is because the bitmap decoding code is heavy, and shouldn't be run every second
 
         lastName = songName.text.toString()
         lastArtist = songAuthor.text.toString()
+
+        MusicApplication.track("Media play", "$lastName - $lastArtist")
 
         val filePath = Util.albumURLToAlbumPath(metadata.description?.iconUri.toString())
         val file = File(filePath)

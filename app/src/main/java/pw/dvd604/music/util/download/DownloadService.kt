@@ -1,20 +1,17 @@
 package pw.dvd604.music.util.download
 
 import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
-import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import pw.dvd604.music.R
-import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.adapter.data.SongDataType
+import pw.dvd604.music.adapter.data.Media
+import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
 
@@ -22,13 +19,21 @@ class DownloadService : Service() {
 
     private var downloadingCount: Int = 0
     private var progress: Int = 0
-    private val channelId: String = "petify_download_channel"
+    private lateinit var channelId: String
     private val notificationId: Int = 696901
-    private var queue: ArrayList<Song> = ArrayList(0)
-    private var duplicateQueue: ArrayList<Song> = ArrayList(0)
+    private var queue: ArrayList<Media> = ArrayList(0)
+    private var duplicateQueue: ArrayList<Media> = ArrayList(0)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        createNotificationChannel()
+        channelId = getString(R.string.petify_download_channel)
+
+        Util.createNotificationChannel(
+            this,
+            channelId,
+            this.getString(R.string.channel_name_progress),
+            this.getString(R.string.channel_description_progress)
+        )
+
         startForeground(notificationId, buildNotification())
 
         queue = Util.downloader.downloadQueue
@@ -43,7 +48,7 @@ class DownloadService : Service() {
                 downloadingCount++
 
                 if (Settings.getBoolean(Settings.offlineAlbum)) {
-                    DownloaderAsync(song, null, null, SongDataType.ALBUM).execute()
+                    DownloaderAsync(song, null, null, MediaType.ALBUM).execute()
                 }
             }
         }.start()
@@ -55,11 +60,11 @@ class DownloadService : Service() {
         return null
     }
 
-    private fun onComplete(song: Song) {
+    private fun onComplete(media: Media) {
         progress++
         downloadingCount--
         duplicateQueue.removeIf {
-            it.id == song.id
+            it.id == media.id
         }
 
         buildNotification(true)
@@ -69,8 +74,8 @@ class DownloadService : Service() {
         }
     }
 
-    private fun onUpdate(song: Song, progress: Int) {
-        Util.log(this, "${song.generateText()} progress: $progress%")
+    private fun onUpdate(media: Media, progress: Int) {
+        Util.log(this, "${media.generateText()} progress: $progress%")
     }
 
     private fun buildNotification(notify: Boolean = false): Notification? {
@@ -99,23 +104,6 @@ class DownloadService : Service() {
         return builder.build()
     }
 
-    private fun createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = this.getString(R.string.channel_name_progress)
-            val descriptionText = this.getString(R.string.channel_description_progress)
-            val importance = NotificationManager.IMPORTANCE_LOW
-            val channel = NotificationChannel(channelId, name, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system
-            val notificationManager: NotificationManager =
-                this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
     private fun buildList(): String {
         var list = ""
 
@@ -125,7 +113,6 @@ class DownloadService : Service() {
 
         return list
     }
-
 
     @Suppress("DEPRECATION")
     private fun pauseDownload(): Boolean {

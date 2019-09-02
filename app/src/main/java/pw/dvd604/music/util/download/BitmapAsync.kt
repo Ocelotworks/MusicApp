@@ -9,7 +9,10 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
-class BitmapAsync(private val nowPlayingFragment: NowPlayingFragment?) : AsyncTask<String, Void, Bitmap>() {
+class BitmapAsync(
+    private val nowPlayingFragment: NowPlayingFragment?,
+    val autoPost: Boolean = true
+) : AsyncTask<String, Void, Bitmap>() {
 
     override fun doInBackground(vararg urls: String?): Bitmap? {
         return try {
@@ -31,7 +34,9 @@ class BitmapAsync(private val nowPlayingFragment: NowPlayingFragment?) : AsyncTa
             val activity : MainActivity = nowPlayingFragment?.activity as MainActivity
             activity.report("Failed to connect to server", false)
         }
-        nowPlayingFragment?.postImage(bmp)
+
+        if (autoPost)
+            nowPlayingFragment?.postImage(bmp)
     }
 
 }

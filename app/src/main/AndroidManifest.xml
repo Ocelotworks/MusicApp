@@ -28,7 +28,7 @@
         </activity>
 
         <service
-                android:name=".MediaService"
+                android:name=".service.MediaService"
                 android:exported="true"
                 tools:ignore="ExportedService">
             <intent-filter>

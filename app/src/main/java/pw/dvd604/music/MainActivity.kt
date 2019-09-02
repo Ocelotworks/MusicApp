@@ -1,7 +1,6 @@
 package pw.dvd604.music
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
@@ -13,12 +12,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
-import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.adapter.data.Media
+import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.fragment.*
-import pw.dvd604.music.util.*
+import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
+import pw.dvd604.music.util.SongList
+import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.download.Downloader
+import pw.dvd604.music.util.network.FilterMapRequest
+import pw.dvd604.music.util.network.HTTP
+import pw.dvd604.music.util.network.SongListRequest
 import pw.dvd604.music.util.update.Updater
 import kotlin.system.exitProcess
 
@@ -59,9 +64,57 @@ class MainActivity : AppCompatActivity() {
 
         checkServerPrefs()
 
-        populateSongList()
+        Thread {
+            populateSongList()
+            populateFilterMaps()
 
-        settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
+            try {
+                settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
+            } catch (e: Exception) {
+                Util.log(this, "Settings threw an exception. Likely first run")
+            }
+        }.start()
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        //startForegroundService(Intent(this, MediaService::class.java))
+
+        if (Settings.getBoolean(Settings.update)) {
+            Updater(this).checkUpdate()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        this.mediaController?.transportControls?.stop()
+    }
+
+    private fun populateFilterMaps() {
+        for (type in MediaType.getNonSong()) {
+            val fileContents = Util.readFromFile(this, "${Util.dataTypeToString(type)}List")
+
+            if (fileContents != null) {
+                FilterMapRequest(::setFilter, type).onResponse(fileContents)
+            }
+
+            http.getReq(HTTP.getAllMedia(type), FilterMapRequest(::setFilter, type, ::writeFilter))
+        }
+    }
+
+    private fun writeFilter(response: String, mediaType: MediaType) {
+        Util.writeToFile(this, "${Util.dataTypeToString(mediaType)}List", response)
+    }
+
+    private fun setFilter(arrayList: ArrayList<Media>, mediaType: MediaType, broken: Boolean) {
+        if (!broken) {
+            SongList.generateMaps(arrayList)
+        } else {
+            Util.deleteFile(this, "${Util.dataTypeToString(mediaType)}List")
+        }
+
+        SongList.applyFilter()
     }
 
     private fun populateSongList() {
@@ -71,30 +124,18 @@ class MainActivity : AppCompatActivity() {
             SongListRequest(::setSongs).onResponse(fileContents)
         }
 
-        http.getReq(HTTP.getSong(), SongListRequest(::setSongs, ::writeSongs))
+        http.getReq(
+            HTTP.getSong(),
+            SongListRequest(::setSongs, ::writeSongs)
+        )
     }
 
     private fun writeSongs(response: String?) {
-        Util.writeToFile(this, "songList", response!!)
+        Util.writeToFile(this, "mediaList", response!!)
     }
 
-    private fun setSongs(songs: ArrayList<Song>) {
-        SongList.setSongsAndNotify(songs)
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        startService(Intent(this, MediaService::class.java))
-
-        if (Settings.getBoolean(Settings.update)) {
-            Updater(this).checkUpdate()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        this.mediaController.transportControls.stop()
+    private fun setSongs(media: ArrayList<Media>) {
+        SongList.setSongsAndNotify(media)
     }
 
     private fun checkServerPrefs() {
@@ -151,7 +192,7 @@ class MainActivity : AppCompatActivity() {
             R.id.btnStar -> {
                 if (!homeLab) {
                     mediaController.sendCommand("likesong", null, null)
-                    Util.report("Liked song!", this, true)
+                    Util.report("Liked media!", this, true)
                 } else {
                     report(getString(R.string.homelabError), true)
                 }
@@ -181,13 +222,13 @@ class MainActivity : AppCompatActivity() {
         fT.commit()
     }
 
-    fun createDetailFragment(song: Song) {
+    fun createDetailFragment(media: Media) {
         val fM = this.supportFragmentManager
         val fT = fM.beginTransaction()
 
         fM.saveFragmentInstanceState(songFragment)
 
-        detailFragment = SongDetailFragment.create(song)
+        detailFragment = SongDetailFragment.create(media)
         fT.replace(R.id.slideContainer, detailFragment)
         fT.addToBackStack("subSong")
         fT.commit()

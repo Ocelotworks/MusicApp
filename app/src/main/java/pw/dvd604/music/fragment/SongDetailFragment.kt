@@ -11,15 +11,15 @@ import androidx.fragment.app.Fragment
 import com.android.volley.Response
 import org.json.JSONObject
 import pw.dvd604.music.R
-import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.network.HTTP
 
 class SongDetailFragment : Fragment(), Response.Listener<String> {
     companion object {
-        fun create(song: Song): SongDetailFragment {
+        fun create(media: Media): SongDetailFragment {
             val bundle = Bundle()
-            bundle.putSerializable("song", song)
+            bundle.putSerializable("media", media)
             val frag = SongDetailFragment()
             frag.arguments = bundle
             return frag
@@ -37,9 +37,10 @@ class SongDetailFragment : Fragment(), Response.Listener<String> {
     override fun onStart() {
         super.onStart()
 
-        val song = this.arguments?.getSerializable("song") as Song
+        val song = this.arguments?.getSerializable("media") as Media
 
-        HTTP(this.context).getReq(HTTP.songDetail(song.id), this)
+        HTTP(this.context)
+            .getReq(HTTP.songDetail(song.id), this)
 
         this.view?.findViewById<TextView>(R.id.subSongTitle)?.text = song.generateText()
     }
@@ -55,7 +56,7 @@ class SongDetailFragment : Fragment(), Response.Listener<String> {
             "Duration: ${Util.prettyTime(json["duration"] as Int)}",
             "----------",
             "Path: ${json["path"]}",
-            "Song ID: ${json["song_id"]}",
+            "Media ID: ${json["song_id"]}",
             "Album ID: ${json["album_id"]}",
             "Artist ID: ${json["artist_id"]}",
             "Genre ID: ${json["genre_id"]}"

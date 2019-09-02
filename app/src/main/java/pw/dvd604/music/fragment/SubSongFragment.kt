@@ -11,15 +11,15 @@ import kotlinx.android.synthetic.main.fragment_sub_songs.*
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
-import pw.dvd604.music.adapter.data.Song
-import pw.dvd604.music.util.HTTP
-import pw.dvd604.music.util.SongListRequest
+import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.network.HTTP
+import pw.dvd604.music.util.network.SongListRequest
 
 class SubSongFragment : Fragment(), AdapterView.OnItemClickListener {
 
     var http: HTTP? = null
-    lateinit var songList: ArrayList<Song>
+    lateinit var mediaList: ArrayList<Media>
 
     companion object {
         fun create(url: String, name: String): SubSongFragment {
@@ -48,28 +48,31 @@ class SubSongFragment : Fragment(), AdapterView.OnItemClickListener {
         subSongList.onItemClickListener = this
 
         http = HTTP(this.context)
-        http?.getReq(data?.getString("url"), SongListRequest(::setSongs))
+        http?.getReq(
+            data?.getString("url"),
+            SongListRequest(::setSongs)
+        )
     }
 
-    private fun setSongs(songs: ArrayList<Song>) {
-        songList = songs
+    private fun setSongs(media: ArrayList<Media>) {
+        mediaList = media
 
         this.context?.let {
-            subSongList.adapter = SongAdapter(it, songList)
+            subSongList.adapter = SongAdapter(it, mediaList)
         }
     }
 
     override fun onItemClick(adapter: AdapterView<*>?, view: View?, position: Int, id: Long) {
         val songAdapter = adapter?.adapter as SongAdapter
-        val song: Song = songAdapter.getItemAtPosition(position)
+        val media: Media = songAdapter.getItemAtPosition(position)
         val activity = this.activity as MainActivity
 
-        Util.songQueue = songList
+        Util.mediaQueue = mediaList
         val songBundle = Bundle()
-        songBundle.putSerializable("song", song)
+        songBundle.putSerializable("media", media)
         activity.mediaController.transportControls.sendCustomAction("setQueue", null)
         activity.mediaController.transportControls.prepareFromUri(
-            Uri.parse(Util.songToUrl(song)),
+            Uri.parse(Util.songToUrl(media)),
             songBundle
         )
     }

@@ -1,24 +1,26 @@
-package pw.dvd604.music.util
+package pw.dvd604.music.util.network
 
 import com.android.volley.Response
 import org.json.JSONArray
-import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.adapter.data.Media
+import pw.dvd604.music.util.Util
 
 class SongListRequest(
-    val callback: (songList: ArrayList<Song>) -> Unit,
-    val responseCallback: ((response: String?) -> Unit)? = null
+    val callback: (mediaList: ArrayList<Media>) -> Unit,
+    private val responseCallback: ((response: String?) -> Unit)? = null
 ) : Response.Listener<String> {
 
-    private val songs = ArrayList<Song>()
-
     override fun onResponse(response: String?) {
-        songs.clear()
+        val songs = ArrayList<Media>()
+
         val array = JSONArray(response)
         for (i in 0 until array.length()) {
             val songJSON = array.getJSONObject(i)
             val song = Util.jsonToSong(songJSON)
             songs.add(song)
         }
+
+
         callback(songs)
 
         responseCallback?.let {

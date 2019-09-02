@@ -45,14 +45,14 @@ class Settings {
             prefs = PreferenceManager.getDefaultSharedPreferences(context)
         }
 
-        fun getSetting(name: String, defaultValue: String = ""): String? {
+        fun getSetting(name: String, defaultValue: String = ""): String {
             return prefs?.getString(
                 name, if (defaultValue == "") {
                     prefDefault[name] as String
                 } else {
                     defaultValue
                 }
-            )
+            ) ?: prefDefault[name] as String
         }
 
         fun setSetting(name: String, value: String) {

@@ -7,12 +7,16 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import pw.dvd604.music.R
-import pw.dvd604.music.adapter.data.Song
+import pw.dvd604.music.adapter.data.Media
 
-open class SongAdapter(context: Context, list: ArrayList<Song>, resource: Int = R.layout.item_songlist) : ArrayAdapter<Song>(context, resource, list){
+open class SongAdapter(
+    context: Context,
+    list: ArrayList<Media>,
+    resource: Int = R.layout.item_songlist
+) : ArrayAdapter<Media>(context, resource, list) {
 
     private var resource: Int = R.layout.item_songlist
-    private var list: ArrayList<Song>
+    private var list: ArrayList<Media>
     private var inflater: LayoutInflater
 
 
@@ -29,14 +33,14 @@ open class SongAdapter(context: Context, list: ArrayList<Song>, resource: Int = 
         view.findViewById<LinearLayout>(R.id.layoutList).isClickable = true
         view.findViewById<LinearLayout>(R.id.layoutList).descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS*/
 
-        val song: Song = list[position]
+        val media: Media = list[position]
 
-        view.findViewById<TextView>(R.id.songText).text = song.generateText()
+        view.findViewById<TextView>(R.id.songText).text = media.generateText()
 
         return view
     }
 
-    fun getItemAtPosition(position: Int) : Song{
+    fun getItemAtPosition(position: Int): Media {
         return list[position]
     }
 
