@@ -117,9 +117,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         MusicApplication.track("Media play", Util.songToJson(media).toString())
 
         if (media.type == MediaType.SONG) {
-            //activity.setSong(media)
-            //val bundle = Bundle()
-            //bundle.putSerializable("media", media)
             MediaControllerCompat.getMediaController(activity)
                 .transportControls.prepareFromUri(Uri.parse(Util.songToUrl(media)), null)
             Util.log(this, Util.songToUrl(media))
