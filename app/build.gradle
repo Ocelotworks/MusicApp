@@ -33,7 +33,7 @@ android {
             minSdkVersion 26
             targetSdkVersion 28
             versionCode code
-            versionName "2." + code
+            versionName "3.0"
             testInstrumentationRunner "android.support.MediaService.runner.AndroidJUnitRunner"
             buildConfigField("String", "sentryKey", apikeyProperties['sentryKey'])
             buildConfigField("String", "apiURL", apikeyProperties['apiURL'])
@@ -41,12 +41,6 @@ android {
             buildConfigField("int", "siteID", apikeyProperties['siteID'])
             buildConfigField("String", "versionURL", apikeyProperties['versionURL'])
             buildConfigField("String", "versionURLRoot", apikeyProperties['versionURLRoot'])
-
-            javaCompileOptions {
-                annotationProcessorOptions {
-                    arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
-                }
-            }
         }
 
     } else {

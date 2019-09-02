@@ -64,26 +64,25 @@ class Util {
          * @param [json] The json object
          * @return Media**/
         fun jsonToSong(json: JSONObject): Media {
+            return Media(
+                safeGet(json, "title"),
+                safeGet(json, "name"),
+                safeGet(json, "song_id"),
+                safeGet(json, "album"),
+                safeGet(json, "genre"),
+                safeGet(json, "artist_id"),
+                safeGet(json, "hash"),
+                MediaType.SONG
+            )
+        }
+
+        private fun safeGet(json: JSONObject, key: String): String {
             return try {
-                Media(
-                    json.getString("title"),
-                    json.getString("name"),
-                    json.getString("song_id"),
-                    json.getString("album"),
-                    json.getString("genre"),
-                    json.getString("artist_id"),
-                    json.getString("hash"),
-                    MediaType.SONG
-                )
+                json.getString(key)
             } catch (e: Exception) {
-                Media(
-                    json.getString("title"),
-                    json.getString("artist"),
-                    json.getString("id"),
-                    json.getString("album"),
-                    "",
-                    json.getString("artistID")
-                )
+                log(this, e.localizedMessage)
+                log(this, json.toString())
+                ""
             }
         }
 
@@ -98,6 +97,7 @@ class Util {
                 .put("album", media.album)
                 .put("genre", media.genre)
                 .put("artist_id", media.artistID)
+                .put("hash", media.hash)
         }
 
         /**Returns the location of the media file for a given media
