@@ -152,7 +152,7 @@ class SessionCallbackReceiver(private val service: MediaService) :
             ).build()
         )
 
-        service.noisyAudioStreamReceiver.register(service, service.intentFilter)
+        service.registerReceivers()
 
         service.audioFocusRequest =
             AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
@@ -214,7 +214,9 @@ class SessionCallbackReceiver(private val service: MediaService) :
         // Abandon audio focus
         if (service.isAudioFocusRequestInitialised())
             am.abandonAudioFocusRequest(service.audioFocusRequest)
-        service.noisyAudioStreamReceiver.unregister(service)
+
+        service.unregisterReceivers()
+
         // Stop the service
         service.stopSelf()
         // Set the session inactive  (and update metadata and state)
@@ -247,7 +249,7 @@ class SessionCallbackReceiver(private val service: MediaService) :
             ).build()
         )
         // unregister BECOME_NOISY BroadcastReceiver
-        service.noisyAudioStreamReceiver.unregister(service)
+        service.unregisterReceivers()
         // Take the service out of the foreground, retain the notification
         service.stopForeground(false)
     }

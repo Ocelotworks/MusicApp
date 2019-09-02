@@ -41,6 +41,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     lateinit var afChangeListener: AudioManager.OnAudioFocusChangeListener
     val noisyAudioStreamReceiver =
         BecomingNoisyReceiver(this)
+    val pwIntentReceiver = MusicIntentController(this)
     lateinit var mediaSession: MediaSessionCompat
     lateinit var player: MediaPlayer
 
@@ -49,7 +50,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     var currentMedia: Media? = null
 
-    val intentFilter = IntentFilter()
+    private val intentFilter = IntentFilter()
+    private val pwIntentFilter = IntentFilter()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         androidx.media.session.MediaButtonReceiver.handleIntent(mediaSession, intent)
@@ -80,6 +82,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         }
 
         intentFilter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+        pwIntentFilter.addAction(MusicIntentController.PLAY)
+        pwIntentFilter.addAction(MusicIntentController.SKIP)
+        pwIntentFilter.addAction(MusicIntentController.PREV)
 
         afChangeListener = AudioFocusListener(this)
 
@@ -361,6 +366,19 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     override fun onSeekComplete(mp: MediaPlayer?) {
         mp?.start()
+    }
+
+    fun registerReceivers() {
+        noisyAudioStreamReceiver.register(this, intentFilter)
+
+        if (Settings.getBoolean(Settings.useIntents)) {
+            pwIntentReceiver.register(this, pwIntentFilter)
+        }
+    }
+
+    fun unregisterReceivers() {
+        noisyAudioStreamReceiver.unregister(this)
+        pwIntentReceiver.unregister(this)
     }
 
     companion object {
