@@ -53,7 +53,8 @@ class MD5 {
 
                 do {
                     read = `is`.read(buffer)
-                    digest.update(buffer, 0, read)
+                    if (read > 0)
+                        digest.update(buffer, 0, read)
                 } while (read > 0)
 
                 val md5sum = digest.digest()

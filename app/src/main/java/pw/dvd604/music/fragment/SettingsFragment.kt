@@ -42,28 +42,41 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 SongList.discoverDownloadedSongs()
                 var i = 0
 
-                for (f in SongList.downloadedSongs) {
-                    val file = File(Util.songToPath(f))
+                Util.report("Hashing songs. Please wait", this.activity as MainActivity, true)
 
-                    if (f.hash == "") break
+                Thread {
+                    for (f in SongList.downloadedSongs) {
+                        val file = File(Util.songToPath(f))
 
-                    if (!MD5.checkMD5(f.hash, file)) {
-                        i++
-                        file.delete()
-                        Util.downloader.addToQueue(f)
+                        if (f.hash == "") break
+
+                        if (!MD5.checkMD5(f.hash, file)) {
+                            i++
+                            file.delete()
+                            Util.downloader.addToQueue(f)
+                        }
                     }
-                }
 
-                Util.report(
-                    "Discovered $i damaged songs. Redownloading...",
-                    this.activity as MainActivity,
-                    true
-                )
-                Util.downloader.doQueue()
+                    reportDone(i)
+                }.start()
                 return true
             }
         }
         return false
+    }
+
+    private fun reportDone(i: Int) {
+        (this.activity as MainActivity).runOnUiThread {
+            Util.report(
+                "Discovered $i damaged songs. Redownloading...",
+                this.activity as MainActivity,
+                true
+            )
+            if (i > 0) {
+                Util.downloader.doQueue()
+            }
+            Util.log(this, "Finished hashing - $i songs failed")
+        }
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
