@@ -48,7 +48,9 @@ class BecomingNoisyReceiver(private val service: MediaService) : BroadcastReceiv
         val action = intent?.action
 
         if (action?.compareTo(AudioManager.ACTION_AUDIO_BECOMING_NOISY) == 0) {
-            service.mediaSession.controller.transportControls.pause()
+            if (service.player.isPlaying) {
+                service.mediaSession.controller.transportControls.pause()
+            }
         }
     }
 }
