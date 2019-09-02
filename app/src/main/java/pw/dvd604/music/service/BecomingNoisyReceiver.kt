@@ -32,9 +32,6 @@ class BecomingNoisyReceiver(private val service: MediaService) : BroadcastReceiv
      * @return true if was registered else false
      */
     fun unregister(context: Context): Boolean {
-        // additional work match on context before unregister
-        // eg store weak ref in register then compare in unregister
-        // if match same instance
         return registered && unregisterInternal(context)
     }
 

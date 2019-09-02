@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.support.v4.media.MediaBrowserCompat
@@ -15,8 +17,10 @@ import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
+import pw.dvd604.music.util.download.BitmapAsync
 import pw.dvd604.music.util.download.Downloader
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.util.*
 import kotlin.collections.ArrayList
@@ -187,10 +191,20 @@ class Util {
                 .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, media.author)
                 .putText(MediaMetadataCompat.METADATA_KEY_GENRE, media.genre)
                 .putText(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, songToAlbumURL(media))
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, songToBitmap(media))
             tempMetadataCompat = metaData
             if (!builder)
                 return metaData.build()
             return null
+        }
+
+        private fun songToBitmap(media: Media): Bitmap? {
+            val file = File(albumToPath(media))
+            return if (file.exists()) {
+                BitmapFactory.decodeFile(file.canonicalPath)
+            } else {
+                BitmapAsync(null, false).execute(songToAlbumURL(media)).get()
+            }
         }
 
         /**@see songToMetadata
