@@ -22,6 +22,7 @@ import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.network.HTTP
+import pw.dvd604.music.util.network.SearchAllListener
 import pw.dvd604.music.util.network.SongListRequest
 import java.io.File
 
@@ -74,7 +75,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                 }
             }
 
-            //Why is this here? It works, so
             afterTextChanged(songSearch.editableText)
         }
     }
@@ -103,10 +103,16 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     override fun afterTextChanged(text: Editable?) {
         text?.let {
             if (it.isEmpty()) {
-                http?.getReq(
-                    HTTP.getAllMedia(Util.viewIDToDataType(searchMode)),
-                    SearchListener(this)
-                )
+                val mediaType = Util.viewIDToDataType(searchMode)
+
+                if (mediaType != MediaType.SONG) {
+                    http?.getReq(
+                        HTTP.getAllMedia(mediaType),
+                        SearchAllListener(mediaType, ::setSongs)
+                    )
+                } else {
+                    setSongs()
+                }
                 return
             }
             http?.getReq(HTTP.search(it.toString()), SearchListener(this))
