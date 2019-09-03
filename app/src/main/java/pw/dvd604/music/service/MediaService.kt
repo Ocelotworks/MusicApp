@@ -39,9 +39,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private var queuePosition: Int = 0
 
     lateinit var afChangeListener: AudioManager.OnAudioFocusChangeListener
-    val noisyAudioStreamReceiver =
+    private val noisyAudioStreamReceiver =
         BecomingNoisyReceiver(this)
-    val pwIntentReceiver = MusicIntentController(this)
+    private val pwIntentReceiver = MusicIntentController(this)
     lateinit var mediaSession: MediaSessionCompat
     lateinit var player: MediaPlayer
 
@@ -73,7 +73,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
         http = HTTP(this)
 
-        if (SongList.songList.isEmpty()) {
+        if (SongList.songList.isEmpty() && !SongList.isBuilding) {
             Util.log(this, "Probably bound by an external media controller")
             Settings.init(this)
             Util.downloader = Downloader(this.applicationContext)
@@ -220,6 +220,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     private fun populateSongList() {
+        SongList.isBuilding = true
         val fileContents = Util.readFromFile(this, "mediaList")
 
         if (fileContents != null) {

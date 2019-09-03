@@ -34,6 +34,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
     private var controllerCallback: MediaControllerCompat.Callback = ControllerCallback(this)
     private var shuffleMode: Boolean = Settings.getBoolean(Settings.shuffle)
     private var stopUpdatingSeek: Boolean = false
+    private var forceBitmapUpdate: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,6 +64,8 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
     override fun onResume() {
         super.onResume()
         volumeControlStream = AudioManager.STREAM_MUSIC
+
+        forceBitmapUpdate = true
     }
 
     override fun onDestroy() {
@@ -96,7 +99,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         songProgress.progress = metadata.getLong("progress").toInt() / 1000
 
         //let the metadata update to here, including progress. Stop if it's not a new media
-        if (lastName == songName.text.toString() && lastArtist == songAuthor.text.toString()) return
+        if ((lastName == songName.text.toString() && lastArtist == songAuthor.text.toString()) || !forceBitmapUpdate) return
         //This is because the bitmap decoding code is heavy, and shouldn't be run every second
 
         lastName = songName.text.toString()
@@ -114,6 +117,8 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         } else {
             BitmapAsync(this).execute(metadata.description?.iconUri.toString())
         }
+
+        forceBitmapUpdate = false
     }
 
     fun postImage(bmp: Bitmap?) {

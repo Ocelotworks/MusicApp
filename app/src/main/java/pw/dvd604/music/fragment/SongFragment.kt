@@ -59,7 +59,8 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         return view
     }
 
-    fun changeTextColour(btn: Int) {
+    fun updateSearchMode(btn: Int) {
+        searchMode = btn
         this.view?.let {
             val buttons = arrayOf(R.id.btnTitle, R.id.btnAlbum, R.id.btnGenre, R.id.btnArtist)
 
@@ -73,6 +74,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                 }
             }
 
+            //Why is this here? It works, so
             afterTextChanged(songSearch.editableText)
         }
     }
@@ -90,7 +92,8 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt("scrolly", mediaList.firstVisiblePosition)
+        if (mediaList != null)
+            outState.putInt("scrolly", mediaList.firstVisiblePosition)
 
         super.onSaveInstanceState(outState)
     }
@@ -100,7 +103,10 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     override fun afterTextChanged(text: Editable?) {
         text?.let {
             if (it.isEmpty()) {
-                setSongs()
+                http?.getReq(
+                    HTTP.getAllMedia(Util.viewIDToDataType(searchMode)),
+                    SearchListener(this)
+                )
                 return
             }
             http?.getReq(HTTP.search(it.toString()), SearchListener(this))

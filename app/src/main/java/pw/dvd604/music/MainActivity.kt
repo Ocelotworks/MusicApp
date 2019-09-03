@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Settings.getSetting(server)?.let { HTTP.setup(it) }
+        Settings.getSetting(server).let { HTTP.setup(it) }
         Util.downloader = Downloader(this.applicationContext)
 
         //Insert actual fragments into shell containers
@@ -118,6 +118,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun populateSongList() {
+        SongList.isBuilding = true
         val fileContents = Util.readFromFile(this, "songList")
 
         if (fileContents != null) {
@@ -159,8 +160,7 @@ class MainActivity : AppCompatActivity() {
             R.id.btnAlbum,
             R.id.btnGenre,
             R.id.btnArtist -> {
-                songFragment.changeTextColour(v.id)
-                songFragment.searchMode = v.id
+                songFragment.updateSearchMode(v.id)
                 return
             }
 
