@@ -33,7 +33,6 @@ class Settings {
             crashReports to true,
             useIntents to false,
             update to true,
-            buildName to "release",
             shuffle to true,
             shuffleOffline to true,
             blacklist to ""
@@ -53,10 +52,6 @@ class Settings {
                     defaultValue
                 }
             ) ?: prefDefault[name] as String
-        }
-
-        fun setSetting(name: String, value: String) {
-            prefs?.edit()?.putString(name, value)?.apply()
         }
 
         fun getBoolean(setting: String): Boolean {

@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.MediaType
@@ -21,6 +22,12 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
         this.findPreference("downloadAll").onPreferenceClickListener = this
         this.findPreference("checkHash").onPreferenceClickListener = this
+        this.findPreference("appCrash").onPreferenceClickListener = this
+
+        if (!BuildConfig.DEBUG) {
+            val experimental = this.findPreference("experimentalCategory")
+            this.preferenceScreen.removePreference(experimental)
+        }
     }
 
     override fun onPreferenceClick(preference: Preference?): Boolean {
@@ -60,6 +67,9 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                     reportDone(i)
                 }.start()
                 return true
+            }
+            "appCrash" -> {
+                throw Exception("Planned App Crash from ${this::class.java.name}")
             }
         }
         return false

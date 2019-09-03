@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
         android:theme="@style/AppTheme">
-
-
     <PreferenceCategory android:title="General">
         <EditTextPreference
                 android:dialogLayout="@layout/preference_multiline"
@@ -84,17 +82,22 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Updates">
-
         <SwitchPreferenceCompat
                 android:defaultValue="1"
                 android:key="autoUpdate"
                 android:title="Enable automatic updates" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+            android:title="Experimental"
+            android:key="experimentalCategory">
+        <Preference
+                android:key="appCrash"
+                android:title="Test app crash" />
 
         <EditTextPreference
-                android:defaultValue="release"
-                android:key="buildName"
-                android:summary="Version name for update checking\nIf set wrong the app will likely misbehave"
-                android:title="[Advanced] Build Name" />
+                android:key="trackingID"
+                android:title="Change Tracking ID" />
     </PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>
