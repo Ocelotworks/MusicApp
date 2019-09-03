@@ -242,7 +242,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     override fun onDestroy() {
         super.onDestroy()
-        noisyAudioStreamReceiver.unregister(this)
+        unregisterReceivers()
     }
 
     private fun setSongs(arrayList: ArrayList<Media>) {
