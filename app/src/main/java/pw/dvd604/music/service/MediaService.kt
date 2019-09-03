@@ -1,5 +1,6 @@
 package pw.dvd604.music.service
 
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioFocusRequest
@@ -96,10 +97,14 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             setOnSeekCompleteListener(this@MediaService)
         }
 
+        val sessionActivityPendingIntent =
+            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
+                PendingIntent.getActivity(this, 0, sessionIntent, 0)
+            }
+
         // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, "petify").apply {
-
-
+            setSessionActivity(sessionActivityPendingIntent)
             setRatingType(RatingCompat.RATING_NONE)
             // Enable callbacks from MediaButtons and TransportControls
             setFlags(
@@ -130,14 +135,10 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             stateBuilder.addCustomAction("setQueue", "Set Queue", R.drawable.ic_notification)
 
             setPlaybackState(stateBuilder.build())
-
-
             // Set the session's token so that client activities can communicate with it.
             setSessionToken(sessionToken)
         }
         mediaSession.setCallback(SessionCallbackReceiver(this))
-
-        //buildNotification()
     }
 
     fun buildNotification() {
