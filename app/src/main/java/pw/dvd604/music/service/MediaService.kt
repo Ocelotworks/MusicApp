@@ -8,6 +8,7 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
@@ -98,6 +99,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, "petify").apply {
 
+
+            setRatingType(RatingCompat.RATING_NONE)
             // Enable callbacks from MediaButtons and TransportControls
             setFlags(
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
@@ -116,7 +119,15 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                             or PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
                             or PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH
                             or PlaybackStateCompat.ACTION_PREPARE
+                            or PlaybackStateCompat.ACTION_PLAY
+                            or PlaybackStateCompat.ACTION_PAUSE
+                            or PlaybackStateCompat.ACTION_STOP
+                    //or PlaybackStateCompat.ACTION_SET_REPEAT_MODE
                 )
+
+            stateBuilder.addCustomAction("shuffle", "Set shuffle mode", R.drawable.ic_notification)
+            stateBuilder.addCustomAction("likesong", "Like song", R.drawable.ic_notification)
+            stateBuilder.addCustomAction("setQueue", "Set Queue", R.drawable.ic_notification)
 
             setPlaybackState(stateBuilder.build())
 
@@ -358,6 +369,12 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
+        mediaSession.setPlaybackState(
+            PlaybackStateCompat.Builder().setErrorMessage(
+                what,
+                "Some error"
+            ).build()
+        )
         return true
     }
 
