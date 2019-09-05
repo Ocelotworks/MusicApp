@@ -22,6 +22,7 @@ class Settings {
         const val buildName = "buildName"
         const val shuffleOffline = "shuffleOffline"
         const val blacklist = "blacklist"
+        const val developer = "developerOptions"
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             server to BuildConfig.defaultURL,
@@ -35,7 +36,8 @@ class Settings {
             update to true,
             shuffle to true,
             shuffleOffline to true,
-            blacklist to ""
+            blacklist to "",
+            developer to false
         )
 
         var prefs: SharedPreferences? = null

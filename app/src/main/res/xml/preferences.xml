@@ -63,7 +63,7 @@
 
     <PreferenceCategory
             android:key="experimentalCategory"
-            android:title="Developer only">
+            android:title="Developer settings">
         <Preference
                 android:key="appCrash"
                 android:title="Test app crash" />
@@ -100,6 +100,11 @@
                 android:key="aggressiveReporting"
                 android:summary="Show error reports as soon as they appear"
                 android:title="Aggressive error reports" />
+
+        <SwitchPreferenceCompat
+                android:defaultValue="0"
+                android:key="developerOptions"
+                android:title="Developer Options" />
     </PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>

@@ -18,7 +18,8 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
     SharedPreferences.OnSharedPreferenceChangeListener {
 
     companion object {
-        var clicks: Int = 0
+        var enabled = false
+        private var clicks = 0
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -29,11 +30,11 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         this.findPreference("appCrash").onPreferenceClickListener = this
         this.findPreference("version").apply {
             onPreferenceClickListener = this@SettingsFragment
-            title = BuildConfig.VERSION_NAME
+            title = "Petify ${BuildConfig.VERSION_NAME}"
             summary = "Build: ${BuildConfig.VERSION_CODE}"
         }
 
-        if (!BuildConfig.DEBUG || clicks < 10) {
+        if (!(BuildConfig.DEBUG || enabled || Settings.getBoolean(Settings.developer))) {
             val experimental = this.findPreference("experimentalCategory")
             this.preferenceScreen.removePreference(experimental)
         }
@@ -82,8 +83,10 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             }
             "version" -> {
                 clicks++
-                if (clicks >= 10) {
+                if (clicks == 10) {
                     Util.report("Activated", this@SettingsFragment.activity as MainActivity, true)
+                    enabled = true
+                    Settings.putBoolean("developerOptions", true)
                 }
                 true
             }
@@ -111,11 +114,7 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 val value = sharedPreferences?.getString(key, "")
                 value?.let {
 
-                    val separator = if (System.getProperty("line.separator") == null) {
-                        "\n"
-                    } else {
-                        System.getProperty("line.separator")
-                    }
+                    val separator = System.getProperty("line.separator") ?: "\n"
 
                     val entryArray = value.split(separator)
 

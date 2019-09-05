@@ -65,8 +65,8 @@ class MainActivity : AppCompatActivity() {
         checkServerPrefs()
 
         Thread {
-            populateFilterMaps()
             populateSongList()
+            populateFilterMaps()
 
             try {
                 settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
