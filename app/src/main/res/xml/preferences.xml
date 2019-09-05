@@ -10,32 +10,17 @@
                 android:title="Content blacklist" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Server setup">
+    <SwitchPreferenceCompat
+            android:defaultValue="1"
+            android:key="aggressiveReporting"
+            android:summary="Show error reports as soon as they appear"
+            android:title="Aggressive error reports" />
 
-        <EditTextPreference
-                android:defaultValue="https://unacceptableuse.com/petify"
-                android:key="address"
-                android:summary="Address to compatible server, e.g. Petify"
-                android:title="Server address" />
-
-        <SwitchPreferenceCompat
-                android:defaultValue="1"
-                android:key="aggressiveReporting"
-                android:summary="Show error reports as soon as they appear"
-                android:title="Aggressive error reports" />
-
-        <SwitchPreferenceCompat
-                android:defaultValue="1"
-                android:key="usageReporting"
-                android:summary="Send usage reports"
-                android:title="Anonymised statistics reports" />
-
-        <SwitchPreferenceCompat
-                android:defaultValue="1"
-                android:key="crashReporting"
-                android:summary="Send crash reports"
-                android:title="Anonymised crash reports" />
-    </PreferenceCategory>
+    <SwitchPreferenceCompat
+            android:defaultValue="1"
+            android:key="usageReporting"
+            android:summary="Send usage reports"
+            android:title="Anonymised statistics reports" />
 
     <PreferenceCategory android:title="Offline play">
 
@@ -56,19 +41,8 @@
 
         <SwitchPreferenceCompat
                 android:defaultValue="1"
-                android:key="albumArt"
-                android:summary="Downloads played album art to reduce data usage"
-                android:title="Keep album art stored locally" />
-
-        <SwitchPreferenceCompat
-                android:defaultValue="1"
                 android:key="shuffleOffline"
                 android:title="Shuffle only downloaded media" />
-
-        <EditTextPreference
-                android:defaultValue="/sdcard/petify"
-                android:key="storage"
-                android:title="Offline Storage Directory" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Intents">
@@ -89,8 +63,8 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-            android:title="Experimental"
-            android:key="experimentalCategory">
+            android:key="experimentalCategory"
+            android:title="Developer only">
         <Preference
                 android:key="appCrash"
                 android:title="Test app crash" />
@@ -98,6 +72,29 @@
         <EditTextPreference
                 android:key="trackingID"
                 android:title="Change Tracking ID" />
+
+        <EditTextPreference
+                android:defaultValue="https://unacceptableuse.com/petify"
+                android:key="address"
+                android:summary="Address to compatible server, e.g. Petify"
+                android:title="Server address" />
+
+        <SwitchPreferenceCompat
+                android:defaultValue="1"
+                android:key="albumArt"
+                android:summary="Downloads played album art to reduce data usage"
+                android:title="Keep album art stored locally" />
+
+        <SwitchPreferenceCompat
+                android:defaultValue="1"
+                android:key="crashReporting"
+                android:summary="Send crash reports"
+                android:title="Anonymised crash reports" />
+
+        <EditTextPreference
+                android:defaultValue="/sdcard/petify"
+                android:key="storage"
+                android:title="Offline Storage Directory" />
     </PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>

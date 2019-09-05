@@ -79,8 +79,6 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        //startForegroundService(Intent(this, MediaService::class.java))
-
         if (Settings.getBoolean(Settings.update)) {
             Updater(this).checkUpdate()
         }
