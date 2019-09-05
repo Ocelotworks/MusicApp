@@ -98,9 +98,14 @@ class SessionCallbackReceiver(private val service: MediaService) :
             service.currentMedia = extras.getSerializable("media") as Media
         } else {
             val splitURL = uri.toString().split('/')
-            service.currentMedia = SongList.songList.filter {
-                it.id == splitURL[splitURL.size - 1]
-            }[0]
+
+            service.currentMedia = try {
+                SongList.songList.filter {
+                    it.id == splitURL[splitURL.size - 1]
+                }[0]
+            } catch (e: Exception) {
+                SongList.songList.random()
+            }
         }
 
         Util.addSongToStack(service.currentMedia)
