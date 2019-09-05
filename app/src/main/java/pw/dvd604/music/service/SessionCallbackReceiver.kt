@@ -245,6 +245,7 @@ class SessionCallbackReceiver(private val service: MediaService) :
         // Update metadata and state
         // pause the player (custom call)
         service.player.pause()
+        service.buildNotification()
 
         service.mediaSession.setPlaybackState(
             PlaybackStateCompat.Builder().setState(
