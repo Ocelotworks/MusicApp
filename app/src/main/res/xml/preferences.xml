@@ -12,12 +12,6 @@
 
     <SwitchPreferenceCompat
             android:defaultValue="1"
-            android:key="aggressiveReporting"
-            android:summary="Show error reports as soon as they appear"
-            android:title="Aggressive error reports" />
-
-    <SwitchPreferenceCompat
-            android:defaultValue="1"
             android:key="usageReporting"
             android:summary="Send usage reports"
             android:title="Anonymised statistics reports" />
@@ -51,7 +45,7 @@
                 android:key="useIntents"
                 android:summary="Listens to intents to allow audio control
                 \nIntent root: pw.dvd604.music
-                \nUsable intents: PAUSE, PLAY, NEXT and PREV"
+                \nUsable intents: PLAY, NEXT and PREV"
                 android:title="Use intents" />
     </PreferenceCategory>
 
@@ -61,6 +55,11 @@
                 android:key="autoUpdate"
                 android:title="Enable automatic updates" />
     </PreferenceCategory>
+
+    <Preference
+            android:key="version"
+            android:summary="{MINOR_VERSION}"
+            android:title="{VERSION}" />
 
     <PreferenceCategory
             android:key="experimentalCategory"
@@ -95,6 +94,12 @@
                 android:defaultValue="/sdcard/petify"
                 android:key="storage"
                 android:title="Offline Storage Directory" />
+
+        <SwitchPreferenceCompat
+                android:defaultValue="1"
+                android:key="aggressiveReporting"
+                android:summary="Show error reports as soon as they appear"
+                android:title="Aggressive error reports" />
     </PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>

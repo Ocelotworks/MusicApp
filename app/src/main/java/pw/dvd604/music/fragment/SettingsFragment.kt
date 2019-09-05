@@ -17,23 +17,32 @@ import java.io.File
 class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener,
     SharedPreferences.OnSharedPreferenceChangeListener {
 
+    companion object {
+        var clicks: Int = 0
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
         this.findPreference("downloadAll").onPreferenceClickListener = this
         this.findPreference("checkHash").onPreferenceClickListener = this
         this.findPreference("appCrash").onPreferenceClickListener = this
+        this.findPreference("version").apply {
+            onPreferenceClickListener = this@SettingsFragment
+            title = BuildConfig.VERSION_NAME
+            summary = "Build: ${BuildConfig.VERSION_CODE}"
+        }
 
-        if (!BuildConfig.DEBUG) {
+        if (!BuildConfig.DEBUG || clicks < 10) {
             val experimental = this.findPreference("experimentalCategory")
             this.preferenceScreen.removePreference(experimental)
         }
     }
 
     override fun onPreferenceClick(preference: Preference?): Boolean {
-        when (preference?.key) {
+        return when (preference?.key) {
             "downloadAll" -> {
-                return if (Settings.getBoolean(Settings.offlineMusic)) {
+                if (Settings.getBoolean(Settings.offlineMusic)) {
                     (this.activity as MainActivity).songFragment.downloadAll()
                     true
                 } else {
@@ -66,13 +75,20 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
                     reportDone(i)
                 }.start()
-                return true
+                true
             }
             "appCrash" -> {
                 throw Exception("Planned App Crash from ${this::class.java.name}")
             }
+            "version" -> {
+                clicks++
+                if (clicks >= 10) {
+                    Util.report("Activated", this@SettingsFragment.activity as MainActivity, true)
+                }
+                true
+            }
+            else -> false
         }
-        return false
     }
 
     private fun reportDone(i: Int) {
