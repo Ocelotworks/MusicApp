@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_songs.*
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.fragment.*
@@ -78,6 +80,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
+        sliding_layout.setScrollableView(mediaList)
         if (Settings.getBoolean(Settings.update)) {
             Updater(this).checkUpdate()
         }
