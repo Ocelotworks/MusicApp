@@ -117,9 +117,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun populateSongList() {
         SongList.isBuilding = true
-        val fileContents = Util.readFromFile(this, "songList")
+        val fileContents = Util.readFromFile(this, "mediaList")
 
         if (fileContents != null) {
+            Util.log(this, fileContents)
             SongListRequest(::setSongs).onResponse(fileContents)
         }
 

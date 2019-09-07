@@ -99,7 +99,10 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         songProgress.progress = metadata.getLong("progress").toInt() / 1000
 
         //let the metadata update to here, including progress. Stop if it's not a new media
-        if ((lastName == songName.text.toString() && lastArtist == songAuthor.text.toString()) || !forceBitmapUpdate) return
+        if (lastName == songName.text.toString() && lastArtist == songAuthor.text.toString()) {
+            if (!forceBitmapUpdate)
+                return
+        }
         //This is because the bitmap decoding code is heavy, and shouldn't be run every second
 
         lastName = songName.text.toString()
@@ -108,6 +111,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         MusicApplication.track("Media play", "$lastName - $lastArtist")
 
         val filePath = Util.albumURLToAlbumPath(metadata.description?.iconUri.toString())
+        Util.log(this, filePath)
         val file = File(filePath)
 
         Util.log(this, filePath)

@@ -12,6 +12,7 @@ import pw.dvd604.music.util.MD5
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.download.DownloaderAsync
 import java.io.File
 
 class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener,
@@ -28,6 +29,7 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         this.findPreference("downloadAll").onPreferenceClickListener = this
         this.findPreference("checkHash").onPreferenceClickListener = this
         this.findPreference("appCrash").onPreferenceClickListener = this
+        this.findPreference("downloadAlbumArt").onPreferenceClickListener = this
         this.findPreference("version").apply {
             onPreferenceClickListener = this@SettingsFragment
             title = "Petify ${BuildConfig.VERSION_NAME}"
@@ -88,6 +90,17 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                     enabled = true
                     Settings.putBoolean("developerOptions", true)
                 }
+                true
+            }
+            "downloadAlbumArt" -> {
+                Thread {
+                    for (s in SongList.songList) {
+                        if (!File(Util.albumToPath(s)).exists()) {
+                            if (!Util.downloader.hasSong(s))
+                                DownloaderAsync(s, null, null, MediaType.ALBUM).execute()
+                        }
+                    }
+                }.start()
                 true
             }
             else -> false
