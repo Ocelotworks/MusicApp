@@ -72,7 +72,7 @@ class SubSongFragment : Fragment(), AdapterView.OnItemClickListener {
         songBundle.putSerializable("media", media)
         activity.mediaController.transportControls.sendCustomAction("setQueue", null)
         activity.mediaController.transportControls.prepareFromUri(
-            Uri.parse(Util.songToUrl(media)),
+            Uri.parse(media.toUrl()),
             songBundle
         )
     }

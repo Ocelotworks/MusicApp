@@ -126,12 +126,12 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         val media: Media = songAdapter.getItemAtPosition(position)
         val activity = this.activity as MainActivity
 
-        MusicApplication.track("Media play", Util.songToJson(media).toString())
+        MusicApplication.track("Media play", media.toJson().toString())
 
         if (media.type == MediaType.SONG) {
             MediaControllerCompat.getMediaController(activity)
-                .transportControls.prepareFromUri(Uri.parse(Util.songToUrl(media)), null)
-            Util.log(this, Util.songToUrl(media))
+                .transportControls.prepareFromUri(Uri.parse(media.toUrl()), null)
+            Util.log(this, media.toUrl())
         } else {
             //Open sub media fragment
             (this.activity as MainActivity).createSubFragment(
@@ -187,7 +187,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
             }
             "Remove from local storage" -> {
                 if (Util.downloader.hasSong(media)) {
-                    val file = File(Util.songToPath(media))
+                    val file = File(media.toPath())
                     file.delete()
 
                     Util.report("Deleted song!", this.activity as MainActivity, true)
@@ -249,11 +249,11 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
 
             for (i in 0 until array.length()) {
                 val songJSON = array.getJSONObject(i)
-                var media: Media? = null
+                var media = Media()
 
                 when (songFragment.searchMode) {
                     R.id.btnTitle -> {
-                        media = Util.jsonToSong(songJSON)
+                        media.fromJson(json)
                     }
                     R.id.btnArtist,
                     R.id.btnGenre,
@@ -271,8 +271,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                     }
                 }
 
-                media?.let { data.add(it) }
-
+                data.add(media)
             }
             songFragment.setSongs(data)
         }

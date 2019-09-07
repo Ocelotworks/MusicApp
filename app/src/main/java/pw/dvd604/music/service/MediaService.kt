@@ -268,7 +268,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             "root" -> {
                 val mediaList = ArrayList<MediaBrowserCompat.MediaItem>(0)
                 for (song in SongList.songList) {
-                    mediaList.add(Util.songToMediaItem(song))
+                    mediaList.add(song.toMediaItem())
                 }
 
                 Util.log(this, "returning 50 children")
@@ -290,7 +290,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
         val mediaList = ArrayList<MediaBrowserCompat.MediaItem>(0)
         for (song in songs) {
-            mediaList.add(Util.songToMediaItem(song))
+            mediaList.add(song.toMediaItem())
         }
 
         Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
@@ -322,7 +322,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 }
 
             val nextMedia: Media = list[nextSongIndex]
-            val url: String = Util.songToUrl(nextMedia)
+            val url: String = nextMedia.toUrl()
 
             mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
         } else {
@@ -350,7 +350,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                         return
                     }
 
-                    val url: String = Util.songToUrl(nextMedia)
+                    val url: String = nextMedia.toUrl()
 
                     mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
                 }
@@ -360,7 +360,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     fun prevSong() {
         val nextMedia: Media = Util.popSongStack()
-        val url: String = Util.songToUrl(nextMedia)
+        val url: String = nextMedia.toUrl()
 
         mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
     }

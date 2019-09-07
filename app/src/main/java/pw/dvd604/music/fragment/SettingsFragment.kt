@@ -65,7 +65,7 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
                 Thread {
                     for (f in SongList.downloadedSongs) {
-                        val file = File(Util.songToPath(f))
+                        val file = File(f.toPath())
 
                         if (f.hash == "") break
 
@@ -95,7 +95,7 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             "downloadAlbumArt" -> {
                 Thread {
                     for (s in SongList.songList) {
-                        if (!File(Util.albumToPath(s)).exists()) {
+                        if (!File(s.toAlbumPath()).exists()) {
                             if (!Util.downloader.hasSong(s))
                                 DownloaderAsync(s, null, null, MediaType.ALBUM).execute()
                         }

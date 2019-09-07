@@ -4,12 +4,7 @@ import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Build
-import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import org.json.JSONObject
@@ -17,10 +12,8 @@ import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
-import pw.dvd604.music.util.download.BitmapAsync
 import pw.dvd604.music.util.download.Downloader
 import java.io.BufferedReader
-import java.io.File
 import java.io.InputStreamReader
 import java.util.*
 import kotlin.collections.ArrayList
@@ -62,81 +55,6 @@ class Util {
             } else {
                 "00:00"
             }
-        }
-
-        /**Creates a Media object from a JSON string
-         * @param [json] The json object
-         * @return Media**/
-        fun jsonToSong(json: JSONObject): Media {
-            return Media(
-                safeGet(json, "title"),
-                safeGet(json, "name"),
-                safeGet(json, "song_id"),
-                safeGet(json, "album"),
-                safeGet(json, "genre"),
-                safeGet(json, "artist_id"),
-                safeGet(json, "hash"),
-                MediaType.SONG
-            )
-        }
-
-        private fun safeGet(json: JSONObject, key: String): String {
-            return try {
-                json.getString(key)
-            } catch (e: Exception) {
-                log(this, e.localizedMessage)
-                log(this, json.toString())
-                ""
-            }
-        }
-
-        /**Creates a JSON object from a Media
-         * @param [media] The media to create the json from
-         * @return JSONObject**/
-        fun songToJson(media: Media): JSONObject? {
-            return JSONObject()
-                .put("title", media.name)
-                .put("name", media.author)
-                .put("song_id", media.id)
-                .put("album", media.album)
-                .put("genre", media.genre)
-                .put("artist_id", media.artistID)
-                .put("hash", media.hash)
-        }
-
-        /**Returns the location of the media file for a given media
-         * Supports offline play, where the local directory is returned, and online play,
-         * where the online URL is returned. This online play respects the user defined server URL
-         * @param media The media to get the location for
-         * @return String, The URL of the media, local or server-based**/
-        fun songToUrl(media: Media?): String {
-            if (Settings.getBoolean(Settings.offlineMusic)) {
-                //Do offline stored check
-                if (downloader.hasSong(media)) {
-                    return songToPath(media!!)
-                }
-            }
-            return "${Settings.getSetting(
-                Settings.server
-            )}/song/${media?.id}"
-        }
-
-        /**Takes a given Media, and creates a MediaBroswerCompat MediaItem.
-         * This is used for populating the MediaService, and allowing external MediaControllers to parse what music we have
-         * @param media The media to create the media item from
-         * @return MediaItem, The Android MediaItem based off the Media**/
-        fun songToMediaItem(media: Media): MediaBrowserCompat.MediaItem {
-            val descriptionBuilder = MediaDescriptionCompat.Builder().apply {
-                setTitle(media.name)
-                setDescription(media.author)
-                setMediaUri(Uri.parse(songToUrl(media)))
-                setIconUri(Uri.parse(songToAlbumURL(media)))
-                setMediaId(media.id)
-            }
-            return MediaBrowserCompat.MediaItem(
-                descriptionBuilder.build(),
-                MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
-            )
         }
 
         /**Takes an Android internal button ID, and returns a human readable button name. Used in tracking
@@ -190,21 +108,12 @@ class Util {
                 .putText(MediaMetadataCompat.METADATA_KEY_TITLE, media.name)
                 .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, media.author)
                 .putText(MediaMetadataCompat.METADATA_KEY_GENRE, media.genre)
-                .putText(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, songToAlbumURL(media))
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, songToBitmap(media))
+                .putText(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, media.toAlbumUrl())
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, media.toBitmap())
             tempMetadataCompat = metaData
             if (!builder)
                 return metaData.build()
             return null
-        }
-
-        private fun songToBitmap(media: Media): Bitmap? {
-            val file = File(albumToPath(media))
-            return if (file.exists()) {
-                BitmapFactory.decodeFile(file.canonicalPath)
-            } else {
-                BitmapAsync(null, false).execute(songToAlbumURL(media)).get()
-            }
         }
 
         /**@see songToMetadata
@@ -234,14 +143,6 @@ class Util {
                 }
             }
             return MediaMetadataCompat.Builder().build()
-        }
-
-        /**Creates a URL pointing to the media album art.
-         * While this doesn't support offline storage at the minute, it will in future
-         * @param media The requested media
-         * @return String, the album art URL**/
-        fun songToAlbumURL(media: Media): String? {
-            return "${Settings.getSetting(Settings.server)}/album/${media.album}"
         }
 
         /**Adds a media to the last played list
@@ -315,22 +216,6 @@ class Util {
          * @param s The string to log**/
         fun log(any: Any, s: String) {
             Log.e(any::class.java.name, s)
-        }
-
-        /**Takes a Media object, and returns the POTENTIAL local path based off media ID
-         * This isn't a given that the file will exist, only that it might be there, or it should be but in this path
-         * @param media The media to generate the path from
-         * @return String, the path to the media**/
-        fun songToPath(media: Media): String {
-            return "${Settings.getSetting(Settings.storage)}/${media.id}"
-        }
-
-        /**Takes a Media object, and returns the POTENTIAL local path based off media ID
-         * This isn't a given that the file will exist, only that it might be there, or it should be but in this path
-         * @param media The media to generate the path from
-         * @return String, the path to the media**/
-        fun albumToPath(media: Media): String {
-            return "${Settings.getSetting(Settings.storage)}/album/${media.id}"
         }
 
         /**Takes the URL to an album artwork image, extracts the ID and generates a local path instead

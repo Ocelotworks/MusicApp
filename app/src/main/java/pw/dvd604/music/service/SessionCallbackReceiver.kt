@@ -84,7 +84,7 @@ class SessionCallbackReceiver(private val service: MediaService) :
 
         Util.log(this, "preparing")
 
-        onPrepareFromUri(Uri.parse(Util.songToUrl(songs[0])), null)
+        onPrepareFromUri(Uri.parse(songs[0].toUrl()), null)
     }
 
     override fun onPrepareFromSearch(query: String?, extras: Bundle?) {
