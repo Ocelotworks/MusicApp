@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.MediaType
@@ -11,22 +12,40 @@ import pw.dvd604.music.util.MD5
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.download.DownloaderAsync
 import java.io.File
 
 class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener,
     SharedPreferences.OnSharedPreferenceChangeListener {
+
+    companion object {
+        var enabled = false
+        private var clicks = 0
+    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
         this.findPreference("downloadAll").onPreferenceClickListener = this
         this.findPreference("checkHash").onPreferenceClickListener = this
+        this.findPreference("appCrash").onPreferenceClickListener = this
+        this.findPreference("downloadAlbumArt").onPreferenceClickListener = this
+        this.findPreference("version").apply {
+            onPreferenceClickListener = this@SettingsFragment
+            title = "Petify ${BuildConfig.VERSION_NAME}"
+            summary = "Build: ${BuildConfig.VERSION_CODE}"
+        }
+
+        if (!(BuildConfig.DEBUG || enabled || Settings.getBoolean(Settings.developer))) {
+            val experimental = this.findPreference("experimentalCategory")
+            this.preferenceScreen.removePreference(experimental)
+        }
     }
 
     override fun onPreferenceClick(preference: Preference?): Boolean {
-        when (preference?.key) {
+        return when (preference?.key) {
             "downloadAll" -> {
-                return if (Settings.getBoolean(Settings.offlineMusic)) {
+                if (Settings.getBoolean(Settings.offlineMusic)) {
                     (this.activity as MainActivity).songFragment.downloadAll()
                     true
                 } else {
@@ -46,7 +65,7 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
                 Thread {
                     for (f in SongList.downloadedSongs) {
-                        val file = File(Util.songToPath(f))
+                        val file = File(f.toPath())
 
                         if (f.hash == "") break
 
@@ -59,10 +78,34 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
                     reportDone(i)
                 }.start()
-                return true
+                true
             }
+            "appCrash" -> {
+                throw Exception("Planned App Crash from ${this::class.java.name}")
+            }
+            "version" -> {
+                clicks++
+                if (clicks == 10) {
+                    Util.report("Activated", this@SettingsFragment.activity as MainActivity, true)
+                    enabled = true
+                    Settings.putBoolean("developerOptions", true)
+                }
+                true
+            }
+            "downloadAlbumArt" -> {
+                Thread {
+                    for (s in SongList.songList) {
+                        val file = File(s.toAlbumPath())
+                        if (file.exists())
+                            file.delete()
+                        DownloaderAsync(s, null, null, MediaType.ALBUM).execute()
+
+                    }
+                }.start()
+                true
+            }
+            else -> false
         }
-        return false
     }
 
     private fun reportDone(i: Int) {
@@ -85,11 +128,7 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 val value = sharedPreferences?.getString(key, "")
                 value?.let {
 
-                    val separator = if (System.getProperty("line.separator") == null) {
-                        "\n"
-                    } else {
-                        System.getProperty("line.separator")
-                    }
+                    val separator = System.getProperty("line.separator") ?: "\n"
 
                     val entryArray = value.split(separator)
 

@@ -15,10 +15,9 @@ import pw.dvd604.music.util.Util
 class HTTP(context: Context?) {
 
     companion object {
-        var address: String? = null
+        private var address: String? = null
         fun setup(addr: String) {
             address = addr
-            Util.log(this, addr)
         }
 
         private const val songAPI: String = "/api/song"

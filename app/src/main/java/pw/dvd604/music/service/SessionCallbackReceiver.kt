@@ -71,20 +71,13 @@ class SessionCallbackReceiver(private val service: MediaService) :
     }
 
     override fun onPlayFromSearch(query: String?, extras: Bundle?) {
-        Util.log(this, "Got search $query")
-
         val songs = SearchHandler.search(query)
 
         if (songs.isEmpty()) {
             service.nextSong()
             return
         }
-
-        Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
-
-        Util.log(this, "preparing")
-
-        onPrepareFromUri(Uri.parse(Util.songToUrl(songs[0])), null)
+        onPrepareFromUri(Uri.parse(songs[0].toUrl()), null)
     }
 
     override fun onPrepareFromSearch(query: String?, extras: Bundle?) {
@@ -98,9 +91,14 @@ class SessionCallbackReceiver(private val service: MediaService) :
             service.currentMedia = extras.getSerializable("media") as Media
         } else {
             val splitURL = uri.toString().split('/')
-            service.currentMedia = SongList.songList.filter {
-                it.id == splitURL[splitURL.size - 1]
-            }[0]
+
+            service.currentMedia = try {
+                SongList.songList.filter {
+                    it.id == splitURL[splitURL.size - 1]
+                }[0]
+            } catch (e: Exception) {
+                SongList.songList.random()
+            }
         }
 
         Util.addSongToStack(service.currentMedia)
@@ -240,6 +238,7 @@ class SessionCallbackReceiver(private val service: MediaService) :
         // Update metadata and state
         // pause the player (custom call)
         service.player.pause()
+        service.buildNotification()
 
         service.mediaSession.setPlaybackState(
             PlaybackStateCompat.Builder().setState(

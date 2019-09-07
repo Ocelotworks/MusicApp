@@ -22,6 +22,7 @@ import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.network.HTTP
+import pw.dvd604.music.util.network.SearchAllListener
 import pw.dvd604.music.util.network.SongListRequest
 import java.io.File
 
@@ -59,7 +60,8 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         return view
     }
 
-    fun changeTextColour(btn: Int) {
+    fun updateSearchMode(btn: Int) {
+        searchMode = btn
         this.view?.let {
             val buttons = arrayOf(R.id.btnTitle, R.id.btnAlbum, R.id.btnGenre, R.id.btnArtist)
 
@@ -90,7 +92,8 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt("scrolly", mediaList.firstVisiblePosition)
+        if (mediaList != null)
+            outState.putInt("scrolly", mediaList.firstVisiblePosition)
 
         super.onSaveInstanceState(outState)
     }
@@ -100,7 +103,16 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     override fun afterTextChanged(text: Editable?) {
         text?.let {
             if (it.isEmpty()) {
-                setSongs()
+                val mediaType = Util.viewIDToDataType(searchMode)
+
+                if (mediaType != MediaType.SONG) {
+                    http?.getReq(
+                        HTTP.getAllMedia(mediaType),
+                        SearchAllListener(mediaType, ::setSongs)
+                    )
+                } else {
+                    setSongs()
+                }
                 return
             }
             http?.getReq(HTTP.search(it.toString()), SearchListener(this))
@@ -114,12 +126,12 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         val media: Media = songAdapter.getItemAtPosition(position)
         val activity = this.activity as MainActivity
 
-        MusicApplication.track("Media play", Util.songToJson(media).toString())
+        MusicApplication.track("Media play", media.toJson().toString())
 
         if (media.type == MediaType.SONG) {
             MediaControllerCompat.getMediaController(activity)
-                .transportControls.prepareFromUri(Uri.parse(Util.songToUrl(media)), null)
-            Util.log(this, Util.songToUrl(media))
+                .transportControls.prepareFromUri(Uri.parse(media.toUrl()), null)
+
         } else {
             //Open sub media fragment
             (this.activity as MainActivity).createSubFragment(
@@ -175,7 +187,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
             }
             "Remove from local storage" -> {
                 if (Util.downloader.hasSong(media)) {
-                    val file = File(Util.songToPath(media))
+                    val file = File(media.toPath())
                     file.delete()
 
                     Util.report("Deleted song!", this.activity as MainActivity, true)
@@ -237,11 +249,11 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
 
             for (i in 0 until array.length()) {
                 val songJSON = array.getJSONObject(i)
-                var media: Media? = null
+                var media = Media()
 
                 when (songFragment.searchMode) {
                     R.id.btnTitle -> {
-                        media = Util.jsonToSong(songJSON)
+                        media.fromJson(json)
                     }
                     R.id.btnArtist,
                     R.id.btnGenre,
@@ -259,8 +271,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                     }
                 }
 
-                media?.let { data.add(it) }
-
+                data.add(media)
             }
             songFragment.setSongs(data)
         }

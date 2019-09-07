@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.util.Settings
-import pw.dvd604.music.util.Util
 import java.io.File
 
 
@@ -19,7 +18,7 @@ class Downloader(val context: Context) {
     }
 
     fun hasSong(media: Media?): Boolean {
-        return File(Util.songToPath(media!!)).exists()
+        return File(media!!.toPath()).exists()
     }
 
     fun addToQueue(media: Media) {

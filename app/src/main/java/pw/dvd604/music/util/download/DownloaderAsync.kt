@@ -24,13 +24,13 @@ class DownloaderAsync(
         try {
             //Open the connection to the media
             if (type == MediaType.SONG) {
-                if (File(Util.songToPath(media)).exists()) return null
+                if (File(media.toPath()).exists()) return null
             }
 
             val url = if (type == MediaType.SONG) {
-                URL(Util.songToUrl(media))
+                URL(media.toUrl())
             } else {
-                URL(Util.songToAlbumURL(media))
+                URL(media.toAlbumUrl())
             }
 
             val connection: URLConnection = url.openConnection()
@@ -43,9 +43,9 @@ class DownloaderAsync(
 
             val outStream = FileOutputStream(
                 if (type == MediaType.SONG) {
-                    Util.songToPath(media)
+                    media.toPath()
                 } else {
-                    Util.albumToPath(media)
+                    media.toAlbumPath()
                 }
             )
 
@@ -73,7 +73,6 @@ class DownloaderAsync(
             outStream.close()
             downStream.close()
         } catch (e: Exception) {
-            Util.log(this, "DownloaderAsync did that thing again")
             Util.log(this, e.localizedMessage)
             failed = true
         }

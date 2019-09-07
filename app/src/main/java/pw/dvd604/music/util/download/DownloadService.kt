@@ -43,7 +43,7 @@ class DownloadService : Service() {
             for (song in queue) {
                 while (downloadingCount > 3 || pauseDownload()) {/*Wait*/
                 }
-                Util.log(this, "Starting")
+
                 DownloaderAsync(song, ::onUpdate, ::onComplete).execute()
                 downloadingCount++
 

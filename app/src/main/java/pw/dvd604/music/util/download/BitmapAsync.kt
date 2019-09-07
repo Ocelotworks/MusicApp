@@ -11,7 +11,7 @@ import java.net.URL
 
 class BitmapAsync(
     private val nowPlayingFragment: NowPlayingFragment?,
-    val autoPost: Boolean = true
+    private val autoPost: Boolean = true
 ) : AsyncTask<String, Void, Bitmap>() {
 
     override fun doInBackground(vararg urls: String?): Bitmap? {

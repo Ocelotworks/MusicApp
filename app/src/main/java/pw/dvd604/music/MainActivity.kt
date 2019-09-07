@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_songs.*
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.fragment.*
@@ -45,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Settings.getSetting(server)?.let { HTTP.setup(it) }
+        Settings.getSetting(server).let { HTTP.setup(it) }
         Util.downloader = Downloader(this.applicationContext)
 
         //Insert actual fragments into shell containers
@@ -71,7 +73,6 @@ class MainActivity : AppCompatActivity() {
             try {
                 settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
             } catch (e: Exception) {
-                Util.log(this, "Settings threw an exception. Likely first run")
             }
         }.start()
     }
@@ -79,8 +80,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        //startForegroundService(Intent(this, MediaService::class.java))
-
+        sliding_layout.setScrollableView(mediaList)
         if (Settings.getBoolean(Settings.update)) {
             Updater(this).checkUpdate()
         }
@@ -118,7 +118,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun populateSongList() {
-        val fileContents = Util.readFromFile(this, "songList")
+        SongList.isBuilding = true
+        val fileContents = Util.readFromFile(this, "mediaList")
 
         if (fileContents != null) {
             SongListRequest(::setSongs).onResponse(fileContents)
@@ -159,8 +160,7 @@ class MainActivity : AppCompatActivity() {
             R.id.btnAlbum,
             R.id.btnGenre,
             R.id.btnArtist -> {
-                songFragment.changeTextColour(v.id)
-                songFragment.searchMode = v.id
+                songFragment.updateSearchMode(v.id)
                 return
             }
 

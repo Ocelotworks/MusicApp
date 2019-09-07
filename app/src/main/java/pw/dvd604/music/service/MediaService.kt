@@ -1,5 +1,6 @@
 package pw.dvd604.music.service
 
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioFocusRequest
@@ -8,6 +9,7 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
@@ -39,9 +41,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private var queuePosition: Int = 0
 
     lateinit var afChangeListener: AudioManager.OnAudioFocusChangeListener
-    val noisyAudioStreamReceiver =
+    private val noisyAudioStreamReceiver =
         BecomingNoisyReceiver(this)
-    val pwIntentReceiver = MusicIntentController(this)
+    private val pwIntentReceiver = MusicIntentController(this)
     lateinit var mediaSession: MediaSessionCompat
     lateinit var player: MediaPlayer
 
@@ -73,8 +75,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
         http = HTTP(this)
 
-        if (SongList.songList.isEmpty()) {
-            Util.log(this, "Probably bound by an external media controller")
+        if (SongList.songList.isEmpty() && !SongList.isBuilding) {
             Settings.init(this)
             Util.downloader = Downloader(this.applicationContext)
             HTTP.setup(Settings.getSetting(Settings.server))
@@ -95,9 +96,15 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             setOnSeekCompleteListener(this@MediaService)
         }
 
+        val sessionActivityPendingIntent =
+            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
+                PendingIntent.getActivity(this, 0, sessionIntent, 0)
+            }
+
         // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, "petify").apply {
-
+            setSessionActivity(sessionActivityPendingIntent)
+            setRatingType(RatingCompat.RATING_NONE)
             // Enable callbacks from MediaButtons and TransportControls
             setFlags(
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
@@ -116,17 +123,21 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                             or PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
                             or PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH
                             or PlaybackStateCompat.ACTION_PREPARE
+                            or PlaybackStateCompat.ACTION_PLAY
+                            or PlaybackStateCompat.ACTION_PAUSE
+                            or PlaybackStateCompat.ACTION_STOP
+                    //or PlaybackStateCompat.ACTION_SET_REPEAT_MODE
                 )
 
+            stateBuilder.addCustomAction("shuffle", "Set shuffle mode", R.drawable.ic_notification)
+            stateBuilder.addCustomAction("likesong", "Like song", R.drawable.ic_notification)
+            stateBuilder.addCustomAction("setQueue", "Set Queue", R.drawable.ic_notification)
+
             setPlaybackState(stateBuilder.build())
-
-
             // Set the session's token so that client activities can communicate with it.
             setSessionToken(sessionToken)
         }
         mediaSession.setCallback(SessionCallbackReceiver(this))
-
-        //buildNotification()
     }
 
     fun buildNotification() {
@@ -220,6 +231,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     private fun populateSongList() {
+        SongList.isBuilding = true
         val fileContents = Util.readFromFile(this, "mediaList")
 
         if (fileContents != null) {
@@ -229,7 +241,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     override fun onDestroy() {
         super.onDestroy()
-        noisyAudioStreamReceiver.unregister(this)
+        unregisterReceivers()
     }
 
     private fun setSongs(arrayList: ArrayList<Media>) {
@@ -255,11 +267,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             "root" -> {
                 val mediaList = ArrayList<MediaBrowserCompat.MediaItem>(0)
                 for (song in SongList.songList) {
-                    mediaList.add(Util.songToMediaItem(song))
+                    mediaList.add(song.toMediaItem())
                 }
-
-                Util.log(this, "returning 50 children")
-
                 result.sendResult(mediaList.subList(0, 50))
             }
         }
@@ -270,17 +279,14 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         extras: Bundle?,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        Util.log(this, "Got search $query")
         val songs = SearchHandler.search(query)
 
         if (songs.isEmpty()) result.sendResult(null)
 
         val mediaList = ArrayList<MediaBrowserCompat.MediaItem>(0)
         for (song in songs) {
-            mediaList.add(Util.songToMediaItem(song))
+            mediaList.add(song.toMediaItem())
         }
-
-        Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
 
         result.sendResult(mediaList)
     }
@@ -309,7 +315,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 }
 
             val nextMedia: Media = list[nextSongIndex]
-            val url: String = Util.songToUrl(nextMedia)
+            val url: String = nextMedia.toUrl()
 
             mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
         } else {
@@ -337,7 +343,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                         return
                     }
 
-                    val url: String = Util.songToUrl(nextMedia)
+                    val url: String = nextMedia.toUrl()
 
                     mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
                 }
@@ -347,7 +353,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     fun prevSong() {
         val nextMedia: Media = Util.popSongStack()
-        val url: String = Util.songToUrl(nextMedia)
+        val url: String = nextMedia.toUrl()
 
         mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
     }
@@ -357,6 +363,12 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
+        mediaSession.setPlaybackState(
+            PlaybackStateCompat.Builder().setErrorMessage(
+                what,
+                "Some error"
+            ).build()
+        )
         return true
     }
 

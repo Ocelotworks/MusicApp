@@ -22,6 +22,7 @@ class Settings {
         const val buildName = "buildName"
         const val shuffleOffline = "shuffleOffline"
         const val blacklist = "blacklist"
+        const val developer = "developerOptions"
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             server to BuildConfig.defaultURL,
@@ -33,10 +34,10 @@ class Settings {
             crashReports to true,
             useIntents to false,
             update to true,
-            buildName to "release",
             shuffle to true,
             shuffleOffline to true,
-            blacklist to ""
+            blacklist to "",
+            developer to false
         )
 
         var prefs: SharedPreferences? = null
@@ -53,10 +54,6 @@ class Settings {
                     defaultValue
                 }
             ) ?: prefDefault[name] as String
-        }
-
-        fun setSetting(name: String, value: String) {
-            prefs?.edit()?.putString(name, value)?.apply()
         }
 
         fun getBoolean(setting: String): Boolean {

@@ -16,6 +16,8 @@ class SongList {
         var translationMap = HashMap<String, String>(0)
         var filterMap = HashMap<String, MediaType>(0)
 
+        var isBuilding: Boolean = false
+
         fun generateMaps(
             arrayList: ArrayList<Media>
         ) {
@@ -83,19 +85,18 @@ class SongList {
 
         fun discoverDownloadedSongs() {
             val path = Settings.getSetting(Settings.storage)
-            path?.let {
-                val directory = File(it)
+            val directory = File(path)
 
-                for (f in directory.listFiles()) {
-                    val songID = f.name
-                    val songObj = songList.filter { song ->
-                        song.id == songID
-                    }
-
-                    if (songList.size > 0) {
-                        downloadedSongs.addAll(songObj)
-                    }
+            for (f in directory.listFiles()) {
+                val songID = f.name
+                val songObj = songList.filter { song ->
+                    song.id == songID
                 }
+
+                if (songList.size > 0) {
+                    downloadedSongs.addAll(songObj)
+                }
+
             }
         }
     }

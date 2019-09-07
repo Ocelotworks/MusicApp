@@ -6,17 +6,13 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.pm.PackageInfoCompat
-import com.android.volley.Response
-import org.json.JSONObject
 import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.R
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
-import pw.dvd604.music.util.network.HTTP
 
 
-class Updater(val context: Context) : Response.Listener<String> {
+class Updater(val context: Context) {
 
     private val channelId: String = context.getString(R.string.petify_update_channel)
     private val notificationId: Int = 696902
@@ -31,24 +27,7 @@ class Updater(val context: Context) : Response.Listener<String> {
     }
 
     fun checkUpdate() {
-        val http = HTTP(context)
-        http.getReq(BuildConfig.versionURL, this)
-    }
-
-    override fun onResponse(response: String?) {
-        val json = JSONObject(response)
-
-        try {
-            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            val version: Int = PackageInfoCompat.getLongVersionCode(pInfo).toInt()
-
-            if (json.getInt(Settings.getSetting(Settings.buildName)) > version) {
-                buildNotification(json.getInt(Settings.getSetting(Settings.buildName)))
-            }
-        } catch (e: Exception) {
-            Util.log(this, "Incorrect build name given")
-        }
-
+        //TODO
     }
 
     private fun buildNotification(version: Int) {
