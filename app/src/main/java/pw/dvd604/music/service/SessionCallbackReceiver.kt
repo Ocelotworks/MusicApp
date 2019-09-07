@@ -71,19 +71,12 @@ class SessionCallbackReceiver(private val service: MediaService) :
     }
 
     override fun onPlayFromSearch(query: String?, extras: Bundle?) {
-        Util.log(this, "Got search $query")
-
         val songs = SearchHandler.search(query)
 
         if (songs.isEmpty()) {
             service.nextSong()
             return
         }
-
-        Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
-
-        Util.log(this, "preparing")
-
         onPrepareFromUri(Uri.parse(songs[0].toUrl()), null)
     }
 

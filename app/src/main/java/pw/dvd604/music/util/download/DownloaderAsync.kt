@@ -73,7 +73,6 @@ class DownloaderAsync(
             outStream.close()
             downStream.close()
         } catch (e: Exception) {
-            Util.log(this, "DownloaderAsync did that thing again")
             Util.log(this, e.localizedMessage)
             failed = true
         }

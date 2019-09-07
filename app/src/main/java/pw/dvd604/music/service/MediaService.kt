@@ -76,7 +76,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         http = HTTP(this)
 
         if (SongList.songList.isEmpty() && !SongList.isBuilding) {
-            Util.log(this, "Probably bound by an external media controller")
             Settings.init(this)
             Util.downloader = Downloader(this.applicationContext)
             HTTP.setup(Settings.getSetting(Settings.server))
@@ -270,9 +269,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 for (song in SongList.songList) {
                     mediaList.add(song.toMediaItem())
                 }
-
-                Util.log(this, "returning 50 children")
-
                 result.sendResult(mediaList.subList(0, 50))
             }
         }
@@ -283,7 +279,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         extras: Bundle?,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        Util.log(this, "Got search $query")
         val songs = SearchHandler.search(query)
 
         if (songs.isEmpty()) result.sendResult(null)
@@ -292,8 +287,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         for (song in songs) {
             mediaList.add(song.toMediaItem())
         }
-
-        Util.log(this, "${songs.size} entry 0: ${songs[0].generateText()}")
 
         result.sendResult(mediaList)
     }

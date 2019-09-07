@@ -131,7 +131,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         if (media.type == MediaType.SONG) {
             MediaControllerCompat.getMediaController(activity)
                 .transportControls.prepareFromUri(Uri.parse(media.toUrl()), null)
-            Util.log(this, media.toUrl())
+
         } else {
             //Open sub media fragment
             (this.activity as MainActivity).createSubFragment(

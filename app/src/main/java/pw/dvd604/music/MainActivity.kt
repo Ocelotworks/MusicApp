@@ -71,7 +71,6 @@ class MainActivity : AppCompatActivity() {
             try {
                 settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
             } catch (e: Exception) {
-                Util.log(this, "Settings threw an exception. Likely first run")
             }
         }.start()
     }
@@ -120,7 +119,6 @@ class MainActivity : AppCompatActivity() {
         val fileContents = Util.readFromFile(this, "mediaList")
 
         if (fileContents != null) {
-            Util.log(this, fileContents)
             SongListRequest(::setSongs).onResponse(fileContents)
         }
 

@@ -31,7 +31,6 @@ class FilterMapRequest(
             } catch (e: Exception) {
                 //Something is really broken here
                 broken = true
-                Util.log(this, "${Util.dataTypeToString(type)} List is really broken. Purging")
             }
         }
 
