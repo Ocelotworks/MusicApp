@@ -84,7 +84,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
 
     var lastName: String = ""
     var lastArtist: String = ""
-    var newSong = false
+    var newSong = true
 
     private fun updateUI(metadata: MediaMetadataCompat?) {
         songName.text = metadata?.description?.title
@@ -92,7 +92,8 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         songDuration.text =
             Util.prettyTime(metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION))
 
-        newSong = (lastName == songName.text.toString() && lastArtist == songAuthor.text.toString())
+        newSong =
+            !(lastName == songName.text.toString() && lastArtist == songAuthor.text.toString())
 
         metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)?.let {
             songProgress.max = it.toInt()
@@ -105,24 +106,22 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         if (!(newSong || forceBitmapUpdate)) return
         //This is because the bitmap decoding code is heavy, and shouldn't be run every second
 
+        forceBitmapUpdate = false
+
         lastName = songName.text.toString()
         lastArtist = songAuthor.text.toString()
 
         MusicApplication.track("Media play", "$lastName - $lastArtist")
 
         val filePath = Util.albumURLToAlbumPath(metadata.description?.iconUri.toString())
-        Util.log(this, filePath)
+
         val file = File(filePath)
 
-        Util.log(this, filePath)
-
-        if (file.exists() && Settings.getBoolean(Settings.offlineAlbum)) {
+        if (file.exists()) {
             postImage(BitmapFactory.decodeFile(file.canonicalPath))
         } else {
             BitmapAsync(this).execute(metadata.description?.iconUri.toString())
         }
-
-        forceBitmapUpdate = false
     }
 
     fun postImage(bmp: Bitmap?) {

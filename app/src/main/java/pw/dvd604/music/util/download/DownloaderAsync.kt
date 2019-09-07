@@ -30,7 +30,7 @@ class DownloaderAsync(
             val url = if (type == MediaType.SONG) {
                 URL(media.toUrl())
             } else {
-                URL(media.toAlbumPath())
+                URL(media.toAlbumUrl())
             }
 
             val connection: URLConnection = url.openConnection()
