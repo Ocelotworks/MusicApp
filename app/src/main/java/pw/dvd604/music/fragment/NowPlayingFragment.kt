@@ -84,12 +84,15 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
 
     var lastName: String = ""
     var lastArtist: String = ""
+    var newSong = false
 
     private fun updateUI(metadata: MediaMetadataCompat?) {
         songName.text = metadata?.description?.title
         songAuthor.text = metadata?.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
         songDuration.text =
             Util.prettyTime(metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION))
+
+        newSong = (lastName == songName.text.toString() && lastArtist == songAuthor.text.toString())
 
         metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)?.let {
             songProgress.max = it.toInt()
@@ -99,10 +102,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         songProgress.progress = metadata.getLong("progress").toInt() / 1000
 
         //let the metadata update to here, including progress. Stop if it's not a new media
-        if (lastName == songName.text.toString() && lastArtist == songAuthor.text.toString()) {
-            if (!forceBitmapUpdate)
-                return
-        }
+        if (!(newSong || forceBitmapUpdate)) return
         //This is because the bitmap decoding code is heavy, and shouldn't be run every second
 
         lastName = songName.text.toString()

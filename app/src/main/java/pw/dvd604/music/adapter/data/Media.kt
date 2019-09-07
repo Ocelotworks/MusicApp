@@ -138,7 +138,7 @@ data class Media(
     }
 
     /**Takes a Media object, and returns the POTENTIAL local path based off media ID
-     * This isn't a given that the file will exist, only that it might be there, or it should be but in this path
+     * This isn't a given that the file will exist, only that it might be there, or it should be put in this path
      * @return String, the path to the media**/
     fun toPath(): String {
         return "${Settings.getSetting(Settings.storage)}/${id}"
