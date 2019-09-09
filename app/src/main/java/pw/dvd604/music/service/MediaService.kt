@@ -129,7 +129,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                     //or PlaybackStateCompat.ACTION_SET_REPEAT_MODE
                 )
 
-            stateBuilder.addCustomAction("shuffle", "Set shuffle mode", R.drawable.ic_notification)
             stateBuilder.addCustomAction("likesong", "Like song", R.drawable.ic_notification)
             stateBuilder.addCustomAction("setQueue", "Set Queue", R.drawable.ic_notification)
 
@@ -309,7 +308,11 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
             val nextSongIndex: Int =
                 if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
-                    Random.nextInt(list.size)
+                    var temp: Int
+                    do {
+                        temp = Random.nextInt(list.size)
+                    } while (temp == currentSongIndex)
+                    temp
                 } else {
                     (currentSongIndex + 1) % list.size
                 }
