@@ -55,7 +55,7 @@ data class Media(
     /**Creates a Media object from a JSON string
      * @param [json] The json object
      * @return Media**/
-    fun fromJson(json: JSONObject) {
+    fun fromJson(json: JSONObject): Media {
         name = safeGet(json, "title")
         author = safeGet(json, "name")
         id = safeGet(json, "song_id")
@@ -63,6 +63,7 @@ data class Media(
         genre = safeGet(json, "genre")
         artistID = safeGet(json, "artist_id")
         hash = safeGet(json, "hash")
+        return this
     }
 
     private fun safeGet(json: JSONObject, key: String): String {
@@ -77,7 +78,7 @@ data class Media(
 
     /**Creates a JSON object from this Media
      * @return JSONObject**/
-    fun toJson(): JSONObject? {
+    fun toJson(): JSONObject {
         return JSONObject()
             .put("title", name)
             .put("name", author)
