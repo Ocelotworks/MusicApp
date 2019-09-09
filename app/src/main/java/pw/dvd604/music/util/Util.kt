@@ -27,7 +27,7 @@ class Util {
         /**Used to track the previous songs played**/
         private val previousSongs = ArrayList<Media>(0)
         /**Used to track the mediaQueue**/
-        var mediaQueue: ArrayList<Media>? = null
+        var mediaQueue: ArrayList<Media> = ArrayList(0)
         /**Instance of the Downloader**/
         @SuppressLint("StaticFieldLeak") //TODO: Fix this better later
         lateinit var downloader: Downloader

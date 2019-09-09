@@ -31,13 +31,14 @@ import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
 
-    var inSettings: Boolean = false
+    private var inSettings: Boolean = false
+    private var inQueue: Boolean = false
     private var nowPlayingFragment: NowPlayingFragment = NowPlayingFragment()
     var songFragment: SongFragment = SongFragment()
     private lateinit var subSongFragment: SubSongFragment
     private lateinit var detailFragment: SongDetailFragment
     private var settingsFragment = SettingsFragment()
-    private var menuItem: MenuItem? = null
+    private var queueFragment = QueueFragment()
     private val permissionsResult: Int = 1
     private var homeLab: Boolean = false
     private lateinit var http: HTTP
@@ -155,6 +156,8 @@ class MainActivity : AppCompatActivity() {
             "Button Click",
             Util.generatePayload(arrayOf("button"), arrayOf(Util.idToString(v.id)))
         )
+        val pbState = this.mediaController.playbackState?.state
+
         when (v.id) {
             R.id.btnTitle,
             R.id.btnAlbum,
@@ -165,7 +168,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.btnPause -> {
-                val pbState = this.mediaController.playbackState?.state
                 if (pbState == PlaybackStateCompat.STATE_PAUSED or PlaybackStateCompat.STATE_PLAYING) {
                     if (pbState == PlaybackStateCompat.STATE_PLAYING) {
                         mediaController.transportControls.pause()
@@ -176,14 +178,12 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             R.id.btnNext -> {
-                val pbState = this.mediaController.playbackState?.state
                 if (pbState == PlaybackStateCompat.STATE_PLAYING or PlaybackStateCompat.STATE_PAUSED) {
                     mediaController.transportControls.skipToNext()
                 }
                 return
             }
             R.id.btnPrev -> {
-                val pbState = this.mediaController.playbackState?.state
                 if (pbState == PlaybackStateCompat.STATE_PLAYING or PlaybackStateCompat.STATE_PAUSED) {
                     mediaController.transportControls.skipToPrevious()
                 }
@@ -240,30 +240,48 @@ class MainActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        R.id.actionSettings -> {
-            // User chose the "Settings" item, show the app settings UI...
-            //By replacing the now playing fragment with the settings fragment
-            //and hiding the menu item
-            val fM = this.supportFragmentManager
-            val fT = fM.beginTransaction()
-            fT.replace(R.id.fragmentContainer, settingsFragment)
-            fT.commit()
-            inSettings = true
-            item.isVisible = false
-            menuItem = item
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-            supportActionBar?.let {
-                it.title = "Settings"
-            }
-            true
+        if (inSettings || inQueue) {
+            return super.onOptionsItemSelected(item)
         }
-        else -> {
-            // If we got here, the user's action was not recognized.
-            // Invoke the superclass to handle it.
-            super.onOptionsItemSelected(item)
+
+        return when (item.itemId) {
+            R.id.actionSettings -> {
+                // User chose the "Settings" item, show the app settings UI...
+                //By replacing the now playing fragment with the settings fragment
+                //and hiding the menu item
+                val fM = this.supportFragmentManager
+                val fT = fM.beginTransaction()
+                fT.replace(R.id.fragmentContainer, settingsFragment)
+                fT.commit()
+                inSettings = true
+
+                supportActionBar?.let {
+                    it.title = "Settings"
+                }
+                true
+            }
+            R.id.actionQueue -> {
+                val fM = this.supportFragmentManager
+                val fT = fM.beginTransaction()
+                fT.replace(R.id.fragmentContainer, queueFragment)
+                fT.commit()
+                inQueue = true
+
+                supportActionBar?.let {
+                    it.title = "Song Queue"
+                }
+                true
+            }
+            else -> {
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                super.onOptionsItemSelected(item)
+            }
         }
     }
+
 
     override fun onBackPressed() {
         when {
@@ -276,14 +294,24 @@ class MainActivity : AppCompatActivity() {
                 fT.replace(R.id.fragmentContainer, nowPlayingFragment)
                 fT.commit()
                 inSettings = false
-                menuItem?.let {
-                    it.isVisible = true
-                }
+
                 supportActionBar?.let {
                     it.title = resources.getString(R.string.app_name)
                 }
 
                 report("Settings changes require an app restart to take effect", true)
+            }
+            inQueue -> {
+                val fM = this.supportFragmentManager
+                val fT = fM.beginTransaction()
+
+                fT.replace(R.id.fragmentContainer, nowPlayingFragment)
+                fT.commit()
+                inQueue = false
+
+                supportActionBar?.let {
+                    it.title = resources.getString(R.string.app_name)
+                }
             }
             else -> //Else let the system deal with the back button
                 super.onBackPressed()

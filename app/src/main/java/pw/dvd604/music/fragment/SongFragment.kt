@@ -196,7 +196,8 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                 }
             }
             "Add to queue" -> {
-                (activity as MainActivity).report("Not yet implemented", true)
+                Util.mediaQueue.add(media)
+                Util.report("Added!", this.activity as MainActivity, true)
             }
             "Go to album" -> {
                 (activity as MainActivity).createSubFragment(

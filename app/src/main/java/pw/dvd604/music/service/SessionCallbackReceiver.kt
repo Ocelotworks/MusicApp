@@ -63,10 +63,6 @@ class SessionCallbackReceiver(private val service: MediaService) :
             "likesong" -> {
                 service.http.putReq(HTTP.like(service.currentMedia?.id), JSONObject("{}"))
             }
-            "setQueue" -> {
-                service.hasQueue = true
-                service.mediaQueue = Util.mediaQueue
-            }
         }
     }
 
