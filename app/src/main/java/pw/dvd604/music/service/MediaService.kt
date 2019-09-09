@@ -327,7 +327,8 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
                 queuePosition = queue.indexOf(song) + 1 + attempts
 
-                if (queuePosition > queue.size) {
+                if (queuePosition >= queue.size) {
+                    Util.mediaQueue = ArrayList(0)
                     nextSong()
                     return
                 }
