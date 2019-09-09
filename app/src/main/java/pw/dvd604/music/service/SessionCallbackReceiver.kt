@@ -70,6 +70,10 @@ class SessionCallbackReceiver(private val service: MediaService) :
         }
     }
 
+    override fun onSetShuffleMode(shuffleMode: Int) {
+        service.mediaSession.setShuffleMode(shuffleMode)
+    }
+
     override fun onPlayFromSearch(query: String?, extras: Bundle?) {
         val songs = SearchHandler.search(query)
 
