@@ -180,6 +180,11 @@ class MainActivity : AppCompatActivity() {
             R.id.btnNext -> {
                 if (pbState == PlaybackStateCompat.STATE_PLAYING or PlaybackStateCompat.STATE_PAUSED) {
                     mediaController.transportControls.skipToNext()
+                } else {
+                    mediaController.transportControls.prepareFromUri(
+                        SongList.songList.random().toUri(),
+                        null
+                    )
                 }
                 return
             }
