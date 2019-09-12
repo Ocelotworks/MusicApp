@@ -152,4 +152,8 @@ data class Media(
         return "${Settings.getSetting(Settings.storage)}/album/${id}"
     }
 
+    fun toUri(): Uri {
+        return Uri.parse(this.toUrl())
+    }
+
 }
