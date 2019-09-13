@@ -24,4 +24,7 @@
     <string name="petify_music_channel">petify_music_channel</string>
     <string name="petify_download_channel">petify_download_channel</string>
     <string name="petify_update_channel">petify_update_channel</string>
+    <string name="petify_hash_channel">petify_hash_channel</string>
+    <string name="petify_hash_name">Hash</string>
+    <string name="petify_hash_description">Lorem Ipsum</string>
 </resources>

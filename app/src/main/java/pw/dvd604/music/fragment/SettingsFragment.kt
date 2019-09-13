@@ -1,5 +1,6 @@
 package pw.dvd604.music.fragment
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.preference.Preference
@@ -8,11 +9,11 @@ import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.MediaType
-import pw.dvd604.music.util.MD5
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.download.DownloaderAsync
+import pw.dvd604.music.util.download.HashService
 import java.io.File
 
 class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener,
@@ -58,26 +59,9 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 }
             }
             "checkHash" -> {
-                SongList.discoverDownloadedSongs()
-                var i = 0
-
-                Util.report("Hashing songs. Please wait", this.activity as MainActivity, true)
-
-                Thread {
-                    for (f in SongList.downloadedSongs) {
-                        val file = File(f.toPath())
-
-                        if (f.hash == "") break
-
-                        if (!MD5.checkMD5(f.hash, file)) {
-                            i++
-                            file.delete()
-                            Util.downloader.addToQueue(f)
-                        }
-                    }
-
-                    reportDone(i)
-                }.start()
+                Intent(this.context, HashService::class.java).also { intent ->
+                    this.context?.startService(intent)
+                }
                 true
             }
             "appCrash" -> {
@@ -105,20 +89,6 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 true
             }
             else -> false
-        }
-    }
-
-    private fun reportDone(i: Int) {
-        (this.activity as MainActivity).runOnUiThread {
-            Util.report(
-                "Discovered $i damaged songs. Redownloading...",
-                this.activity as MainActivity,
-                true
-            )
-            if (i > 0) {
-                Util.downloader.doQueue()
-            }
-            Util.log(this, "Finished hashing - $i songs failed")
         }
     }
 
