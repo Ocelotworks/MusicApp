@@ -23,6 +23,11 @@ class Settings {
         const val shuffleOffline = "shuffleOffline"
         const val blacklist = "blacklist"
         const val developer = "developerOptions"
+        const val running = "enableRunning"
+        const val stepTarget = "stepPM"
+        const val runningMargin = "marginOfError"
+        const val minSongSpeed = "minSongSpeed"
+        const val maxSongSpeed = "maxSongSpeed"
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             server to BuildConfig.defaultURL,
@@ -37,7 +42,12 @@ class Settings {
             shuffle to true,
             shuffleOffline to true,
             blacklist to "",
-            developer to false
+            developer to false,
+            running to false,
+            stepTarget to 100,
+            runningMargin to 50,
+            minSongSpeed to 50,
+            maxSongSpeed to 50
         )
 
         var prefs: SharedPreferences? = null
@@ -54,6 +64,12 @@ class Settings {
                     defaultValue
                 }
             ) ?: prefDefault[name] as String
+        }
+
+        fun getInt(name: String): Int {
+            return prefs?.getInt(
+                name, prefDefault[name] as Int
+            ) ?: prefDefault[name] as Int
         }
 
         fun appendSetting(name: String, text: String) {

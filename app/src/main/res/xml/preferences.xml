@@ -109,6 +109,39 @@
                 android:defaultValue="0"
                 android:key="developerOptions"
                 android:title="Developer Options" />
+
+        <PreferenceCategory android:title="Running mode [EXPERIMENTAL]">
+
+            <SwitchPreferenceCompat
+                    android:defaultValue="0"
+                    android:key="enableRunning"
+                    android:title="Enable" />
+
+            <SeekBarPreference
+                    android:defaultValue="100"
+                    android:max="200"
+                    android:key="stepPM"
+                    android:title="Target steps/minute" />
+
+            <SeekBarPreference
+                    android:defaultValue="10"
+                    android:max="70"
+                    android:key="marginOfError"
+                    android:title="Margin of error (%)" />
+
+            <SeekBarPreference
+                    android:defaultValue="50"
+                    android:max="100"
+                    android:key="minSongSpeed"
+                    android:title="Minimum playback speed (%)" />
+
+            <SeekBarPreference
+                    android:defaultValue="50"
+                    android:max="100"
+                    android:key="maxSongSpeed"
+                    android:title="Maximum playback speed (%)" />
+
+        </PreferenceCategory>
     </PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>
