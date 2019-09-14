@@ -19,6 +19,7 @@ import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
+import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.network.HTTP
@@ -157,14 +158,21 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         } else {
             menu.add(0, v.id, 0, "Remove from local storage")
         }
-        menu.add(0, v.id, 0, "Add to queue")
+
+        menu.add(1, v.id, 0, "Add to queue")
+
         if (media.type == MediaType.SONG) {
-            menu.add(0, v.id, 0, "Go to album")
-            menu.add(0, v.id, 0, "Go to artist")
-            menu.add(0, v.id, 0, "Media info")
+            menu.add(2, v.id, 0, "Go to album")
+            menu.add(2, v.id, 1, "Go to artist")
+            menu.add(2, v.id, 2, "Song info")
+        }
+        if (Util.isDeveloper()) {
+            menu.add(3, v.id, 0, "Blacklist")
         }
         return menu
     }
+
+    var setSongJob: Int = 0
 
     override fun onContextItemSelected(item: MenuItem?): Boolean {
         val position: Int = (item?.menuInfo as AdapterView.AdapterContextMenuInfo).position
@@ -177,10 +185,19 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                     Util.downloader.addToQueue(media)
                     Util.downloader.doQueue()
                 } else {
-                    http?.getReq(
-                        HTTP.getDetailedData(media),
-                        SongListRequest(::setContextSongs)
-                    )
+                    if (setSongJob == 0) {
+                        setSongJob = 1
+                        http?.getReq(
+                            HTTP.getDetailedData(media),
+                            SongListRequest(::setContextSongs)
+                        )
+                    } else {
+                        Util.report(
+                            "Network busy, please try again",
+                            this.activity as MainActivity,
+                            true
+                        )
+                    }
                 }
 
                 MusicApplication.track("Media Download", media.generateText())
@@ -196,7 +213,23 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                 }
             }
             "Add to queue" -> {
-                Util.mediaQueue.add(media)
+                if (media.type == MediaType.SONG) {
+                    Util.mediaQueue.add(media)
+                } else {
+                    if (setSongJob == 0) {
+                        setSongJob = 2
+                        http?.getReq(
+                            HTTP.getDetailedData(media),
+                            SongListRequest(::setContextSongs)
+                        )
+                    } else {
+                        Util.report(
+                            "Network busy, please try again",
+                            this.activity as MainActivity,
+                            true
+                        )
+                    }
+                }
                 Util.report("Added!", this.activity as MainActivity, true)
             }
             "Go to album" -> {
@@ -214,6 +247,13 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
             "Media info" -> {
                 (activity as MainActivity).createDetailFragment(media)
             }
+            "Blacklist" -> {
+                Settings.appendSetting(
+                    Settings.blacklist,
+                    "\n${Util.dataTypeToString(media.type)}:${media.name}"
+                )
+                Util.report("Blacklisted!", this.activity as MainActivity, true)
+            }
 
         }
 
@@ -221,10 +261,20 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     }
 
     private fun setContextSongs(media: ArrayList<Media>) {
-        for (s in media) {
-            Util.downloader.addToQueue(s)
+        when (setSongJob) {
+            1 -> {
+                for (s in media) {
+                    Util.downloader.addToQueue(s)
+                }
+                Util.downloader.doQueue()
+            }
+            2 -> {
+                for (s in media) {
+                    Util.mediaQueue.add(s)
+                }
+            }
         }
-        Util.downloader.doQueue()
+        setSongJob = 0
     }
 
     fun downloadAll() {

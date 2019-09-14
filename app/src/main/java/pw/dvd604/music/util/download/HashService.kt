@@ -85,7 +85,7 @@ class HashService : Service() {
 
         with(NotificationManagerCompat.from(this)) {
             // notificationId is a unique int for each notification that you must define
-            if (progress == size) {
+            if (progress == size - 1) {
                 cancel(notificationId)
                 this@HashService.stopSelf()
             } else {

@@ -56,6 +56,11 @@ class Settings {
             ) ?: prefDefault[name] as String
         }
 
+        fun appendSetting(name: String, text: String) {
+            val oldText = prefs?.getString(name, prefDefault[name] as String)
+            prefs?.edit()?.putString(name, oldText + text)?.apply()
+        }
+
         fun getBoolean(setting: String): Boolean {
             return prefs?.getBoolean(setting, prefDefault[setting] as Boolean)!!
         }
