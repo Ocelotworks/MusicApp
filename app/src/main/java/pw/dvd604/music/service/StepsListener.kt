@@ -15,15 +15,25 @@ class StepsListener(private val mediaService: MediaService) : SensorEventListene
         var playbackSpeed = 1f
     }
 
+    init {
+        lastTime = Date().time
+    }
+
     override fun onSensorChanged(event: SensorEvent?) {
         event?.let { data ->
+
+            if (lastSteps == 0f) {
+                lastSteps = data.values[0]
+                return
+            }
+
             val newSteps = data.values[0]
             val newTime = Date().time
             val stepsDifference = newSteps - lastSteps
             val timeDifference = newTime - lastTime
             val timeInSeconds = timeDifference / 1000
 
-            if (true || timeInSeconds >= 10) {
+            if (timeInSeconds >= 10) {
                 val stepsPerMinute: Float = (stepsDifference / timeInSeconds) * 60
 
                 if (!(stepsPerMinute < 0 || stepsPerMinute == Float.NEGATIVE_INFINITY || stepsPerMinute == Float.POSITIVE_INFINITY)) {
@@ -56,10 +66,9 @@ class StepsListener(private val mediaService: MediaService) : SensorEventListene
                             )
                     }
                 }
+                lastTime = newTime
+                lastSteps = newSteps
             }
-
-            lastTime = newTime
-            lastSteps = newSteps
         }
     }
 
