@@ -37,10 +37,12 @@ class StepsListener(private val mediaService: MediaService) : SensorEventListene
                         val minSpeed = Settings.getInt(Settings.minSongSpeed)
                         val maxSpeed = Settings.getInt(Settings.maxSongSpeed)
                         if (stepsPerMinute < minMOE()) {
-                            playbackSpeed = abs((stepsPerMinute - minMOE()) / 100)
+                            playbackSpeed = target - abs((minMOE() - stepsPerMinute) / target)
+                            if (playbackSpeed < minSpeed / 100) playbackSpeed = minSpeed / 100f
                         }
                         if (stepsPerMinute > maxMOE()) {
-                            playbackSpeed = abs((maxMOE() - stepsPerMinute) / 100)
+                            playbackSpeed = target + abs((stepsPerMinute - maxMOE()) / target)
+                            if (playbackSpeed > maxSpeed / 100) playbackSpeed = maxSpeed / 100f
                         }
 
                     }
