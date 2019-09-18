@@ -300,11 +300,11 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
 
             for (i in 0 until array.length()) {
                 val songJSON = array.getJSONObject(i)
-                var media = Media()
+                lateinit var media: Media
 
                 when (songFragment.searchMode) {
                     R.id.btnTitle -> {
-                        media.fromJson(json)
+                        media = Media().fromJson(songJSON)
                     }
                     R.id.btnArtist,
                     R.id.btnGenre,

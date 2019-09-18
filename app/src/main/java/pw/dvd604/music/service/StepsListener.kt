@@ -82,7 +82,7 @@ class StepsListener(private val mediaService: MediaService) : SensorEventListene
         return target - (target * (moe / 100))
     }
 
-    fun maxMOE(): Int {
+    private fun maxMOE(): Int {
         val target = Settings.getInt(Settings.stepTarget)
         val moe = Settings.getInt(Settings.runningMargin)
         return target + (target * (moe / 100))
