@@ -28,6 +28,7 @@ class Settings {
         const val runningMargin = "marginOfError"
         const val minSongSpeed = "minSongSpeed"
         const val maxSongSpeed = "maxSongSpeed"
+        const val forceExperimentalLayouts = "forceLayouts"
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             server to BuildConfig.defaultURL,
@@ -47,7 +48,8 @@ class Settings {
             stepTarget to 100,
             runningMargin to 50,
             minSongSpeed to 50,
-            maxSongSpeed to 50
+            maxSongSpeed to 50,
+            forceExperimentalLayouts to false
         )
 
         var prefs: SharedPreferences? = null

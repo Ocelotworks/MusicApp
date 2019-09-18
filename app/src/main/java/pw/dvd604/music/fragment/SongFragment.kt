@@ -46,7 +46,13 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_songs, container, false)
+        val view = inflater.inflate(
+            if (!Settings.getBoolean(Settings.forceExperimentalLayouts)) {
+                R.layout.fragment_songs
+            } else {
+                R.layout.fragment_songs_experimental
+            }, container, false
+        )
 
         view.let {
             it.findViewById<EditText>(R.id.songSearch).addTextChangedListener(this)
