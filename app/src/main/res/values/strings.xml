@@ -28,4 +28,5 @@
     <string name="petify_hash_name">Hash</string>
     <string name="petify_hash_description">Lorem Ipsum</string>
     <string name="playlist">Playlist</string>
+    <string name="addQueue">Queue</string>
 </resources>
