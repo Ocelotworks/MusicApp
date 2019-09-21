@@ -22,4 +22,4 @@ jobs:
     - name: Build with Gradle
       run: |
         chmod +x gradlew
-        ./gradlew assembleDebug
+        ./gradlew assemble
