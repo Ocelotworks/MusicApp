@@ -10,7 +10,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Decrypt large secret
-      run: ./decrypt_secret.sh
+      run: |
+        chmod +x decrypt_secret.sh
+        ./decrypt_secret.sh
       env:
         APP_PROPS_SECRET: $
     - name: set up JDK 1.8
