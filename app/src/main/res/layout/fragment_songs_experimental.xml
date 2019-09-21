@@ -5,21 +5,22 @@
         android:layout_width="match_parent"
         android:background="@color/colorPrimary"
         android:layout_height="match_parent">
+
     <EditText
+            android:id="@+id/songSearch"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName"
-            android:ems="10"
-            android:id="@+id/songSearch"
             android:layout_marginStart="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp"
-            app:layout_constraintTop_toTopOf="parent"
-            android:textColor="@color/colorMainText"
+            android:layout_marginEnd="8dp"
+            android:ems="10"
             android:hint="@string/search"
             android:importantForAutofill="no"
+            android:inputType="textPersonName"
+            android:textColor="@color/colorMainText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:targetApi="o" />
 
     <ListView
@@ -27,79 +28,23 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnPlaylist" />
+            app:layout_constraintTop_toBottomOf="@+id/searchSpinner" />
 
-    <Button
-            android:id="@+id/btnTitle"
-            android:layout_width="0dp"
+    <Spinner
+            android:id="@+id/searchSpinner"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:background="@color/colorAccent"
-            android:minHeight="30dp"
-            android:onClick="onClick"
-            android:text="@string/title"
-            android:textColor="@color/colorPrimaryDark"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/songSearch" />
-
-    <Button
-            android:id="@+id/btnArtist"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:background="@color/colorAccent"
-            android:minHeight="30dp"
-            android:onClick="onClick"
-            android:text="@string/artist"
-            android:textColor="@color/colorMainText"
-            app:layout_constraintStart_toEndOf="@+id/btnTitle"
-            app:layout_constraintTop_toBottomOf="@+id/songSearch"
-            tools:text="@string/artist" />
-
-    <Button
-            android:id="@+id/btnGenre"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:background="@color/colorAccent"
-            android:minHeight="30dp"
-            android:onClick="onClick"
-            android:text="@string/genre"
-            android:textColor="@color/colorMainText"
-            app:layout_constraintStart_toEndOf="@+id/btnArtist"
-            app:layout_constraintTop_toBottomOf="@+id/songSearch" />
-
-    <Button
-            android:id="@+id/btnAlbum"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
-            android:background="@color/colorAccent"
-            android:minHeight="30dp"
-            android:onClick="onClick"
-            android:text="@string/album"
-            android:textColor="@color/colorMainText"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btnGenre"
+            android:entries="@array/searchEntries"
+            app:layout_constraintEnd_toEndOf="@+id/mediaList"
+            app:layout_constraintStart_toStartOf="@+id/mediaList"
             app:layout_constraintTop_toBottomOf="@+id/songSearch" />
 
-    <Button
-            android:id="@+id/btnPlaylist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@color/colorAccent"
-            android:minHeight="30dp"
-            android:onClick="onClick"
-            android:text="@string/playlist"
-            android:textColor="@color/colorMainText"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnGenre" />
 </androidx.constraintlayout.widget.ConstraintLayout>

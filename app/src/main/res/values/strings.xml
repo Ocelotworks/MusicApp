@@ -29,4 +29,12 @@
     <string name="petify_hash_description">Lorem Ipsum</string>
     <string name="playlist">Playlist</string>
     <string name="addQueue">Queue</string>
+    <string-array name="searchEntries">
+        <item>Song</item>
+        <item>Artist</item>
+        <item>Genre</item>
+        <item>Album</item>
+        <item>Playlist</item>
+        <item>All</item>
+    </string-array>
 </resources>
