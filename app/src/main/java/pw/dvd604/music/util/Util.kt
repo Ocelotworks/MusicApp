@@ -8,6 +8,7 @@ import android.os.Build
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import org.json.JSONObject
+import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Media
@@ -356,6 +357,10 @@ class Util {
                 id = json.getString("id"),
                 type = type
             )
+        }
+
+        fun isDeveloper(): Boolean {
+            return BuildConfig.DEBUG || Settings.getBoolean(Settings.developer)
         }
     }
 }

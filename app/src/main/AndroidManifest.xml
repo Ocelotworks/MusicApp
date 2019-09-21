@@ -39,6 +39,7 @@
         <service
                 android:name=".util.download.DownloadService"
                 android:exported="false" />
+        <service android:name=".util.download.HashService" />
 
         <receiver android:name="androidx.media.session.MediaButtonReceiver">
             <intent-filter>

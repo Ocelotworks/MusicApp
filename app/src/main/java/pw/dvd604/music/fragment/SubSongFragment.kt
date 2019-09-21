@@ -12,6 +12,7 @@ import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Media
+import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.network.HTTP
 import pw.dvd604.music.util.network.SongListRequest
@@ -38,7 +39,13 @@ class SubSongFragment : Fragment(), AdapterView.OnItemClickListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_sub_songs, container, false)
+        return inflater.inflate(
+            if (!Settings.getBoolean(Settings.forceExperimentalLayouts)) {
+                R.layout.fragment_sub_songs
+            } else {
+                R.layout.fragment_sub_songs_experimental
+            }, container, false
+        )
     }
 
     override fun onStart() {

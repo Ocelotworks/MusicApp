@@ -64,10 +64,6 @@
     <PreferenceCategory
             android:key="experimentalCategory"
             android:title="Developer settings">
-        <Preference
-                android:key="appCrash"
-                android:title="Test app crash" />
-
         <EditTextPreference
                 android:key="trackingID"
                 android:title="Change Tracking ID" />
@@ -109,6 +105,52 @@
                 android:defaultValue="0"
                 android:key="developerOptions"
                 android:title="Developer Options" />
+
+        <PreferenceCategory android:title="Experimental">
+
+            <Preference
+                    android:key="appCrash"
+                    android:title="Test app crash" />
+
+            <SwitchPreferenceCompat
+                    android:defaultValue="0"
+                    android:key="forceLayouts"
+                    android:summary="Really not recommended"
+                    android:title="Force Experimental Layouts" />
+
+            <PreferenceCategory android:title="Running mode [EXPERIMENTAL]">
+
+                <SwitchPreferenceCompat
+                        android:defaultValue="0"
+                        android:key="enableRunning"
+                        android:title="Enable" />
+
+                <SeekBarPreference
+                        android:defaultValue="100"
+                        android:key="stepPM"
+                        android:max="200"
+                        android:title="Target steps/minute" />
+
+                <SeekBarPreference
+                        android:defaultValue="10"
+                        android:key="marginOfError"
+                        android:max="70"
+                        android:title="Margin of error (%)" />
+
+                <SeekBarPreference
+                        android:defaultValue="50"
+                        android:key="minSongSpeed"
+                        android:max="100"
+                        android:title="Minimum playback speed (%)" />
+
+                <SeekBarPreference
+                        android:defaultValue="50"
+                        android:key="maxSongSpeed"
+                        android:max="100"
+                        android:title="Maximum playback speed (%)" />
+
+            </PreferenceCategory>
+        </PreferenceCategory>
     </PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>

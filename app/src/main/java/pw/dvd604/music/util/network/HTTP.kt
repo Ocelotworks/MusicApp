@@ -56,7 +56,7 @@ class HTTP(context: Context?) {
                 }
                 else -> {
                     //This shouldn't ever occur
-                    "/media/"
+                    "/song/"
                 }
             }
 
@@ -83,12 +83,13 @@ class HTTP(context: Context?) {
             return address + searchAPI + term
         }
 
+        @Deprecated(message = "Use local randomisation of songs to ensure offline play works")
         fun getQueue(): String? {
             return address + queueAPI
         }
 
         fun like(id: String?): String {
-            return "$address/media/$id/vote/like"
+            return "$address/song/$id/vote/like"
         }
 
         fun getDetailedData(media: Media): String? {
@@ -107,7 +108,7 @@ class HTTP(context: Context?) {
                 }
                 else -> {
                     //This shouldn't ever occur
-                    "/media/"
+                    "/song/"
                 }
             }
 

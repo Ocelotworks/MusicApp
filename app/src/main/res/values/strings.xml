@@ -24,4 +24,17 @@
     <string name="petify_music_channel">petify_music_channel</string>
     <string name="petify_download_channel">petify_download_channel</string>
     <string name="petify_update_channel">petify_update_channel</string>
+    <string name="petify_hash_channel">petify_hash_channel</string>
+    <string name="petify_hash_name">Hash</string>
+    <string name="petify_hash_description">Lorem Ipsum</string>
+    <string name="playlist">Playlist</string>
+    <string name="addQueue">Queue</string>
+    <string-array name="searchEntries">
+        <item>Song</item>
+        <item>Artist</item>
+        <item>Genre</item>
+        <item>Album</item>
+        <item>Playlist</item>
+        <item>All</item>
+    </string-array>
 </resources>

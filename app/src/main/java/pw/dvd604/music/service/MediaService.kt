@@ -1,8 +1,11 @@
 package pw.dvd604.music.service
 
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -36,8 +39,9 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
     lateinit var http: HTTP
     private var songList = SongList.songList
-    fun hasQueue(): Boolean = Util.mediaQueue.size > 0
+    private fun hasQueue(): Boolean = Util.mediaQueue.size > 0
     private var queuePosition: Int = 0
+    private var playbackSpeed: Float = 1f
 
     lateinit var afChangeListener: AudioManager.OnAudioFocusChangeListener
     private val noisyAudioStreamReceiver =
@@ -136,6 +140,19 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             setSessionToken(sessionToken)
         }
         mediaSession.setCallback(SessionCallbackReceiver(this))
+
+        if (Settings.getBoolean(Settings.running)) {
+            val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+            val sensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+
+            sensor?.also { steps ->
+                sensorManager.registerListener(
+                    StepsListener(this),
+                    steps,
+                    SensorManager.SENSOR_DELAY_FASTEST
+                )
+            }
+        }
     }
 
     fun buildNotification() {

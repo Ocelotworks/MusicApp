@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkServerPrefs() {
         if (Settings.getSetting(server) == Settings.getDefault(server)) {
-            //We're connecting to petify
+            //We're connecting to petify - chances of this not being the case are slim
             homeLab = false
         } else {
             //We're on a home lab, disable all advanced functions
