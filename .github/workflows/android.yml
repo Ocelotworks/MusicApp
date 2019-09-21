@@ -14,7 +14,7 @@ jobs:
         chmod +x decrypt_secret.sh
         ./decrypt_secret.sh
       env:
-        APP_PROPS_SECRET: $
+        APP_PROPS_SECRET: ${{ secrets.APP_PROPS_SECRET }}
     - name: set up JDK 1.8
       uses: actions/setup-java@v1
       with:
