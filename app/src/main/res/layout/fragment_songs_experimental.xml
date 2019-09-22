@@ -11,14 +11,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginTop="16dp"
             android:ems="10"
             android:hint="@string/search"
             android:importantForAutofill="no"
             android:inputType="textPersonName"
             android:textColor="@color/colorMainText"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/searchSpinner"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:targetApi="o" />
@@ -30,6 +29,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp"
+            tools:listitem="@layout/item_songlist"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -37,14 +37,13 @@
 
     <Spinner
             android:id="@+id/searchSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginEnd="8dp"
             android:entries="@array/searchEntries"
+            android:textAlignment="textStart"
+            app:layout_constraintBottom_toBottomOf="@+id/songSearch"
             app:layout_constraintEnd_toEndOf="@+id/mediaList"
-            app:layout_constraintStart_toStartOf="@+id/mediaList"
-            app:layout_constraintTop_toBottomOf="@+id/songSearch" />
+            app:layout_constraintTop_toTopOf="@+id/songSearch" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

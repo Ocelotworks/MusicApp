@@ -35,6 +35,5 @@
         <item>Genre</item>
         <item>Album</item>
         <item>Playlist</item>
-        <item>All</item>
     </string-array>
 </resources>

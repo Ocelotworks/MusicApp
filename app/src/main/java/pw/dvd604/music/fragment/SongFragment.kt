@@ -6,12 +6,11 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.*
-import android.widget.AdapterView
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ListView
+import android.widget.*
 import com.android.volley.Response
-import kotlinx.android.synthetic.main.fragment_songs.*
+import kotlinx.android.synthetic.main.fragment_songs.mediaList
+import kotlinx.android.synthetic.main.fragment_songs.songSearch
+import kotlinx.android.synthetic.main.fragment_songs_experimental.*
 import org.json.JSONObject
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.MusicApplication
@@ -26,12 +25,17 @@ import pw.dvd604.music.util.network.HTTP
 import pw.dvd604.music.util.network.SearchAllListener
 import pw.dvd604.music.util.network.SongListRequest
 import java.io.File
+import java.util.*
+import kotlin.collections.ArrayList
 
 class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
-    AdapterView.OnItemClickListener {
+    AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
+
+    @Deprecated(message = "Phased out in experimental layouts")
     var searchMode: Int = R.id.btnTitle
     var http: HTTP? = null
     //Search modes are how we translate button IDs to JSON array names
+    @Deprecated(message = "Phased out in experimental layouts")
     var searchModes = hashMapOf(
         R.id.btnTitle to "songs",
         R.id.btnArtist to "artists",
@@ -39,6 +43,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         R.id.btnAlbum to "albums"
     )
     private var state: Bundle? = null
+    private var experimental = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,6 +55,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
             if (!Settings.getBoolean(Settings.forceExperimentalLayouts)) {
                 R.layout.fragment_songs
             } else {
+                experimental = true
                 R.layout.fragment_songs_experimental
             }, container, false
         )
@@ -58,6 +64,9 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
             it.findViewById<EditText>(R.id.songSearch).addTextChangedListener(this)
             it.findViewById<ListView>(R.id.mediaList).onItemClickListener = this
             activity?.registerForContextMenu(it.findViewById(R.id.mediaList))
+
+            if (experimental) it.findViewById<Spinner>(R.id.searchSpinner).onItemSelectedListener =
+                this
         }
 
         http = HTTP(context)
@@ -67,7 +76,9 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         return view
     }
 
+    @Deprecated(message = "Phased out in experimental layouts")
     fun updateSearchMode(btn: Int) {
+        if (experimental) return
         searchMode = btn
         this.view?.let {
             val buttons = arrayOf(R.id.btnTitle, R.id.btnAlbum, R.id.btnGenre, R.id.btnArtist)
@@ -110,7 +121,11 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     override fun afterTextChanged(text: Editable?) {
         text?.let {
             if (it.isEmpty()) {
-                val mediaType = Util.viewIDToDataType(searchMode)
+                val mediaType = if (!experimental) {
+                    Util.viewIDToDataType(searchMode)
+                } else {
+                    Util.stringToDataType(searchSpinner.selectedItem as String)
+                }
 
                 if (mediaType != MediaType.SONG) {
                     http?.getReq(
@@ -124,6 +139,13 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
             }
             http?.getReq(HTTP.search(it.toString()), SearchListener(this))
         }
+    }
+
+    override fun onNothingSelected(parent: AdapterView<*>?) {
+    }
+
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        afterTextChanged(songSearch.editableText)
     }
 
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -178,7 +200,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         return menu
     }
 
-    var setSongJob: Int = 0
+    private var setSongJob: Int = 0
 
     override fun onContextItemSelected(item: MenuItem?): Boolean {
         val position: Int = (item?.menuInfo as AdapterView.AdapterContextMenuInfo).position
@@ -302,20 +324,54 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         override fun onResponse(response: String?) {
             val data = ArrayList<Media>()
             val json = JSONObject(response)
-            val array = json.getJSONArray(songFragment.searchModes[songFragment.searchMode])
+            if (!songFragment.experimental) {
+                val array = json.getJSONArray(songFragment.searchModes[songFragment.searchMode])
 
-            for (i in 0 until array.length()) {
-                val songJSON = array.getJSONObject(i)
-                lateinit var media: Media
+                for (i in 0 until array.length()) {
+                    val songJSON = array.getJSONObject(i)
+                    lateinit var media: Media
 
-                when (songFragment.searchMode) {
-                    R.id.btnTitle -> {
-                        media = Media().fromJson(songJSON)
+                    when (songFragment.searchMode) {
+                        R.id.btnTitle -> {
+                            media = Media().fromJson(songJSON)
+                        }
+                        R.id.btnArtist,
+                        R.id.btnGenre,
+                        R.id.btnAlbum -> {
+                            media = Media(
+                                songJSON.getString("name"),
+                                "",
+                                songJSON.getString("id"),
+                                "",
+                                "",
+                                "",
+                                "",
+                                Util.viewIDToDataType(songFragment.searchMode)
+                            )
+                        }
                     }
-                    R.id.btnArtist,
-                    R.id.btnGenre,
-                    R.id.btnAlbum -> {
-                        media = Media(
+
+                    data.add(media)
+                }
+            } else {
+                val searchType =
+                    Util.stringToDataType(songFragment.searchSpinner.selectedItem as String)
+                val array = json.getJSONArray(
+                    "${(songFragment.searchSpinner.selectedItem as String).toLowerCase(
+                        Locale.getDefault()
+                    )}s"
+                )
+
+                for (i in 0 until array.length()) {
+                    val songJSON = array.getJSONObject(i)
+                    lateinit var media: Media
+
+                    when (searchType) {
+                        MediaType.SONG -> media = Media().fromJson(songJSON)
+                        MediaType.ARTIST,
+                        MediaType.GENRE,
+                        MediaType.ALBUM,
+                        MediaType.PLAYLIST -> media = Media(
                             songJSON.getString("name"),
                             "",
                             songJSON.getString("id"),
@@ -323,12 +379,12 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
                             "",
                             "",
                             "",
-                            Util.viewIDToDataType(songFragment.searchMode)
+                            searchType
                         )
                     }
-                }
 
-                data.add(media)
+                    data.add(media)
+                }
             }
             songFragment.setSongs(data)
         }
