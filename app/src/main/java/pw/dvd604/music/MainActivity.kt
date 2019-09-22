@@ -159,14 +159,6 @@ class MainActivity : AppCompatActivity() {
         val pbState = this.mediaController.playbackState?.state
 
         when (v.id) {
-            R.id.btnTitle,
-            R.id.btnAlbum,
-            R.id.btnGenre,
-            R.id.btnArtist -> {
-                songFragment.updateSearchMode(v.id)
-                return
-            }
-
             R.id.btnPause -> {
                 if (pbState == PlaybackStateCompat.STATE_PAUSED or PlaybackStateCompat.STATE_PLAYING) {
                     if (pbState == PlaybackStateCompat.STATE_PLAYING) {

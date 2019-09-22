@@ -63,19 +63,6 @@ class Util {
          * @return String, the Button name**/
         fun idToString(id: Int): String {
             return when (id) {
-                R.id.btnTitle -> {
-                    "Title filter"
-                }
-                R.id.btnAlbum -> {
-                    "Album filter"
-                }
-                R.id.btnGenre -> {
-                    "Genre filter"
-                }
-                R.id.btnArtist -> {
-                    "Artist filter"
-                }
-
                 R.id.btnPause -> {
                     "Pause"
                 }
@@ -174,28 +161,6 @@ class Util {
             Settings.putString(Settings.tracking, uuid)
 
             return uuid
-        }
-
-        /**Takes an internal Android view ID, and returns a [MediaType] from it.
-         * Used when a search button is pressed to tell the app which type of media
-         * 'container' we should be asking the server for.
-         * @param viewID The ID of the search filter button
-         * @return MediaType, the Media object type which corresponds to that button**/
-        fun viewIDToDataType(viewID: Int): MediaType {
-            return when (viewID) {
-                R.id.btnGenre -> {
-                    MediaType.GENRE
-                }
-                R.id.btnArtist -> {
-                    MediaType.ARTIST
-                }
-                R.id.btnAlbum -> {
-                    MediaType.ALBUM
-                }
-                else -> {
-                    MediaType.SONG
-                }
-            }
         }
 
         /**Used in tracking to create JSON strings from key and value arrays
