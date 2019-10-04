@@ -166,7 +166,7 @@ class MainActivity : AppCompatActivity() {
 
         when (v.id) {
             R.id.btnQueue -> {
-
+                subSongFragment.addToQueue()
                 return
             }
             R.id.btnPause -> {
