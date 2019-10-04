@@ -156,9 +156,19 @@ class MainActivity : AppCompatActivity() {
             "Button Click",
             Util.generatePayload(arrayOf("button"), arrayOf(Util.idToString(v.id)))
         )
+        if (this.mediaController == null) {
+            this.report("An error occurred, please try again")
+            MusicApplication.track("error", "MediaController is null?")
+            return
+        }
+
         val pbState = this.mediaController.playbackState?.state
 
         when (v.id) {
+            R.id.btnQueue -> {
+
+                return
+            }
             R.id.btnPause -> {
                 if (pbState == PlaybackStateCompat.STATE_PAUSED or PlaybackStateCompat.STATE_PLAYING) {
                     if (pbState == PlaybackStateCompat.STATE_PLAYING) {

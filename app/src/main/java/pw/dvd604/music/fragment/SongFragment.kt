@@ -62,10 +62,14 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     fun setSongs(data: ArrayList<Media>? = null) {
         this.activity?.runOnUiThread {
             context?.let { con ->
-                if (data != null) {
-                    mediaList.adapter = SongAdapter(con, data)
+                if (mediaList == null) {
+                    MusicApplication.track("Error", "MediaList was null")
                 } else {
-                    mediaList.adapter = SongAdapter(con, SongList.songList)
+                    if (data != null) {
+                        mediaList.adapter = SongAdapter(con, data)
+                    } else {
+                        mediaList.adapter = SongAdapter(con, SongList.songList)
+                    }
                 }
             }
         }

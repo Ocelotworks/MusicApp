@@ -308,6 +308,18 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
     private var attempts = 0
 
+    private fun getNewIndex(currentSongIndex: Int, list: ArrayList<Media>): Int {
+        return if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+            if (list.size > 0) {
+                Random.nextInt(list.size)
+            } else {
+                0
+            }
+        } else {
+            (currentSongIndex + 1) % list.size
+        }
+    }
+
     fun nextSong() {
         if (!hasQueue()) {
             val list: ArrayList<Media> = if (Settings.getBoolean(Settings.shuffleOffline)) {
@@ -322,16 +334,11 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 list.indexOf(currentMedia)
             }
 
-            val nextSongIndex: Int =
-                if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
-                    var temp: Int
-                    do {
-                        temp = Random.nextInt(list.size)
-                    } while (temp == currentSongIndex)
-                    temp
-                } else {
-                    (currentSongIndex + 1) % list.size
-                }
+            var nextSongIndex: Int = getNewIndex(currentSongIndex, list)
+
+            while (nextSongIndex == currentSongIndex) {
+                nextSongIndex++
+            }
 
             val nextMedia: Media = list[nextSongIndex]
             val url: String = nextMedia.toUrl()
