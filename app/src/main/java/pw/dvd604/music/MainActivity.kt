@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
+import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_songs.*
 import pw.dvd604.music.adapter.data.Media
@@ -249,7 +250,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        if (inSettings || inQueue) {
+        if (inSettings) {
             return super.onOptionsItemSelected(item)
         }
 
@@ -272,13 +273,17 @@ class MainActivity : AppCompatActivity() {
             R.id.actionQueue -> {
                 val fM = this.supportFragmentManager
                 val fT = fM.beginTransaction()
-                fT.replace(R.id.fragmentContainer, queueFragment)
-                fT.commit()
-                inQueue = true
-
-                supportActionBar?.let {
-                    it.title = "Song Queue"
+                if (!inQueue) {
+                    fT.replace(R.id.slideContainer, queueFragment)
+                    fT.commit()
+                    inQueue = true
+                    sliding_layout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
+                } else {
+                    fT.replace(R.id.slideContainer, songFragment)
+                    fT.commit()
+                    inQueue = false
                 }
+
                 true
             }
             else -> {
@@ -312,7 +317,7 @@ class MainActivity : AppCompatActivity() {
                 val fM = this.supportFragmentManager
                 val fT = fM.beginTransaction()
 
-                fT.replace(R.id.fragmentContainer, nowPlayingFragment)
+                fT.replace(R.id.slideContainer, songFragment)
                 fT.commit()
                 inQueue = false
 
