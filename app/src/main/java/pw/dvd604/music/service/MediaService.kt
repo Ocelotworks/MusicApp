@@ -305,8 +305,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         result.sendResult(mediaList)
     }
 
-    private var attempts = 0
-
     private fun getNewIndex(currentSongIndex: Int, list: ArrayList<Media>): Int {
         return if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
             if (list.size > 0) {
@@ -351,12 +349,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
 
             //If we're only allowed to play offline music, and we don't have the song we're trying to play downloaded, skip the song and try again
             if (Settings.getBoolean(Settings.shuffleOffline) && !downloadedSongs.any { song -> song.id == nextMedia.id }) {
-
                 Util.mediaQueue.removeAt(0)
-
-                if (attempts >= Util.mediaQueue.size)
-                    Util.mediaQueue.clear()
-
                 nextSong()
                 return
             }
