@@ -11,6 +11,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -139,7 +140,7 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         }
 
         view?.let {
-            val colour: Int = resources.getColor(R.color.colorAccent, null)
+            val colour: Int = fetchAccentColor()
             val img = it.findViewById<ImageView>(R.id.btnShuffle)
 
             if (shuffleMode) {
@@ -169,6 +170,17 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
 
     fun hideStar() {
         this.view?.findViewById<ImageView>(R.id.btnStar)?.visibility = View.INVISIBLE
+    }
+
+    private fun fetchAccentColor(): Int {
+        val typedValue = TypedValue()
+
+        val a = context?.obtainStyledAttributes(typedValue.data, intArrayOf(R.attr.colorAccent))
+        val color = a?.getColor(0, 0)
+
+        a?.recycle()
+
+        return color ?: resources.getColor(R.color.colorAccent, null)
     }
 
     class ConnectionCallback(private val nowPlayingFragment: NowPlayingFragment) :
@@ -205,7 +217,6 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
         override fun onConnectionFailed() {
             // The Service has refused our connection
         }
-
     }
 
     class ControllerCallback(private val nowPlayingFragment: NowPlayingFragment) :

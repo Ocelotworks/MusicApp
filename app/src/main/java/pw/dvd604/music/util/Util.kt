@@ -87,11 +87,9 @@ class Util {
         /**Takes a Media, and returns the Media metadata, including title, artist, genre, and art location.
          * Has some trickery to do with media duration too, by storing the unbuilt metadata, before returning the metadata.
          * This allows [addMetadata] and [addMetadataProgress] to return the same basic metadata as this method, while adding additional information.
-         * Probably not the best way to do it, but things are constantly getting changed
          * @param media The media to build the metadata from
-         * @param builder Whether or not this should potentially destroy the metadata by building it
-         * @return MetaData, if [builder] is true, and null if [builder] is false**/
-        fun songToMetadata(media: Media, builder: Boolean = false): MediaMetadataCompat? {
+         * @return MetaData**/
+        fun songToMetadata(media: Media): MediaMetadataCompat {
             val metaData = MediaMetadataCompat.Builder()
                 .putText(MediaMetadataCompat.METADATA_KEY_TITLE, media.name)
                 .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, media.author)
@@ -99,15 +97,13 @@ class Util {
                 .putText(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, media.toAlbumUrl())
                 .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, media.toBitmap())
             tempMetadataCompat = metaData
-            if (!builder)
-                return metaData.build()
-            return null
+            return metaData.build()
         }
 
         /**@see songToMetadata
          * @param duration The media Duration
          * @return Completed media metadata**/
-        fun addMetadata(duration: Int?): MediaMetadataCompat {
+        fun addMetadata(duration: Int?): MediaMetadataCompat? {
             duration?.let { durationNN ->
                 tempMetadataCompat?.putLong(
                     MediaMetadataCompat.METADATA_KEY_DURATION,
@@ -117,20 +113,20 @@ class Util {
                     return it.build()
                 }
             }
-            return MediaMetadataCompat.Builder().build()
+            return tempMetadataCompat?.build()
         }
 
         /**@see songToMetadata
          * @param duration The media progess
          * @return Completed media metadata**/
-        fun addMetadataProgress(duration: Int?): MediaMetadataCompat {
+        fun addMetadataProgress(duration: Int?): MediaMetadataCompat? {
             duration?.let { durationNN ->
                 tempMetadataCompat?.putLong("progress", durationNN.toLong())
                 tempMetadataCompat?.let {
                     return it.build()
                 }
             }
-            return MediaMetadataCompat.Builder().build()
+            return tempMetadataCompat?.build()
         }
 
         /**Adds a media to the last played list

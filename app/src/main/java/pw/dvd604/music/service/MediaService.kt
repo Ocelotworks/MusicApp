@@ -318,7 +318,7 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     fun nextSong() {
-        if (Util.mediaQueue.isEmpty()) {
+        if (Util.mediaQueue.size == 0) {
             val list: ArrayList<Media> = if (Settings.getBoolean(Settings.shuffleOffline)) {
                 downloadedSongs
             } else {
@@ -343,20 +343,22 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
         } else {
             //If there is a media queue loaded
-            val queue = Util.mediaQueue
+            Util.mediaQueue.removeAt(0)
 
-            val nextMedia: Media = queue[0]
+            if (Util.mediaQueue.size > 0) {
+                val nextMedia: Media = Util.mediaQueue[0]
 
-            //If we're only allowed to play offline music, and we don't have the song we're trying to play downloaded, skip the song and try again
-            if (Settings.getBoolean(Settings.shuffleOffline) && !downloadedSongs.any { song -> song.id == nextMedia.id }) {
-                Util.mediaQueue.removeAt(0)
+                //If we're only allowed to play offline music, and we don't have the song we're trying to play downloaded, skip the song and try again
+                if (Settings.getBoolean(Settings.shuffleOffline) && !downloadedSongs.any { song -> song.id == nextMedia.id }) {
+                    nextSong()
+                    return
+                }
+
+                mediaSession.controller.transportControls.prepareFromUri(nextMedia.toUri(), null)
+            } else {
                 nextSong()
                 return
             }
-
-            val url: String = nextMedia.toUrl()
-
-            mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
         }
     }
 

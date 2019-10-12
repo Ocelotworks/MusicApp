@@ -28,6 +28,7 @@ import pw.dvd604.music.util.network.FilterMapRequest
 import pw.dvd604.music.util.network.HTTP
 import pw.dvd604.music.util.network.SongListRequest
 import pw.dvd604.music.util.update.Updater
+import java.util.*
 import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
@@ -51,6 +52,13 @@ class MainActivity : AppCompatActivity() {
 
         Settings.getSetting(server).let { HTTP.setup(it) }
         Util.downloader = Downloader(this.applicationContext)
+
+        Util.log(this, "${getYearMonth()}")
+
+        if (getYearMonth() == 9) {
+            //Halloween theme
+            setTheme(R.style.AppThemeHalloween)
+        }
 
         //Insert actual fragments into shell containers
         val fM = this.supportFragmentManager
@@ -401,6 +409,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onContextItemSelected(item: MenuItem?): Boolean {
         return songFragment.onContextItemSelected(item)
+    }
+
+    private fun getYearMonth(): Int {
+        val calendar = Calendar.getInstance()
+        calendar.time = Date()
+        return calendar.get(Calendar.MONTH)
     }
 
 }
