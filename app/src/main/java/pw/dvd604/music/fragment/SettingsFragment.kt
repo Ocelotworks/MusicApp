@@ -27,18 +27,18 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
-        this.findPreference("downloadAll").onPreferenceClickListener = this
-        this.findPreference("checkHash").onPreferenceClickListener = this
-        this.findPreference("appCrash").onPreferenceClickListener = this
-        this.findPreference("downloadAlbumArt").onPreferenceClickListener = this
-        this.findPreference("version").apply {
+        this.findPreference<Preference>("downloadAll")?.onPreferenceClickListener = this
+        this.findPreference<Preference>("checkHash")?.onPreferenceClickListener = this
+        this.findPreference<Preference>("appCrash")?.onPreferenceClickListener = this
+        this.findPreference<Preference>("downloadAlbumArt")?.onPreferenceClickListener = this
+        this.findPreference<Preference>("version")?.apply {
             onPreferenceClickListener = this@SettingsFragment
             title = "Petify ${BuildConfig.VERSION_NAME}"
             summary = "Build: ${BuildConfig.VERSION_CODE}"
         }
 
         if (!(BuildConfig.DEBUG || enabled || Settings.getBoolean(Settings.developer))) {
-            val experimental = this.findPreference("experimentalCategory")
+            val experimental = this.findPreference<Preference>("experimentalCategory")
             this.preferenceScreen.removePreference(experimental)
         }
     }

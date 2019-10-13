@@ -31,8 +31,10 @@ class BitmapAsync(
 
     override fun onPostExecute(bmp : Bitmap?) {
         if(bmp == null){
-            val activity : MainActivity = nowPlayingFragment?.activity as MainActivity
-            activity.report("Failed to connect to server", false)
+            if (nowPlayingFragment?.activity != null) {
+                val activity: MainActivity = nowPlayingFragment.activity as MainActivity
+                activity.report("Failed to connect to server", false)
+            }
         }
 
         if (autoPost)

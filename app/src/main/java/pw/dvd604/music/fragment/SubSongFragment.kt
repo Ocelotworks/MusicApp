@@ -83,4 +83,10 @@ class SubSongFragment : Fragment(), AdapterView.OnItemClickListener {
             songBundle
         )
     }
+
+    fun addToQueue() {
+        for (song in mediaList) {
+            Util.mediaQueue.add(song)
+        }
+    }
 }

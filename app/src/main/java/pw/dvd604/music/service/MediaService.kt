@@ -39,7 +39,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
     lateinit var http: HTTP
     private var songList = SongList.songList
-    private fun hasQueue(): Boolean = Util.mediaQueue.size > 0
     private var queuePosition: Int = 0
     private var playbackSpeed: Float = 1f
 
@@ -108,11 +107,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         mediaSession = MediaSessionCompat(baseContext, "petify").apply {
             setSessionActivity(sessionActivityPendingIntent)
             setRatingType(RatingCompat.RATING_NONE)
-            // Enable callbacks from MediaButtons and TransportControls
-            setFlags(
-                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-                        or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-            )
 
             // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
             stateBuilder = PlaybackStateCompat.Builder()
@@ -306,10 +300,20 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         result.sendResult(mediaList)
     }
 
-    private var attempts = 0
+    private fun getNewIndex(currentSongIndex: Int, list: ArrayList<Media>): Int {
+        return if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+            if (list.size > 0) {
+                Random.nextInt(list.size)
+            } else {
+                0
+            }
+        } else {
+            (currentSongIndex + 1) % list.size
+        }
+    }
 
     fun nextSong() {
-        if (!hasQueue()) {
+        if (Util.mediaQueue.size == 0) {
             val list: ArrayList<Media> = if (Settings.getBoolean(Settings.shuffleOffline)) {
                 downloadedSongs
             } else {
@@ -322,16 +326,11 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 list.indexOf(currentMedia)
             }
 
-            val nextSongIndex: Int =
-                if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
-                    var temp: Int
-                    do {
-                        temp = Random.nextInt(list.size)
-                    } while (temp == currentSongIndex)
-                    temp
-                } else {
-                    (currentSongIndex + 1) % list.size
-                }
+            var nextSongIndex: Int = getNewIndex(currentSongIndex, list)
+
+            while (nextSongIndex == currentSongIndex) {
+                nextSongIndex++
+            }
 
             val nextMedia: Media = list[nextSongIndex]
             val url: String = nextMedia.toUrl()
@@ -339,35 +338,22 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
         } else {
             //If there is a media queue loaded
-            currentMedia?.let { song ->
-                val queue = Util.mediaQueue
+            Util.mediaQueue.removeAt(0)
 
-                queuePosition = queue.indexOf(song) + 1 + attempts
+            if (Util.mediaQueue.size > 0) {
+                val nextMedia: Media = Util.mediaQueue[0]
 
-                if (queuePosition >= queue.size) {
-                    Util.mediaQueue = ArrayList(0)
+                //If we're only allowed to play offline music, and we don't have the song we're trying to play downloaded, skip the song and try again
+                if (Settings.getBoolean(Settings.shuffleOffline) && !downloadedSongs.any { song -> song.id == nextMedia.id }) {
                     nextSong()
                     return
                 }
 
-                val nextMedia: Media = queue[queuePosition]
-
-                if (Settings.getBoolean(Settings.shuffleOffline) && downloadedSongs.indexOf(
-                        nextMedia
-                    ) == -1
-                ) {
-                    attempts++
-                    nextSong()
-                    return
-                }
-
-                Util.mediaQueue.removeAt(queuePosition)
-
-                val url: String = nextMedia.toUrl()
-
-                mediaSession.controller.transportControls.prepareFromUri(Uri.parse(url), null)
+                mediaSession.controller.transportControls.prepareFromUri(nextMedia.toUri(), null)
+            } else {
+                nextSong()
+                return
             }
-
         }
     }
 

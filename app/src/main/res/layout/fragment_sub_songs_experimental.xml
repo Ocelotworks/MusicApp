@@ -43,12 +43,13 @@
             android:contentDescription="@string/todo" />
 
     <Button
-            android:id="@+id/button"
+            android:id="@+id/btnQueue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:background="@color/colorAccent"
             android:minHeight="30dp"
+            android:onClick="onClick"
             android:text="@string/addQueue"
             app:layout_constraintBottom_toBottomOf="@+id/subSongTitle"
             app:layout_constraintEnd_toEndOf="parent"

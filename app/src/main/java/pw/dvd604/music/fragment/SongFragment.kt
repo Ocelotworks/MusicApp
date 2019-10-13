@@ -7,9 +7,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.*
 import android.widget.AdapterView
-import android.widget.Button
 import android.widget.EditText
-import android.widget.ListView
+import android.widget.Spinner
 import com.android.volley.Response
 import kotlinx.android.synthetic.main.fragment_songs.*
 import org.json.JSONObject
@@ -26,18 +25,13 @@ import pw.dvd604.music.util.network.HTTP
 import pw.dvd604.music.util.network.SearchAllListener
 import pw.dvd604.music.util.network.SongListRequest
 import java.io.File
+import java.util.*
+import kotlin.collections.ArrayList
 
 class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
-    AdapterView.OnItemClickListener {
-    var searchMode: Int = R.id.btnTitle
+    AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
+
     var http: HTTP? = null
-    //Search modes are how we translate button IDs to JSON array names
-    var searchModes = hashMapOf(
-        R.id.btnTitle to "songs",
-        R.id.btnArtist to "artists",
-        R.id.btnGenre to "genres",
-        R.id.btnAlbum to "albums"
-    )
     private var state: Bundle? = null
 
     override fun onCreateView(
@@ -47,17 +41,14 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     ): View {
         // Inflate the layout for this fragment
         val view = inflater.inflate(
-            if (!Settings.getBoolean(Settings.forceExperimentalLayouts)) {
-                R.layout.fragment_songs
-            } else {
-                R.layout.fragment_songs_experimental
-            }, container, false
+            R.layout.fragment_songs, container, false
         )
 
         view.let {
             it.findViewById<EditText>(R.id.songSearch).addTextChangedListener(this)
-            it.findViewById<ListView>(R.id.mediaList).onItemClickListener = this
-            activity?.registerForContextMenu(it.findViewById(R.id.mediaList))
+            //it.findViewById<ListView>(R.id.mediaList).onItemClickListener = this
+            //activity?.registerForContextMenu(it.findViewById(R.id.mediaList))
+            it.findViewById<Spinner>(R.id.searchSpinner).onItemSelectedListener = this
         }
 
         http = HTTP(context)
@@ -67,32 +58,17 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         return view
     }
 
-    fun updateSearchMode(btn: Int) {
-        searchMode = btn
-        this.view?.let {
-            val buttons = arrayOf(R.id.btnTitle, R.id.btnAlbum, R.id.btnGenre, R.id.btnArtist)
-
-            for (id in buttons) {
-                val button: Button = it.findViewById(id)
-
-                if (id == btn) {
-                    button.setTextColor(resources.getColor(R.color.colorPrimaryDark, null))
-                } else {
-                    button.setTextColor(resources.getColor(R.color.colorMainText, null))
-                }
-            }
-
-            afterTextChanged(songSearch.editableText)
-        }
-    }
-
     fun setSongs(data: ArrayList<Media>? = null) {
         this.activity?.runOnUiThread {
             context?.let { con ->
-                if (data != null) {
-                    mediaList.adapter = SongAdapter(con, data)
+                if (mediaList == null) {
+                    MusicApplication.track("Error", "MediaList was null")
                 } else {
-                    mediaList.adapter = SongAdapter(con, SongList.songList)
+                    if (data != null) {
+                        mediaList.adapter = SongAdapter(con, data)
+                    } else {
+                        mediaList.adapter = SongAdapter(con, SongList.songList)
+                    }
                 }
             }
         }
@@ -110,7 +86,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     override fun afterTextChanged(text: Editable?) {
         text?.let {
             if (it.isEmpty()) {
-                val mediaType = Util.viewIDToDataType(searchMode)
+                val mediaType = Util.stringToDataType(searchSpinner.selectedItem as String)
 
                 if (mediaType != MediaType.SONG) {
                     http?.getReq(
@@ -124,6 +100,13 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
             }
             http?.getReq(HTTP.search(it.toString()), SearchListener(this))
         }
+    }
+
+    override fun onNothingSelected(parent: AdapterView<*>?) {
+    }
+
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        afterTextChanged(songSearch.editableText)
     }
 
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -178,9 +161,9 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         return menu
     }
 
-    var setSongJob: Int = 0
+    private var setSongJob: Int = 0
 
-    override fun onContextItemSelected(item: MenuItem?): Boolean {
+    fun contextItemSelected(item: MenuItem?): Boolean {
         val position: Int = (item?.menuInfo as AdapterView.AdapterContextMenuInfo).position
         val songAdapter = mediaList.adapter as SongAdapter
         val media: Media = songAdapter.getItemAtPosition(position)
@@ -302,34 +285,39 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         override fun onResponse(response: String?) {
             val data = ArrayList<Media>()
             val json = JSONObject(response)
-            val array = json.getJSONArray(songFragment.searchModes[songFragment.searchMode])
+
+            val searchType =
+                Util.stringToDataType(songFragment.searchSpinner.selectedItem as String)
+            val array = json.getJSONArray(
+                "${(songFragment.searchSpinner.selectedItem as String).toLowerCase(
+                    Locale.getDefault()
+                )}s"
+            )
 
             for (i in 0 until array.length()) {
                 val songJSON = array.getJSONObject(i)
                 lateinit var media: Media
 
-                when (songFragment.searchMode) {
-                    R.id.btnTitle -> {
-                        media = Media().fromJson(songJSON)
-                    }
-                    R.id.btnArtist,
-                    R.id.btnGenre,
-                    R.id.btnAlbum -> {
-                        media = Media(
-                            songJSON.getString("name"),
-                            "",
-                            songJSON.getString("id"),
-                            "",
-                            "",
-                            "",
-                            "",
-                            Util.viewIDToDataType(songFragment.searchMode)
-                        )
-                    }
+                when (searchType) {
+                    MediaType.SONG -> media = Media().fromJson(songJSON)
+                    MediaType.ARTIST,
+                    MediaType.GENRE,
+                    MediaType.ALBUM,
+                    MediaType.PLAYLIST -> media = Media(
+                        songJSON.getString("name"),
+                        "",
+                        songJSON.getString("id"),
+                        "",
+                        "",
+                        "",
+                        "",
+                        searchType
+                    )
                 }
 
                 data.add(media)
             }
+
             songFragment.setSongs(data)
         }
     }

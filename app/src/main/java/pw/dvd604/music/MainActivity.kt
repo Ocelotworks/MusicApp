@@ -11,7 +11,10 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.cast.framework.CastButtonFactory
+import com.google.android.gms.cast.framework.CastContext
 import com.google.android.material.snackbar.Snackbar
+import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_songs.*
 import pw.dvd604.music.adapter.data.Media
@@ -27,10 +30,13 @@ import pw.dvd604.music.util.network.FilterMapRequest
 import pw.dvd604.music.util.network.HTTP
 import pw.dvd604.music.util.network.SongListRequest
 import pw.dvd604.music.util.update.Updater
+import java.util.*
 import kotlin.system.exitProcess
+
 
 class MainActivity : AppCompatActivity() {
 
+    private var mediaRouteMenuItem: MenuItem? = null
     private var inSettings: Boolean = false
     private var inQueue: Boolean = false
     private var nowPlayingFragment: NowPlayingFragment = NowPlayingFragment()
@@ -42,6 +48,7 @@ class MainActivity : AppCompatActivity() {
     private val permissionsResult: Int = 1
     private var homeLab: Boolean = false
     private lateinit var http: HTTP
+    private lateinit var castContext: CastContext
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +57,11 @@ class MainActivity : AppCompatActivity() {
 
         Settings.getSetting(server).let { HTTP.setup(it) }
         Util.downloader = Downloader(this.applicationContext)
+
+        if (getYearMonth() == 9) {
+            //Halloween theme
+            setTheme(R.style.AppThemeHalloween)
+        }
 
         //Insert actual fragments into shell containers
         val fM = this.supportFragmentManager
@@ -66,6 +78,8 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
 
         checkServerPrefs()
+
+        castContext = CastContext.getSharedInstance(this)
 
         Thread {
             populateSongList()
@@ -156,17 +170,19 @@ class MainActivity : AppCompatActivity() {
             "Button Click",
             Util.generatePayload(arrayOf("button"), arrayOf(Util.idToString(v.id)))
         )
+        if (this.mediaController == null) {
+            this.report("An error occurred, please try again")
+            MusicApplication.track("error", "MediaController is null?")
+            return
+        }
+
         val pbState = this.mediaController.playbackState?.state
 
         when (v.id) {
-            R.id.btnTitle,
-            R.id.btnAlbum,
-            R.id.btnGenre,
-            R.id.btnArtist -> {
-                songFragment.updateSearchMode(v.id)
+            R.id.btnQueue -> {
+                subSongFragment.addToQueue()
                 return
             }
-
             R.id.btnPause -> {
                 if (pbState == PlaybackStateCompat.STATE_PAUSED or PlaybackStateCompat.STATE_PLAYING) {
                     if (pbState == PlaybackStateCompat.STATE_PLAYING) {
@@ -242,12 +258,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         //Create our options menu
         menuInflater.inflate(R.menu.menu_bar, menu)
+        mediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(
+            applicationContext,
+            menu,
+            R.id.media_route_menu_item
+        )
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        if (inSettings || inQueue) {
+        if (inSettings) {
             return super.onOptionsItemSelected(item)
         }
 
@@ -270,13 +291,17 @@ class MainActivity : AppCompatActivity() {
             R.id.actionQueue -> {
                 val fM = this.supportFragmentManager
                 val fT = fM.beginTransaction()
-                fT.replace(R.id.fragmentContainer, queueFragment)
-                fT.commit()
-                inQueue = true
-
-                supportActionBar?.let {
-                    it.title = "Song Queue"
+                if (!inQueue) {
+                    fT.replace(R.id.slideContainer, queueFragment)
+                    fT.commit()
+                    inQueue = true
+                    sliding_layout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
+                } else {
+                    fT.replace(R.id.slideContainer, songFragment)
+                    fT.commit()
+                    inQueue = false
                 }
+
                 true
             }
             else -> {
@@ -310,7 +335,7 @@ class MainActivity : AppCompatActivity() {
                 val fM = this.supportFragmentManager
                 val fT = fM.beginTransaction()
 
-                fT.replace(R.id.fragmentContainer, nowPlayingFragment)
+                fT.replace(R.id.slideContainer, songFragment)
                 fT.commit()
                 inQueue = false
 
@@ -393,7 +418,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onContextItemSelected(item: MenuItem?): Boolean {
-        return songFragment.onContextItemSelected(item)
+        return songFragment.contextItemSelected(item)
     }
 
+    private fun getYearMonth(): Int {
+        val calendar = Calendar.getInstance()
+        calendar.time = Date()
+        return calendar.get(Calendar.MONTH)
+    }
 }

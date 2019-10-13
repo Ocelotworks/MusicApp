@@ -4,6 +4,12 @@
       android:layout_width="wrap_content">
 
     <item
+            android:id="@+id/media_route_menu_item"
+            android:title=""
+            app:actionProviderClass="androidx.mediarouter.app.MediaRouteActionProvider"
+            app:showAsAction="always" />
+
+    <item
             android:id="@+id/actionQueue"
             android:title=""
             app:showAsAction="ifRoom"
