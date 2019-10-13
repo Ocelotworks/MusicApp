@@ -17,6 +17,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_songs.*
+import kotlinx.android.synthetic.main.fragment_songs_experimental.*
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.fragment.*
@@ -58,8 +59,6 @@ class MainActivity : AppCompatActivity() {
         Settings.getSetting(server).let { HTTP.setup(it) }
         Util.downloader = Downloader(this.applicationContext)
 
-        Util.log(this, "${getYearMonth()}")
-
         if (getYearMonth() == 9) {
             //Halloween theme
             setTheme(R.style.AppThemeHalloween)
@@ -97,7 +96,11 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        sliding_layout.setScrollableView(mediaList)
+        if (!Settings.getBoolean(Settings.forceExperimentalLayouts)) {
+            sliding_layout.setScrollableView(mediaList)
+        } else {
+            sliding_layout.setScrollableView(recyclerList)
+        }
         if (Settings.getBoolean(Settings.update)) {
             Updater(this).checkUpdate()
         }
@@ -264,7 +267,7 @@ class MainActivity : AppCompatActivity() {
             applicationContext,
             menu,
             R.id.media_route_menu_item
-        );
+        )
         return super.onCreateOptionsMenu(menu)
     }
 
