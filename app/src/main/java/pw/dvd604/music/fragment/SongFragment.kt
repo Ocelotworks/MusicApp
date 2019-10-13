@@ -9,8 +9,6 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.EditText
 import android.widget.Spinner
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Response
 import kotlinx.android.synthetic.main.fragment_songs.*
 import org.json.JSONObject
@@ -18,7 +16,6 @@ import pw.dvd604.music.MainActivity
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
-import pw.dvd604.music.adapter.SongRecyclerAdapter
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.util.Settings
@@ -36,10 +33,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
 
     var http: HTTP? = null
     private var state: Bundle? = null
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var viewAdapter: RecyclerView.Adapter<*>
-    private lateinit var viewManager: RecyclerView.LayoutManager
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,29 +41,8 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
     ): View {
         // Inflate the layout for this fragment
         val view = inflater.inflate(
-            if (Settings.getBoolean(Settings.forceExperimentalLayouts)) {
-                R.layout.fragment_songs_experimental
-            } else {
-                R.layout.fragment_songs
-            }, container, false
+            R.layout.fragment_songs, container, false
         )
-
-        if (Settings.getBoolean(Settings.forceExperimentalLayouts)) {
-            viewManager = LinearLayoutManager(this.context)
-            viewAdapter = SongRecyclerAdapter(SongList.songList)
-
-            recyclerView = view.findViewById<RecyclerView>(R.id.recyclerList).apply {
-                // use this setting to improve performance if you know that changes
-                // in content do not change the layout size of the RecyclerView
-                setHasFixedSize(true)
-
-                // use a linear layout manager
-                layoutManager = viewManager
-
-                // specify an viewAdapter (see also next example)
-                adapter = viewAdapter
-            }
-        }
 
         view.let {
             it.findViewById<EditText>(R.id.songSearch).addTextChangedListener(this)
@@ -91,7 +63,6 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
             context?.let { con ->
                 if (mediaList == null) {
                     MusicApplication.track("Error", "MediaList was null")
-                    recyclerView.adapter = SongRecyclerAdapter(SongList.songList)
                 } else {
                     if (data != null) {
                         mediaList.adapter = SongAdapter(con, data)

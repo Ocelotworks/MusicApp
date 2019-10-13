@@ -17,7 +17,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_songs.*
-import kotlinx.android.synthetic.main.fragment_songs_experimental.*
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.fragment.*
@@ -96,11 +95,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        if (!Settings.getBoolean(Settings.forceExperimentalLayouts)) {
-            sliding_layout.setScrollableView(mediaList)
-        } else {
-            sliding_layout.setScrollableView(recyclerList)
-        }
+        sliding_layout.setScrollableView(mediaList)
         if (Settings.getBoolean(Settings.update)) {
             Updater(this).checkUpdate()
         }

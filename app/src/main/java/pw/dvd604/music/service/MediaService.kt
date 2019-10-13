@@ -107,11 +107,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
         mediaSession = MediaSessionCompat(baseContext, "petify").apply {
             setSessionActivity(sessionActivityPendingIntent)
             setRatingType(RatingCompat.RATING_NONE)
-            // Enable callbacks from MediaButtons and TransportControls
-            setFlags(
-                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-                        or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-            )
 
             // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
             stateBuilder = PlaybackStateCompat.Builder()
