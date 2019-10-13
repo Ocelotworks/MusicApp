@@ -29,6 +29,8 @@ class Settings {
         const val minSongSpeed = "minSongSpeed"
         const val maxSongSpeed = "maxSongSpeed"
         const val forceExperimentalLayouts = "forceLayouts"
+        const val apiKey = "apiKey"
+        const val playlistWhitelist = "whitelistPlaylist"
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             server to BuildConfig.defaultURL,
@@ -49,7 +51,9 @@ class Settings {
             runningMargin to 50,
             minSongSpeed to 50,
             maxSongSpeed to 50,
-            forceExperimentalLayouts to false
+            forceExperimentalLayouts to false,
+            apiKey to "",
+            playlistWhitelist to ""
         )
 
         var prefs: SharedPreferences? = null

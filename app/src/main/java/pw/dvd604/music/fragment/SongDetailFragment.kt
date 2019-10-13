@@ -9,9 +9,12 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.android.volley.Response
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_sub_songs.*
 import org.json.JSONObject
 import pw.dvd604.music.R
 import pw.dvd604.music.adapter.data.Media
+import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.network.HTTP
 
@@ -39,8 +42,12 @@ class SongDetailFragment : Fragment(), Response.Listener<String> {
 
         val song = this.arguments?.getSerializable("media") as Media
 
-        HTTP(this.context)
-            .getReq(HTTP.songDetail(song.id), this)
+        sliding_layout?.setScrollableView(subSongList)
+
+        if (song.type == MediaType.SONG) {
+            HTTP(this.context)
+                .getReq(HTTP.songDetail(song.id), this)
+        }
 
         this.view?.findViewById<TextView>(R.id.subSongTitle)?.text = song.generateText()
     }

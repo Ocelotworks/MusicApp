@@ -1,6 +1,9 @@
 package pw.dvd604.music
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
@@ -8,6 +11,8 @@ import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.AdapterView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -17,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_songs.*
+import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.fragment.*
@@ -30,6 +36,7 @@ import pw.dvd604.music.util.network.FilterMapRequest
 import pw.dvd604.music.util.network.HTTP
 import pw.dvd604.music.util.network.SongListRequest
 import pw.dvd604.music.util.update.Updater
+import java.io.File
 import java.util.*
 import kotlin.system.exitProcess
 
@@ -81,6 +88,18 @@ class MainActivity : AppCompatActivity() {
 
         castContext = CastContext.getSharedInstance(this)
 
+        if (Settings.getSetting(Settings.playlistWhitelist) != "") {
+            //We have a playlist whitelist
+            http.getReq(
+                HTTP.getDetailedData(
+                    Media(
+                        id = Settings.getSetting(Settings.playlistWhitelist),
+                        type = MediaType.PLAYLIST
+                    )
+                ), SongListRequest(::setFilterSongs)
+            )
+        }
+
         Thread {
             populateSongList()
             populateFilterMaps()
@@ -90,6 +109,11 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
             }
         }.start()
+    }
+
+    private fun setFilterSongs(songs: ArrayList<Media>) {
+        SongList.whitelist = songs
+        SongList.parseWhiteList()
     }
 
     override fun onStart() {
@@ -243,7 +267,7 @@ class MainActivity : AppCompatActivity() {
         fT.commit()
     }
 
-    fun createDetailFragment(media: Media) {
+    private fun createDetailFragment(media: Media) {
         val fM = this.supportFragmentManager
         val fT = fM.beginTransaction()
 
@@ -417,8 +441,116 @@ class MainActivity : AppCompatActivity() {
         super.onCreateContextMenu(songFragment.buildContext(menu, v, menuInfo), v, menuInfo)
     }
 
+    private var setSongJob: Int = 0
+
     override fun onContextItemSelected(item: MenuItem?): Boolean {
-        return songFragment.contextItemSelected(item)
+        val position: Int = (item?.menuInfo as AdapterView.AdapterContextMenuInfo).position
+        val songAdapter = mediaList.adapter as SongAdapter
+        val media: Media = songAdapter.getItemAtPosition(position)
+
+        when (item.title) {
+            "Download" -> {
+                if (media.type == MediaType.SONG) {
+                    Util.downloader.addToQueue(media)
+                    Util.downloader.doQueue()
+                } else {
+                    if (setSongJob == 0) {
+                        setSongJob = 1
+                        http.getReq(
+                            HTTP.getDetailedData(media),
+                            SongListRequest(::setContextSongs)
+                        )
+                    } else {
+                        Util.report(
+                            "Network busy, please try again",
+                            this,
+                            true
+                        )
+                    }
+                }
+
+                MusicApplication.track("Media Download", media.generateText())
+            }
+            "Remove from local storage" -> {
+                if (Util.downloader.hasSong(media)) {
+                    val file = File(media.toPath())
+                    file.delete()
+
+                    Util.report("Deleted song!", this, true)
+
+                    MusicApplication.track("Media Delete", media.generateText())
+                }
+            }
+            "Add to queue" -> {
+                if (media.type == MediaType.SONG) {
+                    Util.mediaQueue.add(media)
+                } else {
+                    if (setSongJob == 0) {
+                        setSongJob = 2
+                        http.getReq(
+                            HTTP.getDetailedData(media),
+                            SongListRequest(::setContextSongs)
+                        )
+                    } else {
+                        Util.report(
+                            "Network busy, please try again",
+                            this,
+                            true
+                        )
+                    }
+                }
+                Util.report("Added!", this, true)
+            }
+            "Go to album" -> {
+                createSubFragment(
+                    HTTP.getAlbum(media.album),
+                    media.name
+                )
+            }
+            "Go to artist" -> {
+                createSubFragment(
+                    HTTP.getArtist(media.artistID),
+                    media.author
+                )
+            }
+            "Song info" -> {
+                createDetailFragment(media)
+            }
+            "Blacklist" -> {
+                Settings.appendSetting(
+                    Settings.blacklist,
+                    "\n${Util.dataTypeToString(media.type)}:${media.name}"
+                )
+                Util.report("Blacklisted!", this, true)
+            }
+            "Copy ID" -> {
+                val clipboard =
+                    this.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager?
+                val clip = ClipData.newPlainText("playlistid", media.id)
+                clipboard?.primaryClip = clip
+                Toast.makeText(this, "Copied ID!", Toast.LENGTH_SHORT).show()
+            }
+
+        }
+
+        return true
+    }
+
+    private fun setContextSongs(media: ArrayList<Media>) {
+        when (setSongJob) {
+            1 -> {
+                for (s in media) {
+                    Util.downloader.addToQueue(s)
+                }
+                Util.downloader.doQueue()
+            }
+            2 -> {
+                for (s in media) {
+                    Util.mediaQueue.add(s)
+                }
+            }
+        }
+        setSongJob = 0
     }
 
     private fun getYearMonth(): Int {

@@ -15,6 +15,7 @@ class SongList {
         var backupSongList = ArrayList<Media>(0)
         var translationMap = HashMap<String, String>(0)
         var filterMap = HashMap<String, MediaType>(0)
+        var whitelist = ArrayList<Media>(0)
 
         var isBuilding: Boolean = false
 
@@ -42,6 +43,7 @@ class SongList {
                 songList = Util.duplicateArrayList(backupSongList)
             }
             val oldSize = songList.size
+
             for ((k, v) in filterMap) {
                 val key = k.toLowerCase(Locale.getDefault())
                 when (v) {
@@ -70,11 +72,10 @@ class SongList {
                         }
                     }
                     MediaType.PLAYLIST -> {
-                        // val id = translationMap[k]
-                        /*
-                        mediaList.removeIf {media ->
-                            media.artistID == id
-                        }*/
+                        val id = translationMap[key]
+                        songList.removeIf { song ->
+                            song.id == id
+                        }
                     }
                 }
             }
@@ -93,11 +94,13 @@ class SongList {
                     song.id == songID
                 }
 
-                if (songList.size > 0) {
-                    downloadedSongs.addAll(songObj)
-                }
-
+                downloadedSongs.addAll(songObj)
             }
+        }
+
+        fun parseWhiteList() {
+            songList = whitelist
+            backupSongList.clear()
         }
     }
 }

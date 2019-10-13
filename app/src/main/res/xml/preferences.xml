@@ -16,7 +16,7 @@
             android:title="Anonymised statistics reports" />
 
         <EditTextPreference
-                android:key="apikKey"
+                android:key="apiKey"
                 android:title="API Key" />
 
     </PreferenceCategory>
@@ -69,6 +69,11 @@
     <PreferenceCategory
             android:key="experimentalCategory"
             android:title="Developer settings">
+
+        <EditTextPreference
+                android:key="whitelistPlaylist"
+                android:title="Playlist Whitelist" />
+
         <EditTextPreference
                 android:key="trackingID"
                 android:title="Change Tracking ID" />

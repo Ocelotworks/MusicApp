@@ -5,11 +5,16 @@ import android.os.Bundle
 import android.support.v4.media.session.MediaControllerCompat
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.*
+import android.view.ContextMenu
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.EditText
+import android.widget.ListView
 import android.widget.Spinner
 import com.android.volley.Response
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_songs.*
 import org.json.JSONObject
 import pw.dvd604.music.MainActivity
@@ -18,13 +23,10 @@ import pw.dvd604.music.R
 import pw.dvd604.music.adapter.SongAdapter
 import pw.dvd604.music.adapter.data.Media
 import pw.dvd604.music.adapter.data.MediaType
-import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
 import pw.dvd604.music.util.network.HTTP
 import pw.dvd604.music.util.network.SearchAllListener
-import pw.dvd604.music.util.network.SongListRequest
-import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -46,9 +48,10 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
 
         view.let {
             it.findViewById<EditText>(R.id.songSearch).addTextChangedListener(this)
-            //it.findViewById<ListView>(R.id.mediaList).onItemClickListener = this
-            //activity?.registerForContextMenu(it.findViewById(R.id.mediaList))
+            it.findViewById<ListView>(R.id.mediaList).onItemClickListener = this
+            activity?.registerForContextMenu(it.findViewById(R.id.mediaList))
             it.findViewById<Spinner>(R.id.searchSpinner).onItemSelectedListener = this
+            sliding_layout?.setScrollableView(it.findViewById(R.id.mediaList))
         }
 
         http = HTTP(context)
@@ -155,115 +158,13 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
             menu.add(2, v.id, 1, "Go to artist")
             menu.add(2, v.id, 2, "Song info")
         }
+        if (media.type == MediaType.PLAYLIST) {
+            menu.add(2, v.id, 0, "Copy ID")
+        }
         if (Util.isDeveloper()) {
             menu.add(3, v.id, 0, "Blacklist")
         }
         return menu
-    }
-
-    private var setSongJob: Int = 0
-
-    fun contextItemSelected(item: MenuItem?): Boolean {
-        val position: Int = (item?.menuInfo as AdapterView.AdapterContextMenuInfo).position
-        val songAdapter = mediaList.adapter as SongAdapter
-        val media: Media = songAdapter.getItemAtPosition(position)
-
-        when (item.title) {
-            "Download" -> {
-                if (media.type == MediaType.SONG) {
-                    Util.downloader.addToQueue(media)
-                    Util.downloader.doQueue()
-                } else {
-                    if (setSongJob == 0) {
-                        setSongJob = 1
-                        http?.getReq(
-                            HTTP.getDetailedData(media),
-                            SongListRequest(::setContextSongs)
-                        )
-                    } else {
-                        Util.report(
-                            "Network busy, please try again",
-                            this.activity as MainActivity,
-                            true
-                        )
-                    }
-                }
-
-                MusicApplication.track("Media Download", media.generateText())
-            }
-            "Remove from local storage" -> {
-                if (Util.downloader.hasSong(media)) {
-                    val file = File(media.toPath())
-                    file.delete()
-
-                    Util.report("Deleted song!", this.activity as MainActivity, true)
-
-                    MusicApplication.track("Media Delete", media.generateText())
-                }
-            }
-            "Add to queue" -> {
-                if (media.type == MediaType.SONG) {
-                    Util.mediaQueue.add(media)
-                } else {
-                    if (setSongJob == 0) {
-                        setSongJob = 2
-                        http?.getReq(
-                            HTTP.getDetailedData(media),
-                            SongListRequest(::setContextSongs)
-                        )
-                    } else {
-                        Util.report(
-                            "Network busy, please try again",
-                            this.activity as MainActivity,
-                            true
-                        )
-                    }
-                }
-                Util.report("Added!", this.activity as MainActivity, true)
-            }
-            "Go to album" -> {
-                (activity as MainActivity).createSubFragment(
-                    HTTP.getAlbum(media.album),
-                    media.name
-                )
-            }
-            "Go to artist" -> {
-                (activity as MainActivity).createSubFragment(
-                    HTTP.getArtist(media.artistID),
-                    media.author
-                )
-            }
-            "Media info" -> {
-                (activity as MainActivity).createDetailFragment(media)
-            }
-            "Blacklist" -> {
-                Settings.appendSetting(
-                    Settings.blacklist,
-                    "\n${Util.dataTypeToString(media.type)}:${media.name}"
-                )
-                Util.report("Blacklisted!", this.activity as MainActivity, true)
-            }
-
-        }
-
-        return true
-    }
-
-    private fun setContextSongs(media: ArrayList<Media>) {
-        when (setSongJob) {
-            1 -> {
-                for (s in media) {
-                    Util.downloader.addToQueue(s)
-                }
-                Util.downloader.doQueue()
-            }
-            2 -> {
-                for (s in media) {
-                    Util.mediaQueue.add(s)
-                }
-            }
-        }
-        setSongJob = 0
     }
 
     fun downloadAll() {
