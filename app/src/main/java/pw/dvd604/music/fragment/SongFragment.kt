@@ -164,7 +164,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
 
     private var setSongJob: Int = 0
 
-    override fun onContextItemSelected(item: MenuItem?): Boolean {
+    fun contextItemSelected(item: MenuItem?): Boolean {
         val position: Int = (item?.menuInfo as AdapterView.AdapterContextMenuInfo).position
         val songAdapter = mediaList.adapter as SongAdapter
         val media: Media = songAdapter.getItemAtPosition(position)

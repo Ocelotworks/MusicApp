@@ -8,13 +8,18 @@
                 android:key="blacklist"
                 android:summary="Don't like rap? This is for you"
                 android:title="Content blacklist" />
-    </PreferenceCategory>
 
     <SwitchPreferenceCompat
             android:defaultValue="1"
             android:key="usageReporting"
             android:summary="Send usage reports"
             android:title="Anonymised statistics reports" />
+
+        <EditTextPreference
+                android:key="apikKey"
+                android:title="API Key" />
+
+    </PreferenceCategory>
 
     <PreferenceCategory android:title="Offline play">
 

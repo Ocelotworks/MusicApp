@@ -11,6 +11,8 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.cast.framework.CastButtonFactory
+import com.google.android.gms.cast.framework.CastContext
 import com.google.android.material.snackbar.Snackbar
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
@@ -31,8 +33,10 @@ import pw.dvd604.music.util.update.Updater
 import java.util.*
 import kotlin.system.exitProcess
 
+
 class MainActivity : AppCompatActivity() {
 
+    private var mediaRouteMenuItem: MenuItem? = null
     private var inSettings: Boolean = false
     private var inQueue: Boolean = false
     private var nowPlayingFragment: NowPlayingFragment = NowPlayingFragment()
@@ -44,6 +48,7 @@ class MainActivity : AppCompatActivity() {
     private val permissionsResult: Int = 1
     private var homeLab: Boolean = false
     private lateinit var http: HTTP
+    private lateinit var castContext: CastContext
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,6 +80,8 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
 
         checkServerPrefs()
+
+        castContext = CastContext.getSharedInstance(this)
 
         Thread {
             populateSongList()
@@ -253,6 +260,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         //Create our options menu
         menuInflater.inflate(R.menu.menu_bar, menu)
+        mediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(
+            applicationContext,
+            menu,
+            R.id.media_route_menu_item
+        );
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -408,7 +420,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onContextItemSelected(item: MenuItem?): Boolean {
-        return songFragment.onContextItemSelected(item)
+        return songFragment.contextItemSelected(item)
     }
 
     private fun getYearMonth(): Int {
@@ -416,5 +428,4 @@ class MainActivity : AppCompatActivity() {
         calendar.time = Date()
         return calendar.get(Calendar.MONTH)
     }
-
 }
