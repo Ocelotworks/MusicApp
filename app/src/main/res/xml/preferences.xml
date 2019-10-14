@@ -113,10 +113,6 @@
                 android:summary="Show error reports as soon as they appear"
                 android:title="Aggressive error reports" />
 
-        <Preference
-                android:key="downloadAlbumArt"
-                android:title="Force download local song album art" />
-
         <SwitchPreferenceCompat
                 android:defaultValue="0"
                 android:key="developerOptions"

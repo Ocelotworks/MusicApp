@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceGroup
 import androidx.preference.SeekBarPreference
 import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.MainActivity
@@ -13,12 +14,10 @@ import pw.dvd604.music.adapter.data.MediaType
 import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
-import pw.dvd604.music.util.download.DownloaderAsync
 import pw.dvd604.music.util.download.HashService
-import java.io.File
 
 class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener,
-    SharedPreferences.OnSharedPreferenceChangeListener {
+    SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceChangeListener {
 
     companion object {
         var enabled = false
@@ -43,12 +42,23 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             this.preferenceScreen.removePreference(experimental)
         }
 
-        for (i in 0 until preferenceScreen.preferenceCount) {
-            if (preferenceScreen.getPreference(i) is SeekBarPreference) {
-                val preference = preferenceScreen.getPreference(i) as SeekBarPreference
-                preference.showSeekBarValue = true
+        setSeekBars(preferenceScreen)
+    }
+
+    private fun setSeekBars(group: PreferenceGroup) {
+        for (i in 0 until group.preferenceCount) {
+            val pref = group.getPreference(i)
+            if (pref is SeekBarPreference) {
+                pref.showSeekBarValue = true
+            } else if (pref is PreferenceGroup) {
+                setSeekBars(pref)
             }
         }
+    }
+
+    override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
+        preference?.summary = "${newValue as Int}"
+        return true
     }
 
     override fun onPreferenceClick(preference: Preference?): Boolean {
@@ -82,18 +92,6 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                     enabled = true
                     Settings.putBoolean("developerOptions", true)
                 }
-                true
-            }
-            "downloadAlbumArt" -> {
-                Thread {
-                    for (s in SongList.songList) {
-                        val file = File(s.toAlbumPath())
-                        if (file.exists())
-                            file.delete()
-                        DownloaderAsync(s, null, null, MediaType.ALBUM).execute()
-
-                    }
-                }.start()
                 true
             }
             else -> false
