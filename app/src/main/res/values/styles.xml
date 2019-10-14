@@ -19,8 +19,8 @@
     </style>
 
     <style name="AppThemeChristmas" parent="AppTheme">
-        <item name="colorAccent">#B3000C</item>
-        <item name="android:editTextColor">#B3000C</item>
+        <item name="colorAccent">#da1a15</item>
+        <item name="android:editTextColor">#da1a15</item>
     </style>
 
 </resources>
