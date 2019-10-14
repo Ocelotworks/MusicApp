@@ -65,9 +65,19 @@ class MainActivity : AppCompatActivity() {
         Settings.getSetting(server).let { HTTP.setup(it) }
         Util.downloader = Downloader(this.applicationContext)
 
-        if (getYearMonth() == 9) {
-            //Halloween theme
-            setTheme(R.style.AppThemeHalloween)
+        val themeNumber = if (Settings.getInt(Settings.theme) == 0) {
+            getYearMonth()
+        } else {
+            Settings.getInt(Settings.theme)
+        }
+
+        when (themeNumber) {
+            9 -> {
+                setTheme(R.style.AppThemeHalloween)
+            }
+            11 -> {
+                setTheme(R.style.AppThemeChristmas)
+            }
         }
 
         //Insert actual fragments into shell containers

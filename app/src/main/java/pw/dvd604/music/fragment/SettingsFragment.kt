@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SeekBarPreference
 import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
@@ -40,6 +41,13 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         if (!(BuildConfig.DEBUG || enabled || Settings.getBoolean(Settings.developer))) {
             val experimental = this.findPreference<Preference>("experimentalCategory")
             this.preferenceScreen.removePreference(experimental)
+        }
+
+        for (i in 0 until preferenceScreen.preferenceCount) {
+            if (preferenceScreen.getPreference(i) is SeekBarPreference) {
+                val preference = preferenceScreen.getPreference(i) as SeekBarPreference
+                preference.showSeekBarValue = true
+            }
         }
     }
 

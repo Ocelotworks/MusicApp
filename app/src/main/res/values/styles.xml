@@ -2,7 +2,6 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -14,17 +13,14 @@
         <item name="android:editTextColor">@color/colorAccent</item>
     </style>
 
-    <style name="AppThemeHalloween" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+    <style name="AppThemeHalloween" parent="AppTheme">
         <item name="colorAccent">#ec9f10</item>
-        <item name="android:textColorHint">@color/colorSecondaryText</item>
-        <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:background">@color/colorPrimary</item>
-        <item name="android:textColor">@color/colorMainText</item>
-        <item name="android:textColorSecondary">@color/colorSecondaryText</item>
         <item name="android:editTextColor">#ec9f10</item>
+    </style>
+
+    <style name="AppThemeChristmas" parent="AppTheme">
+        <item name="colorAccent">#B3000C</item>
+        <item name="android:editTextColor">#B3000C</item>
     </style>
 
 </resources>

@@ -70,6 +70,12 @@
             android:key="experimentalCategory"
             android:title="Developer settings">
 
+        <SeekBarPreference
+                android:defaultValue="0"
+                android:key="forceTheme"
+                android:max="11"
+                android:title="Force month theme" />
+
         <EditTextPreference
                 android:key="whitelistPlaylist"
                 android:title="Playlist Whitelist" />

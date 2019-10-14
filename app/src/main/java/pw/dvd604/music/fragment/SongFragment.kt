@@ -128,10 +128,7 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
         } else {
             //Open sub media fragment
             (this.activity as MainActivity).createSubFragment(
-                HTTP.getDetailedSong(
-                    media.id,
-                    media.type
-                ), media.name
+                HTTP.getDetailedData(media), media.name
             )
         }
     }

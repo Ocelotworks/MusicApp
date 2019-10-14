@@ -8,6 +8,7 @@ import pw.dvd604.music.BuildConfig
 
 class Settings {
     companion object {
+        const val theme: String = "forceTheme"
         const val server = "address"
         const val offlineMusic = "download"
         const val offlineAlbum = "albumArt"
@@ -53,7 +54,8 @@ class Settings {
             maxSongSpeed to 50,
             forceExperimentalLayouts to false,
             apiKey to "",
-            playlistWhitelist to ""
+            playlistWhitelist to "",
+            theme to 0
         )
 
         var prefs: SharedPreferences? = null

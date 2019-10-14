@@ -40,29 +40,6 @@ class HTTP(context: Context?) {
             return "$address/api/${Util.dataTypeToString(value)}"
         }
 
-        fun getDetailedSong(id: String, type: MediaType): String {
-            val typeString: String = when (type) {
-                MediaType.ALBUM -> {
-                    "/album/"
-                }
-                MediaType.ARTIST -> {
-                    "/artist/"
-                }
-                MediaType.PLAYLIST -> {
-                    "/playlist/"
-                }
-                MediaType.GENRE -> {
-                    "/genre/"
-                }
-                else -> {
-                    //This shouldn't ever occur
-                    "/song/"
-                }
-            }
-
-            return "$address$songAPI$typeString$id"
-        }
-
         fun getAlbum(id: String): String {
             return "$address$songAPI/album/$id"
         }
@@ -92,7 +69,7 @@ class HTTP(context: Context?) {
             return "$address/song/$id/vote/like"
         }
 
-        fun getDetailedData(media: Media): String? {
+        fun getDetailedData(media: Media): String {
             val typeString: String = when (media.type) {
                 MediaType.ALBUM -> {
                     "/album/"
@@ -107,8 +84,7 @@ class HTTP(context: Context?) {
                     "/genre/"
                 }
                 else -> {
-                    //This shouldn't ever occur
-                    "/song/"
+                    throw Exception("getDetailedData used incorrectly")
                 }
             }
 
