@@ -88,40 +88,44 @@ class NowPlayingFragment : androidx.fragment.app.Fragment(), SeekBar.OnSeekBarCh
     var newSong = true
 
     private fun updateUI(metadata: MediaMetadataCompat?) {
-        songName.text = metadata?.description?.title
-        songAuthor.text = metadata?.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
-        songDuration.text =
-            Util.prettyTime(metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION))
+        try {
+            songName.text = metadata?.description?.title
+            songAuthor.text = metadata?.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
+            songDuration.text =
+                Util.prettyTime(metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION))
 
-        newSong =
-            !(lastName == songName.text.toString() && lastArtist == songAuthor.text.toString())
+            newSong =
+                !(lastName == songName.text.toString() && lastArtist == songAuthor.text.toString())
 
-        metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)?.let {
-            songProgress.max = it.toInt()
-        }
+            metadata?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)?.let {
+                songProgress.max = it.toInt()
+            }
 
-        songProgessText.text = Util.prettyTime(metadata?.getLong("progress")!! / 1000)
-        songProgress.progress = metadata.getLong("progress").toInt() / 1000
+            songProgessText.text = Util.prettyTime(metadata?.getLong("progress")!! / 1000)
+            songProgress.progress = metadata.getLong("progress").toInt() / 1000
 
-        //let the metadata update to here, including progress. Stop if it's not a new media
-        if (!(newSong || forceBitmapUpdate)) return
-        //This is because the bitmap decoding code is heavy, and shouldn't be run every second
+            //let the metadata update to here, including progress. Stop if it's not a new media
+            if (!(newSong || forceBitmapUpdate)) return
+            //This is because the bitmap decoding code is heavy, and shouldn't be run every second
 
-        forceBitmapUpdate = false
+            forceBitmapUpdate = false
 
-        lastName = songName.text.toString()
-        lastArtist = songAuthor.text.toString()
+            lastName = songName.text.toString()
+            lastArtist = songAuthor.text.toString()
 
-        MusicApplication.track("Media play", "$lastName - $lastArtist")
+            MusicApplication.track("Media play", "$lastName - $lastArtist")
 
-        val filePath = Util.albumURLToAlbumPath(metadata.description?.iconUri.toString())
+            val filePath = Util.albumURLToAlbumPath(metadata.description?.iconUri.toString())
 
-        val file = File(filePath)
+            val file = File(filePath)
 
-        if (file.exists()) {
-            postImage(BitmapFactory.decodeFile(file.canonicalPath))
-        } else {
-            BitmapAsync(this).execute(metadata.description?.iconUri.toString())
+            if (file.exists()) {
+                postImage(BitmapFactory.decodeFile(file.canonicalPath))
+            } else {
+                BitmapAsync(this).execute(metadata.description?.iconUri.toString())
+            }
+        } catch (e: Exception) {
+            return
         }
     }
 

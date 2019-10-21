@@ -31,6 +31,7 @@ import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.alerts.AlertQueue
 import pw.dvd604.music.util.download.Downloader
 import pw.dvd604.music.util.network.FilterMapRequest
 import pw.dvd604.music.util.network.HTTP
@@ -89,6 +90,8 @@ class MainActivity : AppCompatActivity() {
 
         http = HTTP(this)
 
+        AlertQueue.addListener(::alertListener)
+
         SongList.callback = songFragment::setSongs
 
         //Check permissions
@@ -119,6 +122,12 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
             }
         }.start()
+    }
+
+    private fun alertListener() {
+        val alert = AlertQueue.getAlert()
+        this.report(alert.text, alert.urgent)
+        AlertQueue.handled()
     }
 
     private fun setFilterSongs(songs: ArrayList<Media>) {
@@ -348,6 +357,10 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onBackPressed() {
+        if (sliding_layout.panelState == SlidingUpPanelLayout.PanelState.EXPANDED) {
+            sliding_layout.panelState = SlidingUpPanelLayout.PanelState.COLLAPSED
+            return
+        }
         when {
             inSettings -> {
                 //If we're currently looking at the settings, replace the fragment back to the old now playing fragment
@@ -363,7 +376,7 @@ class MainActivity : AppCompatActivity() {
                     it.title = resources.getString(R.string.app_name)
                 }
 
-                report("Settings changes require an app restart to take effect", true)
+                report("Settings changes require an app restart to take affect", true)
             }
             inQueue -> {
                 val fM = this.supportFragmentManager

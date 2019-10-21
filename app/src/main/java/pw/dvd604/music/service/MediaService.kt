@@ -25,6 +25,8 @@ import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.SongList.Companion.downloadedSongs
 import pw.dvd604.music.util.Util
+import pw.dvd604.music.util.alerts.AlertItem
+import pw.dvd604.music.util.alerts.AlertQueue
 import pw.dvd604.music.util.download.Downloader
 import pw.dvd604.music.util.network.HTTP
 import pw.dvd604.music.util.network.SongListRequest
@@ -301,6 +303,10 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     }
 
     private fun getNewIndex(currentSongIndex: Int, list: ArrayList<Media>): Int {
+        if (list.size == 0) {
+            throw ArrayIndexOutOfBoundsException("List length not more than 0")
+        }
+
         return if (mediaSession.controller.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
             if (list.size > 0) {
                 Random.nextInt(list.size)
@@ -326,7 +332,15 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
                 list.indexOf(currentMedia)
             }
 
-            var nextSongIndex: Int = getNewIndex(currentSongIndex, list)
+            var nextSongIndex: Int
+
+            try {
+                nextSongIndex = getNewIndex(currentSongIndex, list)
+            } catch (e: ArrayIndexOutOfBoundsException) {
+                AlertQueue.addAlert(AlertItem("Song list not yet initialised", true, this))
+                AlertQueue.notifyListeners()
+                return
+            }
 
             while (nextSongIndex == currentSongIndex) {
                 nextSongIndex++
