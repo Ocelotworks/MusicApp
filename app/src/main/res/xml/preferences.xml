@@ -9,11 +9,11 @@
                 android:summary="Don't like rap? This is for you"
                 android:title="Content blacklist" />
 
-    <SwitchPreferenceCompat
-            android:defaultValue="1"
-            android:key="usageReporting"
-            android:summary="Send usage reports"
-            android:title="Anonymised statistics reports" />
+        <SwitchPreferenceCompat
+                android:defaultValue="1"
+                android:key="usageReporting"
+                android:summary="Send usage reports"
+                android:title="Anonymised statistics reports" />
 
         <EditTextPreference
                 android:key="apiKey"
@@ -129,39 +129,6 @@
                     android:key="forceLayouts"
                     android:summary="Really not recommended"
                     android:title="Force Experimental Layouts" />
-
-            <PreferenceCategory android:title="Running mode [EXPERIMENTAL]">
-
-                <SwitchPreferenceCompat
-                        android:defaultValue="0"
-                        android:key="enableRunning"
-                        android:title="Enable" />
-
-                <SeekBarPreference
-                        android:defaultValue="100"
-                        android:key="stepPM"
-                        android:max="200"
-                        android:title="Target steps/minute" />
-
-                <SeekBarPreference
-                        android:defaultValue="10"
-                        android:key="marginOfError"
-                        android:max="70"
-                        android:title="Margin of error (%)" />
-
-                <SeekBarPreference
-                        android:defaultValue="50"
-                        android:key="minSongSpeed"
-                        android:max="100"
-                        android:title="Minimum playback speed (%)" />
-
-                <SeekBarPreference
-                        android:defaultValue="50"
-                        android:key="maxSongSpeed"
-                        android:max="100"
-                        android:title="Maximum playback speed (%)" />
-
-            </PreferenceCategory>
         </PreferenceCategory>
     </PreferenceCategory>
 
