@@ -22,8 +22,6 @@ import pw.dvd604.music.util.Settings
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.SongList.Companion.downloadedSongs
 import pw.dvd604.music.util.Util
-import pw.dvd604.music.util.alerts.AlertItem
-import pw.dvd604.music.util.alerts.AlertQueue
 import pw.dvd604.music.util.download.Downloader
 import pw.dvd604.music.util.network.HTTP
 import pw.dvd604.music.util.network.SongListRequest
@@ -38,8 +36,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
     lateinit var http: HTTP
     private var songList = SongList.songList
-    private var queuePosition: Int = 0
-    private var playbackSpeed: Float = 1f
 
     lateinit var afChangeListener: AudioManager.OnAudioFocusChangeListener
     private val noisyAudioStreamReceiver =
@@ -321,8 +317,6 @@ class MediaService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener
             try {
                 nextSongIndex = getNewIndex(currentSongIndex, list)
             } catch (e: ArrayIndexOutOfBoundsException) {
-                AlertQueue.addAlert(AlertItem("Song list not yet initialised", true, this))
-                AlertQueue.notifyListeners()
                 return
             }
 

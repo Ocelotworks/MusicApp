@@ -181,42 +181,46 @@ class SongFragment : androidx.fragment.app.Fragment(), TextWatcher,
 
     class SearchListener(private val songFragment: SongFragment) : Response.Listener<String> {
         override fun onResponse(response: String?) {
-            val data = ArrayList<Media>()
-            val json = JSONObject(response)
+            try {
+                val data = ArrayList<Media>()
+                val json = JSONObject(response)
 
-            val searchType =
-                Util.stringToDataType(songFragment.searchSpinner.selectedItem as String)
-            val array = json.getJSONArray(
-                "${(songFragment.searchSpinner.selectedItem as String).toLowerCase(
-                    Locale.getDefault()
-                )}s"
-            )
+                val searchType =
+                    Util.stringToDataType(songFragment.searchSpinner.selectedItem as String)
+                val array = json.getJSONArray(
+                    "${(songFragment.searchSpinner.selectedItem as String).toLowerCase(
+                        Locale.getDefault()
+                    )}s"
+                )
 
-            for (i in 0 until array.length()) {
-                val songJSON = array.getJSONObject(i)
-                lateinit var media: Media
+                for (i in 0 until array.length()) {
+                    val songJSON = array.getJSONObject(i)
+                    lateinit var media: Media
 
-                when (searchType) {
-                    MediaType.SONG -> media = Media().fromJson(songJSON)
-                    MediaType.ARTIST,
-                    MediaType.GENRE,
-                    MediaType.ALBUM,
-                    MediaType.PLAYLIST -> media = Media(
-                        songJSON.getString("name"),
-                        "",
-                        songJSON.getString("id"),
-                        "",
-                        "",
-                        "",
-                        "",
-                        searchType
-                    )
+                    when (searchType) {
+                        MediaType.SONG -> media = Media().fromJson(songJSON)
+                        MediaType.ARTIST,
+                        MediaType.GENRE,
+                        MediaType.ALBUM,
+                        MediaType.PLAYLIST -> media = Media(
+                            songJSON.getString("name"),
+                            "",
+                            songJSON.getString("id"),
+                            "",
+                            "",
+                            "",
+                            "",
+                            searchType
+                        )
+                    }
+
+                    data.add(media)
                 }
 
-                data.add(media)
+                songFragment.setSongs(data)
+            } catch (e: Exception) {
+                return
             }
-
-            songFragment.setSongs(data)
         }
     }
 }

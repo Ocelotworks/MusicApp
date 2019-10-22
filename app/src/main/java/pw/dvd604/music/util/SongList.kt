@@ -88,13 +88,17 @@ class SongList {
             val path = Settings.getSetting(Settings.storage)
             val directory = File(path)
 
-            for (f in directory.listFiles()) {
-                val songID = f.name
-                val songObj = songList.filter { song ->
-                    song.id == songID
-                }
+            try {
+                for (f in directory.listFiles()) {
+                    val songID = f.name
+                    val songObj = songList.filter { song ->
+                        song.id == songID
+                    }
 
-                downloadedSongs.addAll(songObj)
+                    downloadedSongs.addAll(songObj)
+                }
+            } catch (e: Exception) {
+                return
             }
         }
 

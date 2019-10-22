@@ -31,7 +31,6 @@ import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
 import pw.dvd604.music.util.Settings.Companion.server
 import pw.dvd604.music.util.SongList
 import pw.dvd604.music.util.Util
-import pw.dvd604.music.util.alerts.AlertQueue
 import pw.dvd604.music.util.download.Downloader
 import pw.dvd604.music.util.network.FilterMapRequest
 import pw.dvd604.music.util.network.HTTP
@@ -39,7 +38,6 @@ import pw.dvd604.music.util.network.SongListRequest
 import pw.dvd604.music.util.update.Updater
 import java.io.File
 import java.util.*
-import kotlin.system.exitProcess
 
 
 class MainActivity : AppCompatActivity() {
@@ -90,8 +88,6 @@ class MainActivity : AppCompatActivity() {
 
         http = HTTP(this)
 
-        AlertQueue.addListener(::alertListener)
-
         SongList.callback = songFragment::setSongs
 
         //Check permissions
@@ -122,12 +118,6 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
             }
         }.start()
-    }
-
-    private fun alertListener() {
-        val alert = AlertQueue.getAlert()
-        this.report(alert.text, alert.urgent)
-        AlertQueue.handled()
     }
 
     private fun setFilterSongs(songs: ArrayList<Media>) {
@@ -415,12 +405,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun check(perms: Array<String>): Boolean {
-        var result = true
         for (perm in perms) {
             if (ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_DENIED)
-                result = false
+                return false
         }
-        return result
+        return true
     }
 
     fun report(text: String, urgent: Boolean = false) {
@@ -444,8 +433,8 @@ class MainActivity : AppCompatActivity() {
                 if (grantResults.isNotEmpty()) {
                     for (perm in grantResults) {
                         if (perm != PackageManager.PERMISSION_GRANTED) {
-                            report("This app will not work without permissions", false)
-                            exitProcess(-1)
+                            report("This app will not work without permissions", true)
+                            //exitProcess(-1)
                         }
                     }
                 }

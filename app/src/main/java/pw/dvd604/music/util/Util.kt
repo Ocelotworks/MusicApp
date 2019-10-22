@@ -138,7 +138,7 @@ class Util {
         /**Pops the last played media from the stack, deletes it, and returns it here
          * @return Media, the last played media**/
         fun popSongStack(): Media {
-            return if (previousSongs.indices.contains(previousSongs.size - 1)) {
+            return if (previousSongs.size - 1 > 0) {
                 previousSongs.removeAt(previousSongs.size - 1)
                 previousSongs[previousSongs.size - 1]
             } else {
