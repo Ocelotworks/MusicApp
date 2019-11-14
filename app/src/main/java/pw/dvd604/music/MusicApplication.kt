@@ -2,8 +2,11 @@ package pw.dvd604.music
 
 import android.app.Application
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import io.sentry.Sentry
 import io.sentry.android.AndroidSentryClientFactory
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
 import pw.dvd604.music.data.room.AppDatabase
@@ -11,6 +14,9 @@ import kotlin.system.exitProcess
 
 
 class MusicApplication : Application() {
+
+    lateinit var db: RoomDatabase
+
     companion object {
         private var tracker: Tracker? = null
         fun track(category: String, event: String) {
@@ -23,10 +29,12 @@ class MusicApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "petify-db"
-        ).build()
+        GlobalScope.launch {
+            db = Room.databaseBuilder(
+                applicationContext,
+                AppDatabase::class.java, "petify-db"
+            ).build()
+        }
 
 
         Sentry.init(

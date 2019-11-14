@@ -29,11 +29,11 @@ android {
         apikeyProperties.store(apikeyPropertiesFile.newWriter(), null)
 
         defaultConfig {
-            applicationId "pw.dvd604.music"
+            applicationId "pw.dvd604.music.debug"
             minSdkVersion 26
             targetSdkVersion 28
             versionCode code
-            versionName "3.0"
+            versionName "4.0"
             testInstrumentationRunner "android.support.MediaService.runner.AndroidJUnitRunner"
             buildConfigField("String", "sentryKey", apikeyProperties['sentryKey'])
             buildConfigField("String", "apiURL", apikeyProperties['apiURL'])
