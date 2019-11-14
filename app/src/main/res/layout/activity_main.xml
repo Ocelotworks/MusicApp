@@ -15,8 +15,9 @@
             android:layout_height="match_parent" android:id="@+id/fragmentContainer">
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <fragment
+            android:id="@+id/slideContainer"
+            android:name="pw.dvd604.music.fragment.ControlFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" android:id="@+id/slideContainer">
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_height="match_parent" />
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>
