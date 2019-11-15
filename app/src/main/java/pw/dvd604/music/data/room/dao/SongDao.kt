@@ -22,4 +22,7 @@ interface SongDao {
 
     @Delete
     fun delete(song: Song)
+
+    @Query("SELECT COUNT(*) FROM song")
+    fun count(): Int
 }
