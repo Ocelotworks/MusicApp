@@ -35,14 +35,17 @@ class ContentManager(private val context: Context, private val activity: Activit
     }
 
     fun buildDatabase() {
+        //Here we're building the local database from the info we can get from the server
+        //We're creating a loading dialog, but not showing it
+        //And then in a co-routine we're building song, artist and album DB tables, along with creating the relations between them
         val dialog = ViewDialog(activity)
         dialog.setListener(activity as MainActivity)
-        dialog.showDialog()
+
         GlobalScope.launch {
             try {
-                build(app.db.songDao() as BaseDao<Any>, Song.Companion::parse, "song")
-                build(app.db.artistDao() as BaseDao<Any>, Artist.Companion::parse, "artist")
-                build(app.db.albumDao() as BaseDao<Any>, Album.Companion::parse, "album")
+                build(app.db.songDao() as BaseDao<Any>, Song.Companion::parse, "song", dialog)
+                build(app.db.artistDao() as BaseDao<Any>, Artist.Companion::parse, "artist", dialog)
+                build(app.db.albumDao() as BaseDao<Any>, Album.Companion::parse, "album", dialog)
 
                 buildRelations(app.db.artistSongJoinDao(), app.db.albumSongJoinDao(), dialog)
             } catch (e: java.lang.Exception) {
@@ -60,33 +63,41 @@ class ContentManager(private val context: Context, private val activity: Activit
             "${BuildConfig.defaultURL}song",
             Response.Listener { res ->
                 val array = JSONArray(res)
-
                 GlobalScope.launch {
-                    for (i in 0 until array.length()) {
-                        try {
-                            val json = array.getJSONObject(i)
-                            val artistJoin = ArtistSongJoin(
-                                songID = json.getString("id"),
-                                artistID = json.getString("artistID")
-                            )
+                    try {
+                        if (artistSongJoinDao.count() < array.length()) {
+                            for (i in 0 until array.length()) {
 
-                            val albumJoin = AlbumSongJoin(
-                                songID = json.getString("id"),
-                                albumID = json.getString("albumID")
-                            )
+                                val json = array.getJSONObject(i)
+                                val artistJoin = ArtistSongJoin(
+                                    songID = json.getString("id"),
+                                    artistID = json.getString("artistID")
+                                )
 
-                            artistSongJoinDao.insert(artistJoin)
-                            albumSongJoinDao.insert(albumJoin)
-                        } catch (e: Exception) {
-                            Log.e("Error", "", e)
+                                val albumJoin = AlbumSongJoin(
+                                    songID = json.getString("id"),
+                                    albumID = json.getString("albumID")
+                                )
+
+                                artistSongJoinDao.insert(artistJoin)
+                                albumSongJoinDao.insert(albumJoin)
+
+                            }
                         }
+                        dialog.hideDialog()
+                    } catch (e: Exception) {
+                        Log.e("Error", "", e)
                     }
-                    dialog.hideDialog()
                 }
             })
     }
 
-    private fun build(dao: BaseDao<Any>, parse: (obj: JSONObject) -> Any, type: String) {
+    private fun build(
+        dao: BaseDao<Any>,
+        parse: (obj: JSONObject) -> Any,
+        type: String,
+        dialog: ViewDialog? = null
+    ) {
         if (dao.count() > 0) return
 
         HTTP(context).getReq(
@@ -94,14 +105,17 @@ class ContentManager(private val context: Context, private val activity: Activit
             Response.Listener { res ->
                 val array = JSONArray(res)
 
-                for (i in 0 until array.length()) {
-                    GlobalScope.launch {
-                        try {
-                            val dataObject = parse(array.getJSONObject(i))
+                if (array.length() > dao.count()) {
+                    dialog?.showDialog()
+                    for (i in 0 until array.length()) {
+                        GlobalScope.launch {
+                            try {
+                                val dataObject = parse(array.getJSONObject(i))
 
-                            dao.insert(dataObject)
-                        } catch (e: Exception) {
-                            Log.e("Error", "", e)
+                                dao.insert(dataObject)
+                            } catch (e: Exception) {
+                                Log.e("Error", "", e)
+                            }
                         }
                     }
                 }

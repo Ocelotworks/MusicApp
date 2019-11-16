@@ -21,15 +21,18 @@ interface ArtistSongJoinDao {
            WHERE artist_song_join.songId=:songId
            """
     )
-    fun getPlaylistsForSong(songId: Int): Array<Playlist>
+    fun getArtistForSong(songId: String): Array<Playlist>
 
     @Query(
         """
            SELECT * FROM song
            INNER JOIN artist_song_join
            ON song.id=artist_song_join.songId
-           WHERE artist_song_join.artistID=:playlistId
+           WHERE artist_song_join.artistID=:artistId
            """
     )
-    fun getSongsForPlaylist(playlistId: Int): Array<Song>
+    fun getSongsForArtist(artistId: String): Array<Song>
+
+    @Query("SELECT COUNT(*) FROM artist_song_join")
+    fun count(): Int
 }
