@@ -10,7 +10,7 @@ import pw.dvd604.music.data.room.dao.*
 
 @Database(
     entities = [Album::class, Playlist::class, Song::class, Artist::class, AlbumSongJoin::class, ArtistSongJoin::class, PlaylistSongJoin::class],
-    version = 1
+    version = 7
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun albumDao(): AlbumDao

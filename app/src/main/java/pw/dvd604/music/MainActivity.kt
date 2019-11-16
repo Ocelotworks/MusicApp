@@ -4,54 +4,41 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.android.volley.Response
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_playing.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import pw.dvd604.music.data.Song
-import pw.dvd604.music.dialog.ViewDialog
-import pw.dvd604.music.util.HTTP
+import pw.dvd604.music.dialog.DialogHideListener
+import pw.dvd604.music.util.ContentManager
 
 
-class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListener {
+class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListener,
+    DialogHideListener {
+    override fun onHide() {
+        GlobalScope.launch {
+            val album = getApp().db.albumSongJoinDao()
+                .getSongsForAlbum("000f7b4c-6b3c-4c36-948c-ac2ed7811dc9")
+
+            album.forEach {
+                Log.e("Test", it.title)
+            }
+        }
+    }
+
+    private lateinit var mContentManager: ContentManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setupUI()
+        mContentManager = ContentManager(this.applicationContext, this)
+        mContentManager.buildDatabase()
 
+    }
+
+    private fun setupUI() {
         sliding_layout.addPanelSlideListener(this)
-
-        GlobalScope.launch {
-            if (getApp().db.songDao().count() == 0) {
-                val dialog = ViewDialog(this@MainActivity)
-                dialog.showDialog()
-
-                HTTP(this@MainActivity).getReq(
-                    "http://unacceptableuse.com:3000/api/v2/song",
-                    Response.Listener { res ->
-
-                        Log.e("Build", "Started")
-                        val array = JSONArray(res)
-                        val songList = ArrayList<Song>()
-
-                        for (i in 0 until array.length()) {
-                            val songObject = Song.parse(array.getJSONObject(i))
-                            Log.e("Build", "At $i")
-
-                            songList.add(songObject)
-                        }
-
-                        Log.e("Build", "finished")
-
-                        getApp().db.songDao().insertAll(*songList.toTypedArray())
-                        dialog.hideDialog()
-                    })
-            } else {
-                Log.e("Build", "Have ${getApp().db.songDao().count()} songs in db")
-            }
-        }
     }
 
     override fun onPanelSlide(panel: View?, slideOffset: Float) {

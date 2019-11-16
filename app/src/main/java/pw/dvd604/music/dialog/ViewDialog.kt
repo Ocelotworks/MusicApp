@@ -11,6 +11,7 @@ import pw.dvd604.music.R
 
 class ViewDialog(private var activity: Activity) {
     private lateinit var dialog: Dialog
+    private var dialogHideListener: DialogHideListener? = null
 
     fun showDialog() {
 
@@ -31,7 +32,12 @@ class ViewDialog(private var activity: Activity) {
     }
 
     fun hideDialog() {
+        dialogHideListener?.onHide()
         dialog.dismiss()
+    }
+
+    fun setListener(dialogHideListener: DialogHideListener) {
+        this.dialogHideListener = dialogHideListener
     }
 
 }

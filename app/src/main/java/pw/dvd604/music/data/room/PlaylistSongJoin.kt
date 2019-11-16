@@ -18,6 +18,6 @@ import pw.dvd604.music.data.Song
         childColumns = arrayOf("songID")
     )]
 )
-data class PlaylistSongJoin(val playlistID: Int, val songID: Int) {
+data class PlaylistSongJoin(val playlistID: String, val songID: String) {
 
 }

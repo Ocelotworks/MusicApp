@@ -33,7 +33,7 @@ class MusicApplication : Application() {
             db = Room.databaseBuilder(
                 applicationContext,
                 AppDatabase::class.java, "petify-db"
-            ).build()
+            ).fallbackToDestructiveMigration().build()
         }
 
         Settings.init(this)

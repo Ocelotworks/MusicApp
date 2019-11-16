@@ -2,6 +2,7 @@ package pw.dvd604.music.data.room.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import pw.dvd604.music.data.Playlist
 import pw.dvd604.music.data.Song
@@ -9,7 +10,7 @@ import pw.dvd604.music.data.room.ArtistSongJoin
 
 @Dao
 interface ArtistSongJoinDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(artistSongJoin: ArtistSongJoin)
 
     @Query(
