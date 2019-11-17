@@ -7,15 +7,27 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_songs.*
 import kotlinx.coroutines.*
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.adapter.CardRecyclerAdapter
+import pw.dvd604.music.data.adapter.ListRecyclerAdapter
+import pw.dvd604.music.data.room.dao.ArtistSongJoinDao
 import pw.dvd604.music.data.room.dao.BaseDao
 
-class ListFragment(val dao: BaseDao<*>, val title: String) : Fragment() {
+enum class ListLayout {
+    GRID, LIST
+}
+
+class ListFragment(
+    private val dao: BaseDao<*>,
+    private val title: String,
+    private val layout: ListLayout = ListLayout.GRID,
+    val artistJoinDao: ArtistSongJoinDao
+) : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,39 +41,60 @@ class ListFragment(val dao: BaseDao<*>, val title: String) : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         pageTitle.text = title
 
-        songList.layoutManager = GridLayoutManager(this@ListFragment.context, 3)
-        songList.adapter = CardRecyclerAdapter(this@ListFragment.context!!) { cd ->
-            Log.e("Clicked", "${cd.title} ${cd.id} click")
+        if (layout == ListLayout.GRID) {
+            songList.layoutManager = GridLayoutManager(this@ListFragment.context, 3)
+            songList.adapter = CardRecyclerAdapter(this@ListFragment.context!!) { cd ->
+                Log.e("Clicked", "${cd.title} ${cd.id} click")
 
-            GlobalScope.launch {
-                val songs =
-                    (this@ListFragment.activity as MainActivity).getApp().db.albumSongJoinDao()
-                        .getSongsForAlbum(cd.id)
+                GlobalScope.launch {
+                    val songs =
+                        (this@ListFragment.activity as MainActivity).getApp().db.albumSongJoinDao()
+                            .getSongsForAlbum(cd.id)
 
-                songs.forEach {
-                    Log.e("Songs", it.toString())
+                    songs.forEach {
+                        Log.e("Songs", it.toString())
+                    }
                 }
             }
-        }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            try {
-                val adapter = songList.adapter as CardRecyclerAdapter
+            CoroutineScope(Dispatchers.Main).launch {
+                try {
+                    val adapter = songList.adapter as CardRecyclerAdapter
 
 
-                val task = async(Dispatchers.IO) {
-                    dao.getAll()
+                    val task = async(Dispatchers.IO) {
+                        dao.getAll()
+                    }
+
+                    val data = task.await()
+
+                    adapter.setData(data as List<CardData>)
+
+                    adapter.notifyDataSetChanged()
+                } catch (e: Exception) {
+                    Log.e("Error", "", e)
                 }
+            }
+        } else if (layout == ListLayout.LIST) {
+            songList.layoutManager = LinearLayoutManager(context)
+            songList.adapter = ListRecyclerAdapter(this@ListFragment.context!!) { }
 
-                val data = task.await()
+            CoroutineScope(Dispatchers.Main).launch {
+                try {
+                    val adapter = songList.adapter as ListRecyclerAdapter
 
-                adapter.setData(data as List<CardData>)
+                    val songTask = async(Dispatchers.IO) {
+                        dao.getAll()
+                    }
 
-                Log.e("Test", "Done...")
+                    val songData = songTask.await()
 
-                adapter.notifyDataSetChanged()
-            } catch (e: Exception) {
-                Log.e("Error", "", e)
+                    adapter.setData(songData as List<CardData>)
+
+                    adapter.notifyDataSetChanged()
+                } catch (e: Exception) {
+                    Log.e("Error", "", e)
+                }
             }
         }
     }

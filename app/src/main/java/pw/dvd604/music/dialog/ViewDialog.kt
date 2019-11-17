@@ -32,7 +32,7 @@ class ViewDialog(private var activity: Activity) {
     }
 
     fun hideDialog() {
-        if (!dialog.isShowing)
+        if (!this::dialog.isInitialized || !dialog.isShowing)
             return
 
         dialogHideListener?.onHide()

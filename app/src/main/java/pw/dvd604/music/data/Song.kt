@@ -1,16 +1,15 @@
 package pw.dvd604.music.data
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import org.json.JSONObject
 
 @Entity(tableName = "song")
-data class Song(
-    @PrimaryKey var id: String = "",
-    var title: String = "",
+class Song(
+    id: String = "",
+    title: String = "",
     var duration: Int = 0,
     var hash: String = ""
-) {
+) : CardData(title, id, "song", "https://unacceptableuse.com/petify/album/") {
 
     companion object {
         fun parse(obj: JSONObject): Song {

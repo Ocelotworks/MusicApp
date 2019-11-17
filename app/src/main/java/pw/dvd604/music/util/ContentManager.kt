@@ -10,6 +10,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.android.volley.Response
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
@@ -23,6 +24,7 @@ import pw.dvd604.music.data.room.ArtistSongJoin
 import pw.dvd604.music.data.room.dao.AlbumSongJoinDao
 import pw.dvd604.music.data.room.dao.ArtistSongJoinDao
 import pw.dvd604.music.data.room.dao.BaseDao
+import pw.dvd604.music.data.room.dao.SongDao
 import pw.dvd604.music.dialog.ViewDialog
 import java.io.File
 
@@ -53,6 +55,8 @@ class ContentManager(private val context: Context, private val activity: Activit
         }
     }
 
+    private var built = false
+
     fun buildDatabase() {
         //Here we're building the local database from the info we can get from the server
         //We're creating a loading dialog, but not showing it
@@ -64,6 +68,10 @@ class ContentManager(private val context: Context, private val activity: Activit
                 build(app.db.songDao() as BaseDao<Any>, Song.Companion::parse, "song", dialog)
                 build(app.db.artistDao() as BaseDao<Any>, Artist.Companion::parse, "artist", dialog)
                 build(app.db.albumDao() as BaseDao<Any>, Album.Companion::parse, "album", dialog)
+
+                while (!built) {
+                    delay(1000)
+                }
 
                 buildRelations(app.db.artistSongJoinDao(), app.db.albumSongJoinDao(), dialog)
             } catch (e: java.lang.Exception) {
@@ -129,7 +137,9 @@ class ContentManager(private val context: Context, private val activity: Activit
             "${BuildConfig.defaultURL}$type",
             Response.Listener { res ->
                 val array = JSONArray(res)
-                dialog?.showDialog("Building core tables")
+
+                if (dao is SongDao)
+                    dialog?.showDialog("Building core tables")
 
                 GlobalScope.launch {
                     try {
@@ -146,6 +156,11 @@ class ContentManager(private val context: Context, private val activity: Activit
                                 }
                             }
                         }
+
+                        if (dao is SongDao) {
+                            built = true
+                        }
+                        dialog?.hideDialog()
                     } catch (e: Exception) {
                         Log.e("Error", "", e)
                     }

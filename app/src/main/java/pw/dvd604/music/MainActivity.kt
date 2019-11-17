@@ -11,9 +11,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_playing.*
 import pw.dvd604.music.data.room.dao.BaseDao
 import pw.dvd604.music.fragment.ListFragment
+import pw.dvd604.music.fragment.ListLayout
 import pw.dvd604.music.util.ContentManager
 
-private const val NUM_PAGES = 2
+private const val NUM_PAGES = 3
 
 class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListener {
 
@@ -62,6 +63,9 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
             1 -> {
                 getApp().db.artistDao()
             }
+            2 -> {
+                getApp().db.songDao()
+            }
             else -> {
                 getApp().db.albumDao()
             }
@@ -76,8 +80,25 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
             1 -> {
                 "Artists"
             }
+            2 -> {
+                "Songs"
+            }
             else -> {
                 "Unknown?"
+            }
+        }
+    }
+
+    private fun getPagerLayout(position: Int): ListLayout {
+        return when (position) {
+            0 -> {
+                ListLayout.GRID
+            }
+            1, 2 -> {
+                ListLayout.LIST
+            }
+            else -> {
+                ListLayout.GRID
             }
         }
     }
@@ -87,10 +108,15 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
      * sequence.
      */
     private inner class ScreenSlidePagerAdapter(fm: FragmentManager) :
-        FragmentStatePagerAdapter(fm) {
+        FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
         override fun getCount(): Int = NUM_PAGES
 
         override fun getItem(position: Int): Fragment =
-            ListFragment(getDao(position), getPagerTitle(position))
+            ListFragment(
+                getDao(position),
+                getPagerTitle(position),
+                getPagerLayout(position),
+                getApp().db.artistSongJoinDao()
+            )
     }
 }
