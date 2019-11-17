@@ -7,7 +7,7 @@ import pw.dvd604.music.data.Playlist
 @Dao
 abstract class PlaylistDao : BaseDao<Playlist> {
     @Query("SELECT * FROM playlist")
-    abstract fun getAll(): List<Playlist>
+    abstract override fun getAll(): List<Playlist>
 
     @Query("SELECT * FROM playlist WHERE id IN (:ids)")
     abstract fun findByIDs(ids: IntArray): List<Playlist>

@@ -8,15 +8,14 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import kotlinx.android.synthetic.main.fragment_songs.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
+import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.adapter.CardRecyclerAdapter
+import pw.dvd604.music.data.room.dao.BaseDao
 
-class ListFragment : Fragment() {
+class ListFragment(val dao: BaseDao<*>) : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,8 +28,18 @@ class ListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         songList.layoutManager = GridLayoutManager(this@ListFragment.context, 3)
-        songList.adapter = CardRecyclerAdapter(this@ListFragment.context!!) {
-            Log.e("Clicked", "${it.title} click")
+        songList.adapter = CardRecyclerAdapter(this@ListFragment.context!!) { cd ->
+            Log.e("Clicked", "${cd.title} ${cd.id} click")
+
+            GlobalScope.launch {
+                val songs =
+                    (this@ListFragment.activity as MainActivity).getApp().db.albumSongJoinDao()
+                        .getSongsForAlbum(cd.id)
+
+                songs.forEach {
+                    Log.e("Songs", it.toString())
+                }
+            }
         }
 
         CoroutineScope(Dispatchers.Main).launch {
@@ -39,12 +48,12 @@ class ListFragment : Fragment() {
 
 
                 val task = async(Dispatchers.IO) {
-                    (this@ListFragment.activity as MainActivity).getApp().db.albumDao().getAll()
+                    dao.getAll()
                 }
 
                 val data = task.await()
 
-                adapter.setData(data)
+                adapter.setData(data as List<CardData>)
 
                 Log.e("Test", "Done...")
 

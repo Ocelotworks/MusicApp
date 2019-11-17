@@ -17,6 +17,8 @@ class MusicApplication : Application() {
 
     lateinit var db: AppDatabase
 
+    lateinit var internalStorage: String
+
     companion object {
         private var tracker: Tracker? = null
         fun track(category: String, event: String) {
@@ -35,6 +37,8 @@ class MusicApplication : Application() {
                 AppDatabase::class.java, "petify-db"
             ).fallbackToDestructiveMigration().build()
         }
+
+        internalStorage = filesDir.path
 
         Settings.init(this)
 

@@ -7,7 +7,7 @@ import pw.dvd604.music.data.Album
 @Dao
 abstract class AlbumDao : BaseDao<Album> {
     @Query("SELECT * FROM album")
-    abstract fun getAll(): List<Album>
+    abstract override fun getAll(): List<Album>
 
     @Query("SELECT * FROM album WHERE id IN (:ids)")
     abstract fun findByIDs(ids: IntArray): List<Album>

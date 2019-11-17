@@ -7,8 +7,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.cardview_item.view.*
+import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
 import pw.dvd604.music.data.CardData
+import java.io.File
 
 class CardRecyclerAdapter(
     private val context: Context,
@@ -34,7 +36,13 @@ class CardRecyclerAdapter(
 
 class CardViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     fun bind(data: CardData, listener: (CardData) -> Unit) = with(itemView) {
-        Glide.with(context).load(data.url).into(itemImage)
+
+        val path = "${(context.applicationContext as MusicApplication).internalStorage}/${data.id}"
+        if (File(path).exists()) {
+            Glide.with(context).asBitmap().load(path).into(itemImage)
+        } else {
+            Glide.with(context).asBitmap().load(data.url + data.id).into(itemImage)
+        }
         itemTitle.text = data.title
 
         setOnClickListener { listener(data) }

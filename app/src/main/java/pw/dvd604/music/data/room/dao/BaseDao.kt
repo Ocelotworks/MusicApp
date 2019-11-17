@@ -14,4 +14,6 @@ interface BaseDao<T> {
 
     @Insert
     fun insert(dataObject: T)
+
+    fun getAll(): List<T>
 }

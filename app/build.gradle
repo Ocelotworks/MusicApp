@@ -41,6 +41,7 @@ android {
             buildConfigField("int", "siteID", apikeyProperties['siteID'])
             buildConfigField("String", "versionURL", apikeyProperties['versionURL'])
             buildConfigField("String", "versionURLRoot", apikeyProperties['versionURLRoot'])
+            buildConfigField("String", "storage", apikeyProperties['storage'])
         }
 
     } else {
@@ -122,5 +123,5 @@ dependencies {
     testImplementation "androidx.room:room-testing:$room_version"
     implementation 'com.android.support:design:28.0.0'
 
-    implementation 'com.github.bumptech.glide:glide:3.7.0'
+    implementation 'com.github.bumptech.glide:glide:4.10.0'
 }

@@ -1,9 +1,13 @@
 package pw.dvd604.music.util
 
+import android.Manifest
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.android.volley.Response
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -20,10 +24,19 @@ import pw.dvd604.music.data.room.dao.AlbumSongJoinDao
 import pw.dvd604.music.data.room.dao.ArtistSongJoinDao
 import pw.dvd604.music.data.room.dao.BaseDao
 import pw.dvd604.music.dialog.ViewDialog
+import java.io.File
+
 
 class ContentManager(private val context: Context, private val activity: Activity) {
 
     private var app: MusicApplication
+
+    var permissions = arrayOf(
+        Manifest.permission.INTERNET,
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    )
+
 
     init {
         if (context !is Application) {
@@ -31,6 +44,13 @@ class ContentManager(private val context: Context, private val activity: Activit
         }
 
         app = context as MusicApplication
+
+        if (!File(Settings.storage).exists()) {
+            File(Settings.storage).mkdirs()
+            Log.e("File", "True")
+        } else {
+            Log.e("File", "false")
+        }
     }
 
     fun buildDatabase() {
@@ -66,21 +86,26 @@ class ContentManager(private val context: Context, private val activity: Activit
                     try {
                         if (artistSongJoinDao.count() < array.length()) {
                             for (i in 0 until array.length()) {
-
                                 val json = array.getJSONObject(i)
-                                val artistJoin = ArtistSongJoin(
-                                    songID = json.getString("id"),
-                                    artistID = json.getString("artistID")
-                                )
+                                try {
+                                    val artistJoin = ArtistSongJoin(
+                                        songID = json.getString("id"),
+                                        artistID = json.getString("artistID")
+                                    )
 
-                                val albumJoin = AlbumSongJoin(
-                                    songID = json.getString("id"),
-                                    albumID = json.getString("albumID")
-                                )
+                                    val albumJoin = AlbumSongJoin(
+                                        songID = json.getString("id"),
+                                        albumID = json.getString("albumID")
+                                    )
 
-                                artistSongJoinDao.insert(artistJoin)
-                                albumSongJoinDao.insert(albumJoin)
-
+                                    artistSongJoinDao.insert(artistJoin)
+                                    albumSongJoinDao.insert(albumJoin)
+                                } catch (ignored: java.lang.Exception) {
+                                    Log.e(
+                                        "BRelations",
+                                        "Error from build song relations from ${json}: ${ignored.message}"
+                                    )
+                                }
                             }
                         }
                     } catch (e: Exception) {
@@ -126,5 +151,21 @@ class ContentManager(private val context: Context, private val activity: Activit
                     }
                 }
             })
+    }
+
+    fun requestPermissions(): Boolean {
+        var result: Int
+        val listPermissionsNeeded = ArrayList<String>()
+        for (p in permissions) {
+            result = ContextCompat.checkSelfPermission(activity, p)
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                listPermissionsNeeded.add(p)
+            }
+        }
+        if (listPermissionsNeeded.isNotEmpty()) {
+            ActivityCompat.requestPermissions(activity, listPermissionsNeeded.toTypedArray(), 100)
+            return false
+        }
+        return true
     }
 }

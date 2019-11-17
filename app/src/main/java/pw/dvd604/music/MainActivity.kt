@@ -13,18 +13,21 @@ import pw.dvd604.music.util.ContentManager
 class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListener {
 
     private lateinit var mContentManager: ContentManager
-    private val songListFragment = ListFragment()
+    private lateinit var songListFragment: ListFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setupUI()
         mContentManager = ContentManager(this.applicationContext, this)
+        mContentManager.requestPermissions()
         mContentManager.buildDatabase()
     }
 
     private fun setupUI() {
         sliding_layout.addPanelSlideListener(this)
+
+        songListFragment = ListFragment(getApp().db.albumDao())
 
         this.supportFragmentManager.beginTransaction().add(R.id.fragmentContainer, songListFragment)
             .commit()

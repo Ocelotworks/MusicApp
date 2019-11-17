@@ -1,7 +1,9 @@
 package pw.dvd604.music.util
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Environment
 import androidx.preference.PreferenceManager
 import pw.dvd604.music.BuildConfig
 
@@ -13,6 +15,14 @@ class Settings {
         const val shuffleOffline = "shuffleOffline"
         const val developer = "developerOptions"
         const val firstRun = "firstRun"
+
+
+        @SuppressLint("SdCardPath")
+        val storage = BuildConfig.storage.replace(
+            "/sdcard/",
+            Environment.getExternalStorageDirectory().path,
+            true
+        )
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             server to BuildConfig.defaultURL,
