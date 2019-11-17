@@ -10,7 +10,6 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 import pw.dvd604.music.BuildConfig
-import pw.dvd604.music.MainActivity
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.data.Album
 import pw.dvd604.music.data.Artist
@@ -39,7 +38,6 @@ class ContentManager(private val context: Context, private val activity: Activit
         //We're creating a loading dialog, but not showing it
         //And then in a co-routine we're building song, artist and album DB tables, along with creating the relations between them
         val dialog = ViewDialog(activity)
-        dialog.setListener(activity as MainActivity)
 
         GlobalScope.launch {
             try {
@@ -63,6 +61,7 @@ class ContentManager(private val context: Context, private val activity: Activit
             "${BuildConfig.defaultURL}song",
             Response.Listener { res ->
                 val array = JSONArray(res)
+                dialog.showDialog("Building table relations")
                 GlobalScope.launch {
                     try {
                         if (artistSongJoinDao.count() < array.length()) {
@@ -84,10 +83,11 @@ class ContentManager(private val context: Context, private val activity: Activit
 
                             }
                         }
-                        dialog.hideDialog()
                     } catch (e: Exception) {
                         Log.e("Error", "", e)
                     }
+
+                    dialog.hideDialog()
                 }
             })
     }
@@ -104,19 +104,25 @@ class ContentManager(private val context: Context, private val activity: Activit
             "${BuildConfig.defaultURL}$type",
             Response.Listener { res ->
                 val array = JSONArray(res)
+                dialog?.showDialog("Building core tables")
 
-                if (array.length() > dao.count()) {
-                    dialog?.showDialog()
-                    for (i in 0 until array.length()) {
-                        GlobalScope.launch {
-                            try {
-                                val dataObject = parse(array.getJSONObject(i))
+                GlobalScope.launch {
+                    try {
+                        if (array.length() > dao.count()) {
+                            for (i in 0 until array.length()) {
+                                GlobalScope.launch {
+                                    try {
+                                        val dataObject = parse(array.getJSONObject(i))
 
-                                dao.insert(dataObject)
-                            } catch (e: Exception) {
-                                Log.e("Error", "", e)
+                                        dao.insert(dataObject)
+                                    } catch (e: Exception) {
+                                        Log.e("Error", "", e)
+                                    }
+                                }
                             }
                         }
+                    } catch (e: Exception) {
+                        Log.e("Error", "", e)
                     }
                 }
             })

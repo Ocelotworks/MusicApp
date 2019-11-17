@@ -5,11 +5,12 @@ import androidx.room.PrimaryKey
 import org.json.JSONObject
 
 @Entity(tableName = "album")
-data class Album(
+class Album(
     @PrimaryKey var id: String = "",
-    var title: String = "",
-    var artistID: String = ""
-) {
+    title: String = "",
+    var artistID: String = "",
+    url: String = ""
+) : CardData(title, id, "album") {
     companion object {
         fun parse(obj: JSONObject): Album {
             val album = Album()

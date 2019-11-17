@@ -30,6 +30,7 @@
     <string name="playlist">Playlist</string>
     <string name="addQueue">Queue</string>
     <string name="empty">Empty</string>
+    <string name="loading_string">Warming things up</string>
     <string-array name="searchEntries">
         <item>Song</item>
         <item>Artist</item>

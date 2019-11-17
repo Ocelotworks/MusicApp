@@ -13,7 +13,7 @@ class ViewDialog(private var activity: Activity) {
     private lateinit var dialog: Dialog
     private var dialogHideListener: DialogHideListener? = null
 
-    fun showDialog() {
+    fun showDialog(s: String = "") {
 
         dialog = Dialog(activity)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -27,6 +27,8 @@ class ViewDialog(private var activity: Activity) {
             .centerCrop()
             .crossFade()
             .into(imageViewTarget)
+
+        dialog.loadingText.text = s
 
         dialog.show()
     }
