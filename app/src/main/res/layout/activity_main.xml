@@ -10,10 +10,10 @@
         sothree:umanoPanelHeight="68dp"
         sothree:umanoShadowHeight="4dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.viewpager.widget.ViewPager
+            android:id="@+id/pager"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" android:id="@+id/fragmentContainer">
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_height="match_parent" />
 
     <fragment
             android:id="@+id/slideContainer"

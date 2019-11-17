@@ -15,7 +15,7 @@ import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.adapter.CardRecyclerAdapter
 import pw.dvd604.music.data.room.dao.BaseDao
 
-class ListFragment(val dao: BaseDao<*>) : Fragment() {
+class ListFragment(val dao: BaseDao<*>, val title: String) : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -27,6 +27,8 @@ class ListFragment(val dao: BaseDao<*>) : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        pageTitle.text = title
+
         songList.layoutManager = GridLayoutManager(this@ListFragment.context, 3)
         songList.adapter = CardRecyclerAdapter(this@ListFragment.context!!) { cd ->
             Log.e("Clicked", "${cd.title} ${cd.id} click")
