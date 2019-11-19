@@ -10,7 +10,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.android.volley.Response
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
@@ -29,7 +28,11 @@ import pw.dvd604.music.dialog.ViewDialog
 import java.io.File
 
 
-class ContentManager(private val context: Context, private val activity: Activity) {
+class ContentManager(
+    private val context: Context,
+    private val activity: Activity,
+    private val doneBuild: () -> Unit
+) {
 
     private var app: MusicApplication
 
@@ -55,8 +58,6 @@ class ContentManager(private val context: Context, private val activity: Activit
         }
     }
 
-    private var built = false
-
     fun buildDatabase() {
         //Here we're building the local database from the info we can get from the server
         //We're creating a loading dialog, but not showing it
@@ -68,12 +69,6 @@ class ContentManager(private val context: Context, private val activity: Activit
                 build(app.db.songDao() as BaseDao<Any>, Song.Companion::parse, "song", dialog)
                 build(app.db.artistDao() as BaseDao<Any>, Artist.Companion::parse, "artist", dialog)
                 build(app.db.albumDao() as BaseDao<Any>, Album.Companion::parse, "album", dialog)
-
-                while (!built) {
-                    delay(1000)
-                }
-
-                buildRelations(app.db.artistSongJoinDao(), app.db.albumSongJoinDao(), dialog)
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
             }
@@ -83,13 +78,14 @@ class ContentManager(private val context: Context, private val activity: Activit
     private fun buildRelations(
         artistSongJoinDao: ArtistSongJoinDao,
         albumSongJoinDao: AlbumSongJoinDao,
-        dialog: ViewDialog
+        dialog: ViewDialog?
     ) {
+        Log.e("Running", "1213")
         HTTP(context).getReq(
             "${BuildConfig.defaultURL}song",
             Response.Listener { res ->
                 val array = JSONArray(res)
-                dialog.showDialog("Building table relations")
+                dialog?.showDialog("Building table relations")
                 GlobalScope.launch {
                     try {
                         if (artistSongJoinDao.count() < array.length()) {
@@ -106,6 +102,7 @@ class ContentManager(private val context: Context, private val activity: Activit
                                         albumID = json.getString("albumID")
                                     )
 
+                                    Log.e("Running", "Inserting")
                                     artistSongJoinDao.insert(artistJoin)
                                     albumSongJoinDao.insert(albumJoin)
                                 } catch (ignored: java.lang.Exception) {
@@ -119,8 +116,8 @@ class ContentManager(private val context: Context, private val activity: Activit
                     } catch (e: Exception) {
                         Log.e("Error", "", e)
                     }
-
-                    dialog.hideDialog()
+                    doneBuild()
+                    dialog?.hideDialog()
                 }
             })
     }
@@ -158,7 +155,11 @@ class ContentManager(private val context: Context, private val activity: Activit
                         }
 
                         if (dao is SongDao) {
-                            built = true
+                            buildRelations(
+                                app.db.artistSongJoinDao(),
+                                app.db.albumSongJoinDao(),
+                                dialog
+                            )
                         }
                         dialog?.hideDialog()
                     } catch (e: Exception) {

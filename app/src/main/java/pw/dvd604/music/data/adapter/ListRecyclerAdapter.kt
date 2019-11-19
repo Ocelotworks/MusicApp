@@ -34,6 +34,7 @@ class ListRecyclerAdapter(
 class ListViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     fun bind(data: CardData, listener: (CardData) -> Unit) = with(itemView) {
         bodyText.text = data.title
+        subText.text = data.subtext
 
         setOnClickListener { listener(data) }
     }

@@ -1,6 +1,7 @@
 package pw.dvd604.music
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -9,6 +10,8 @@ import androidx.fragment.app.FragmentStatePagerAdapter
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_playing.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import pw.dvd604.music.data.room.dao.BaseDao
 import pw.dvd604.music.fragment.ListFragment
 import pw.dvd604.music.fragment.ListLayout
@@ -24,9 +27,17 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setupUI()
-        mContentManager = ContentManager(this.applicationContext, this)
+        mContentManager = ContentManager(this.applicationContext, this) {
+            //TODO
+        }
         mContentManager.requestPermissions()
         mContentManager.buildDatabase()
+
+        GlobalScope.launch {
+            getApp().db.artistSongJoinDao().getSongsWithArtists().forEach {
+                Log.e("Test", "${it.artistTitle} ${it.songTitle}")
+            }
+        }
     }
 
     private fun setupUI() {

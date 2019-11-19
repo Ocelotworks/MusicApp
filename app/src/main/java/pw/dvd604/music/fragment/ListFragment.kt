@@ -10,11 +10,11 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_songs.*
 import kotlinx.coroutines.*
-import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.adapter.CardRecyclerAdapter
 import pw.dvd604.music.data.adapter.ListRecyclerAdapter
+import pw.dvd604.music.data.room.ArtistSong
 import pw.dvd604.music.data.room.dao.ArtistSongJoinDao
 import pw.dvd604.music.data.room.dao.BaseDao
 
@@ -41,24 +41,12 @@ class ListFragment(
         super.onViewCreated(view, savedInstanceState)
         pageTitle.text = title
 
+        //GRID - Pictures
         if (layout == ListLayout.GRID) {
-            songList.layoutManager = GridLayoutManager(this@ListFragment.context, 3)
-            songList.adapter = CardRecyclerAdapter(this@ListFragment.context!!) { cd ->
-                Log.e("Clicked", "${cd.title} ${cd.id} click")
-
-                GlobalScope.launch {
-                    val songs =
-                        (this@ListFragment.activity as MainActivity).getApp().db.albumSongJoinDao()
-                            .getSongsForAlbum(cd.id)
-
-                    songs.forEach {
-                        Log.e("Songs", it.toString())
-                    }
-                }
-            }
-
             CoroutineScope(Dispatchers.Main).launch {
                 try {
+                    songList.layoutManager = GridLayoutManager(this@ListFragment.context, 3)
+                    songList.adapter = CardRecyclerAdapter(this@ListFragment.context!!) {}
                     val adapter = songList.adapter as CardRecyclerAdapter
 
 
@@ -76,6 +64,7 @@ class ListFragment(
                 }
             }
         } else if (layout == ListLayout.LIST) {
+            //LIST - JUST TEXT
             songList.layoutManager = LinearLayoutManager(context)
             songList.adapter = ListRecyclerAdapter(this@ListFragment.context!!) { }
 
@@ -83,13 +72,26 @@ class ListFragment(
                 try {
                     val adapter = songList.adapter as ListRecyclerAdapter
 
-                    val songTask = async(Dispatchers.IO) {
-                        dao.getAll()
+                    if (title == "Songs") {
+                        val songData: List<ArtistSong> =
+                            withContext(Dispatchers.IO) {
+                                artistJoinDao.getSongsWithArtists()
+                            }
+
+                        val cardData = ArrayList<CardData>(0)
+
+                        songData.forEach { cardData.add(it.toCardData()) }
+
+                        adapter.setData(cardData)
+                    } else {
+                        val songTask = async(Dispatchers.IO) {
+                            dao.getAll()
+                        }
+
+                        val songData: List<CardData> = songTask.await() as List<CardData>
+
+                        adapter.setData(songData)
                     }
-
-                    val songData = songTask.await()
-
-                    adapter.setData(songData as List<CardData>)
 
                     adapter.notifyDataSetChanged()
                 } catch (e: Exception) {
