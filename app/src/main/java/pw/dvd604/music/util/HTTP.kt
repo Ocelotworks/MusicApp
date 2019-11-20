@@ -16,10 +16,13 @@ class HTTP(context: Context?) {
 
     fun getReq(url: String?, listener: Response.Listener<String>?) {
         val req = StringRequest(Request.Method.GET, url, listener, Response.ErrorListener { error ->
-            Log.e(
-                "Volley",
-                error.localizedMessage
-            )
+            try {
+                Log.e(
+                    "Volley",
+                    error.localizedMessage
+                )
+            } catch (ignored: Exception) {
+            }
         })
         queue.add(req)
     }

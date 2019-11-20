@@ -39,7 +39,6 @@ class ListFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        pageTitle.text = title
 
         //GRID - Pictures
         if (layout == ListLayout.GRID) {

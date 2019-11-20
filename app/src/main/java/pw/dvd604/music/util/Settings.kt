@@ -9,13 +9,10 @@ import pw.dvd604.music.BuildConfig
 
 class Settings {
     companion object {
-        const val server = "address"
         const val offlineMusic = "download"
         const val shuffle = "shuffle"
         const val shuffleOffline = "shuffleOffline"
         const val developer = "developerOptions"
-        const val firstRun = "firstRun"
-
 
         @SuppressLint("SdCardPath")
         val storage = BuildConfig.storage.replace(
@@ -25,12 +22,9 @@ class Settings {
         )
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
-            server to BuildConfig.defaultURL,
             offlineMusic to true,
-            shuffle to true,
             shuffleOffline to true,
-            developer to false,
-            firstRun to true
+            developer to false
         )
 
         var prefs: SharedPreferences? = null

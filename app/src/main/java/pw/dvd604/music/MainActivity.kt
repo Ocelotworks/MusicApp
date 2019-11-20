@@ -7,17 +7,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
+import com.google.android.material.tabs.TabLayout
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_playing.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import pw.dvd604.music.data.room.dao.BaseDao
 import pw.dvd604.music.fragment.ListFragment
 import pw.dvd604.music.fragment.ListLayout
+import pw.dvd604.music.fragment.SettingsFragment
 import pw.dvd604.music.util.ContentManager
 
-private const val NUM_PAGES = 3
+private const val NUM_PAGES = 4
 
 class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListener {
 
@@ -28,24 +31,25 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         setContentView(R.layout.activity_main)
         setupUI()
         mContentManager = ContentManager(this.applicationContext, this) {
-            //TODO
+            GlobalScope.launch(Dispatchers.Main) {
+                try {
+                    setupUI()
+                } catch (e: Exception) {
+                    Log.e("Test", "", e)
+                }
+            }
         }
         mContentManager.requestPermissions()
         mContentManager.buildDatabase()
-
-        GlobalScope.launch {
-            getApp().db.artistSongJoinDao().getSongsWithArtists().forEach {
-                Log.e("Test", "${it.artistTitle} ${it.songTitle}")
-            }
-        }
     }
 
     private fun setupUI() {
         sliding_layout.addPanelSlideListener(this)
-        pager.adapter = ScreenSlidePagerAdapter(supportFragmentManager)
 
-        //this.supportFragmentManager.beginTransaction().add(R.id.fragmentContainer, songListFragment)
-        //    .commit()
+        (tabDots as TabLayout).setupWithViewPager(pager)
+        //tabDots.
+
+        pager.adapter = ScreenSlidePagerAdapter(supportFragmentManager)
     }
 
     override fun onPanelSlide(panel: View?, slideOffset: Float) {
@@ -83,23 +87,6 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         }
     }
 
-    private fun getPagerTitle(position: Int): String {
-        return when (position) {
-            0 -> {
-                "Albums"
-            }
-            1 -> {
-                "Artists"
-            }
-            2 -> {
-                "Songs"
-            }
-            else -> {
-                "Unknown?"
-            }
-        }
-    }
-
     private fun getPagerLayout(position: Int): ListLayout {
         return when (position) {
             0 -> {
@@ -114,20 +101,48 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         }
     }
 
-    /**
-     * A simple pager adapter that represents 5 ScreenSlidePageFragment objects, in
-     * sequence.
-     */
     private inner class ScreenSlidePagerAdapter(fm: FragmentManager) :
         FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
         override fun getCount(): Int = NUM_PAGES
 
-        override fun getItem(position: Int): Fragment =
-            ListFragment(
-                getDao(position),
-                getPagerTitle(position),
-                getPagerLayout(position),
-                getApp().db.artistSongJoinDao()
-            )
+        override fun getPageTitle(position: Int): CharSequence? {
+            return when (position) {
+                0 -> {
+                    "Albums"
+                }
+                1 -> {
+                    "Artists"
+                }
+                2 -> {
+                    "Songs"
+                }
+                3 -> {
+                    "Settings"
+                }
+                else -> {
+                    "Unknown?"
+                }
+            }
+        }
+
+        override fun getItem(position: Int): Fragment {
+            return when (position) {
+                0, 1, 2 -> {
+                    ListFragment(
+                        getDao(position),
+                        getPageTitle(position).toString(),
+                        getPagerLayout(position),
+                        getApp().db.artistSongJoinDao()
+                    )
+                }
+                3 -> {
+                    SettingsFragment()
+                }
+                else -> {
+                    SettingsFragment()
+                }
+            }
+        }
+
     }
 }

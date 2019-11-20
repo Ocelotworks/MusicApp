@@ -80,7 +80,7 @@ class ContentManager(
         albumSongJoinDao: AlbumSongJoinDao,
         dialog: ViewDialog?
     ) {
-        Log.e("Running", "1213")
+
         HTTP(context).getReq(
             "${BuildConfig.defaultURL}song",
             Response.Listener { res ->
@@ -102,7 +102,6 @@ class ContentManager(
                                         albumID = json.getString("albumID")
                                     )
 
-                                    Log.e("Running", "Inserting")
                                     artistSongJoinDao.insert(artistJoin)
                                     albumSongJoinDao.insert(albumJoin)
                                 } catch (ignored: java.lang.Exception) {
