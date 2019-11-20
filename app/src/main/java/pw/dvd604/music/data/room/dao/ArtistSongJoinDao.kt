@@ -27,4 +27,7 @@ interface ArtistSongJoinDao {
 
     @Query("SELECT COUNT(*) FROM artist_song_join")
     fun count(): Int
+
+    @Query("SELECT song.id as songID, artist.title as artistTitle, song.title as songTitle FROM artist_song_join INNER JOIN artist ON artist.id=artist_song_join.artistID INNER JOIN song ON song.id=artist_song_join.songID LIMIT :count")
+    abstract fun getLimit(count: Int): List<ArtistSong>
 }

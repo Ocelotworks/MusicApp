@@ -1,5 +1,7 @@
 package pw.dvd604.music.data.room
 
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import pw.dvd604.music.data.CardData
 
 class ArtistSong {
@@ -9,5 +11,15 @@ class ArtistSong {
 
     fun toCardData(): CardData {
         return CardData(title = songTitle, id = songID, type = "", url = "", subtext = artistTitle)
+    }
+
+    fun toMediaItem(): MediaBrowserCompat.MediaItem {
+        val descriptionBuilder =
+            MediaDescriptionCompat.Builder().setMediaId(songID).setTitle(songTitle)
+                .setSubtitle(songTitle)
+        return MediaBrowserCompat.MediaItem(
+            descriptionBuilder.build(),
+            MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
+        )
     }
 }

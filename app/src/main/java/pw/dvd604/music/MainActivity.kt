@@ -1,6 +1,10 @@
 package pw.dvd604.music
 
+import android.content.ComponentName
+import android.media.AudioManager
 import android.os.Bundle
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.session.MediaControllerCompat
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -18,6 +22,9 @@ import pw.dvd604.music.data.room.dao.BaseDao
 import pw.dvd604.music.fragment.ListFragment
 import pw.dvd604.music.fragment.ListLayout
 import pw.dvd604.music.fragment.SettingsFragment
+import pw.dvd604.music.service.ClientConnectionCallback
+import pw.dvd604.music.service.ControllerCallback
+import pw.dvd604.music.service.MediaPlaybackService
 import pw.dvd604.music.util.ContentManager
 
 private const val NUM_PAGES = 4
@@ -25,6 +32,9 @@ private const val NUM_PAGES = 4
 class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListener {
 
     private lateinit var mContentManager: ContentManager
+    lateinit var mediaBrowser: MediaBrowserCompat
+    val controllerCallback = ControllerCallback(this)
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,17 +49,39 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
                 }
             }
         }
-        mContentManager.requestPermissions()
         mContentManager.buildDatabase()
     }
 
+    public override fun onStart() {
+        super.onStart()
+        mediaBrowser.connect()
+    }
+
+    public override fun onResume() {
+        super.onResume()
+        volumeControlStream = AudioManager.STREAM_MUSIC
+    }
+
+    public override fun onStop() {
+        super.onStop()
+        // (see "stay in sync with the MediaSession")
+        MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
+        mediaBrowser.disconnect()
+    }
+
+
     private fun setupUI() {
+        pager.adapter = ScreenSlidePagerAdapter(supportFragmentManager)
         sliding_layout.addPanelSlideListener(this)
 
         (tabDots as TabLayout).setupWithViewPager(pager)
-        //tabDots.
 
-        pager.adapter = ScreenSlidePagerAdapter(supportFragmentManager)
+        mediaBrowser = MediaBrowserCompat(
+            this,
+            ComponentName(this, MediaPlaybackService::class.java),
+            ClientConnectionCallback(this),
+            null // optional Bundle
+        )
     }
 
     override fun onPanelSlide(panel: View?, slideOffset: Float) {
