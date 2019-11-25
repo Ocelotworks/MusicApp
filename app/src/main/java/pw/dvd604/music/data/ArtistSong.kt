@@ -1,8 +1,7 @@
-package pw.dvd604.music.data.room
+package pw.dvd604.music.data
 
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
-import pw.dvd604.music.data.CardData
 
 class ArtistSong {
     var songID: String = ""

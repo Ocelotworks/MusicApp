@@ -1,5 +1,6 @@
 package pw.dvd604.music.data
 
+import android.media.MediaMetadata
 import androidx.room.Entity
 import org.json.JSONObject
 
@@ -20,5 +21,14 @@ class Song(
             song.hash = obj.getString("hash")
             return song
         }
+    }
+
+    fun toMetaData(artist: Artist): MediaMetadata {
+        return MediaMetadata.Builder().apply {
+            this.putText(MediaMetadata.METADATA_KEY_TITLE, title)
+            this.putText(MediaMetadata.METADATA_KEY_ARTIST, artist.title)
+            this.putText(MediaMetadata.METADATA_KEY_MEDIA_ID, id)
+            this.putLong(MediaMetadata.METADATA_KEY_DURATION, duration.toLong())
+        }.build()
     }
 }

@@ -4,20 +4,34 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 
-class SessionCallback(val service: MediaPlaybackService) : MediaSessionCompat.Callback() {
+class SessionCallback(private val service: MediaPlaybackService) : MediaSessionCompat.Callback() {
+
+
     override fun onPlayFromSearch(query: String?, extras: Bundle?) {
     }
 
     override fun onPrepareFromSearch(query: String?, extras: Bundle?) {
-        onPlayFromSearch(query, extras)
+
     }
 
     override fun onPrepareFromUri(uri: Uri?, extras: Bundle?) {
-        super.onPrepareFromUri(uri, extras)
+        service.mMediaContainer.prepare(uri)
+    }
+
+    override fun onPlayFromUri(uri: Uri?, extras: Bundle?) {
+        service.mMediaContainer.play(uri)
+    }
+
+    override fun onPrepareFromMediaId(mediaId: String?, extras: Bundle?) {
+        service.mMediaContainer.prepare(mediaId)
+    }
+
+    override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+        service.mMediaContainer.play(mediaId)
     }
 
     override fun onPlay() {
-        super.onPlay()
+        service.mMediaContainer.play()
     }
 
 

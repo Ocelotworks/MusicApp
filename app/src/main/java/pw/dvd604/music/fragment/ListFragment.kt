@@ -11,10 +11,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_songs.*
 import kotlinx.coroutines.*
 import pw.dvd604.music.R
+import pw.dvd604.music.data.ArtistSong
 import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.adapter.CardRecyclerAdapter
 import pw.dvd604.music.data.adapter.ListRecyclerAdapter
-import pw.dvd604.music.data.room.ArtistSong
 import pw.dvd604.music.data.room.dao.ArtistSongJoinDao
 import pw.dvd604.music.data.room.dao.BaseDao
 

@@ -5,8 +5,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import pw.dvd604.music.data.Artist
+import pw.dvd604.music.data.ArtistSong
 import pw.dvd604.music.data.Song
-import pw.dvd604.music.data.room.ArtistSong
 import pw.dvd604.music.data.room.ArtistSongJoin
 
 @Dao
