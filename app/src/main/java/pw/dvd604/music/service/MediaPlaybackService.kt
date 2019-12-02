@@ -12,6 +12,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
+import pw.dvd604.music.data.ArtistJoinHelper
 import pw.dvd604.music.data.ArtistSong
 import pw.dvd604.music.data.Song
 import pw.dvd604.music.data.room.AppDatabase
@@ -27,6 +28,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
     val mMediaContainer = MediaContainer(this)
     lateinit var songList: List<Song>
     lateinit var artistSongList: List<ArtistSong>
+    lateinit var artistJoinHelper: ArtistJoinHelper
 
     override fun onCreate() {
         super.onCreate()
@@ -41,9 +43,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         GlobalScope.launch {
             try {
                 db = (application as MusicApplication).db
+                artistJoinHelper =
+                    ArtistJoinHelper(db.songDao(), db.artistSongJoinDao(), db.artistDao())
 
                 songList = db.songDao().getAll()
-                artistSongList = db.artistSongJoinDao().getSongsWithArtists()
+                artistSongList = artistJoinHelper.get()
             } catch (e: Exception) {
                 Log.e("Service", "", e)
             }
@@ -83,7 +87,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         result.detach()
 
         GlobalScope.launch {
-            val data = db.artistSongJoinDao().getLimit(10)
+            val data = artistJoinHelper.get().subList(0, 10)
             val list = ArrayList<MediaBrowserCompat.MediaItem>(0)
 
             data.forEach {

@@ -11,7 +11,7 @@ import pw.dvd604.music.data.CardData
 
 class ListRecyclerAdapter(
     private val context: Context,
-    private var data: List<CardData> = ArrayList(0),
+    private var data: ArrayList<CardData> = ArrayList(0),
     private val listener: (CardData) -> Unit
 ) : RecyclerView.Adapter<ListViewHolder>() {
 
@@ -26,8 +26,12 @@ class ListRecyclerAdapter(
     override fun onBindViewHolder(holder: ListViewHolder, position: Int) =
         holder.bind(data[position], listener)
 
-    fun setData(newData: List<CardData>) {
+    fun setData(newData: ArrayList<CardData>) {
         data = newData
+    }
+
+    fun addData(cardData: CardData) {
+        data.add(cardData)
     }
 }
 

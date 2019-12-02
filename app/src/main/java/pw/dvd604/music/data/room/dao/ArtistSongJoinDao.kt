@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import pw.dvd604.music.data.Artist
-import pw.dvd604.music.data.ArtistSong
 import pw.dvd604.music.data.Song
 import pw.dvd604.music.data.room.ArtistSongJoin
 
@@ -19,15 +18,20 @@ interface ArtistSongJoinDao {
     )
     fun getArtistForSong(songId: String): Array<Artist>
 
+    @Query(
+        "SELECT * FROM artist_song_join WHERE songId=:songId LIMIT 1"
+    )
+    fun getArtistJoinForSong(songId: String): ArtistSongJoin
+
     @Query("SELECT * FROM song INNER JOIN artist_song_join ON song.id=artist_song_join.songId WHERE artist_song_join.artistID=:artistId")
     fun getSongsForArtist(artistId: String): Array<Song>
-
-    @Query("SELECT song.id as songID, artist.title as artistTitle, song.title as songTitle FROM artist_song_join INNER JOIN artist ON artist.id=artist_song_join.artistID INNER JOIN song ON song.id=artist_song_join.songID")
-    fun getSongsWithArtists(): List<ArtistSong>
 
     @Query("SELECT COUNT(*) FROM artist_song_join")
     fun count(): Int
 
-    @Query("SELECT song.id as songID, artist.title as artistTitle, song.title as songTitle FROM artist_song_join INNER JOIN artist ON artist.id=artist_song_join.artistID INNER JOIN song ON song.id=artist_song_join.songID LIMIT :count")
-    abstract fun getLimit(count: Int): List<ArtistSong>
+    @Query("SELECT * FROM artist_song_join")
+    fun getAll(): List<ArtistSongJoin>
+
+    //  @Query("SELECT song.id as songID, artist.title as artistTitle, song.title as songTitle FROM artist_song_join INNER JOIN artist ON artist.id=artist_song_join.artistID INNER JOIN song ON song.id=artist_song_join.songID LIMIT :count")
+    //abstract fun getLimit(count: Int): List<ArtistSong>
 }

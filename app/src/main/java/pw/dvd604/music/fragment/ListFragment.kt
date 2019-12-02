@@ -10,13 +10,15 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_songs.*
 import kotlinx.coroutines.*
+import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
-import pw.dvd604.music.data.ArtistSong
+import pw.dvd604.music.data.ArtistJoinHelper
 import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.adapter.CardRecyclerAdapter
 import pw.dvd604.music.data.adapter.ListRecyclerAdapter
-import pw.dvd604.music.data.room.dao.ArtistSongJoinDao
+import pw.dvd604.music.data.room.AppDatabase
 import pw.dvd604.music.data.room.dao.BaseDao
+import pw.dvd604.music.data.room.dao.SongDao
 
 enum class ListLayout {
     GRID, LIST
@@ -26,7 +28,7 @@ class ListFragment(
     private val dao: BaseDao<*>,
     private val title: String,
     private val layout: ListLayout = ListLayout.GRID,
-    val artistJoinDao: ArtistSongJoinDao
+    private val db: AppDatabase
 ) : Fragment() {
 
     override fun onCreateView(
@@ -65,23 +67,31 @@ class ListFragment(
         } else if (layout == ListLayout.LIST) {
             //LIST - JUST TEXT
             songList.layoutManager = LinearLayoutManager(context)
-            songList.adapter = ListRecyclerAdapter(this@ListFragment.context!!) { }
+            songList.adapter = ListRecyclerAdapter(this@ListFragment.context!!) {
+                (this.activity as MainActivity).controllerHandler.play(it.id)
+            }
 
             CoroutineScope(Dispatchers.Main).launch {
                 try {
                     val adapter = songList.adapter as ListRecyclerAdapter
 
                     if (title == "Songs") {
-                        val songData: List<ArtistSong> =
-                            withContext(Dispatchers.IO) {
-                                artistJoinDao.getSongsWithArtists()
+
+                        withContext(Dispatchers.IO) {
+                            ArtistJoinHelper(
+                                dao as SongDao,
+                                db.artistSongJoinDao(),
+                                db.artistDao()
+                            ).get()
+                        }.forEach {
+                            try {
+                                adapter.addData(it.toCardData())
+                                adapter.notifyDataSetChanged()
+                            } catch (e: java.lang.Exception) {
+                                Log.e("Test", "", e)
                             }
+                        }
 
-                        val cardData = ArrayList<CardData>(0)
-
-                        songData.forEach { cardData.add(it.toCardData()) }
-
-                        adapter.setData(cardData)
                     } else {
                         val songTask = async(Dispatchers.IO) {
                             dao.getAll()
@@ -89,7 +99,7 @@ class ListFragment(
 
                         val songData: List<CardData> = songTask.await() as List<CardData>
 
-                        adapter.setData(songData)
+                        adapter.setData(ArrayList(songData))
                     }
 
                     adapter.notifyDataSetChanged()

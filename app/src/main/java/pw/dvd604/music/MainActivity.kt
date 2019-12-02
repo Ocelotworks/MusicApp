@@ -26,6 +26,7 @@ import pw.dvd604.music.service.ClientConnectionCallback
 import pw.dvd604.music.service.ControllerCallback
 import pw.dvd604.music.service.MediaPlaybackService
 import pw.dvd604.music.util.ContentManager
+import pw.dvd604.music.util.ControllerHandler
 
 private const val NUM_PAGES = 4
 
@@ -34,7 +35,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
     private lateinit var mContentManager: ContentManager
     lateinit var mediaBrowser: MediaBrowserCompat
     val controllerCallback = ControllerCallback(this)
-
+    val controllerHandler = ControllerHandler(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,7 +115,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
                 getApp().db.songDao()
             }
             else -> {
-                getApp().db.albumDao()
+                getApp().db.songDao()
             }
         }
     }
@@ -164,7 +165,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
                         getDao(position),
                         getPageTitle(position).toString(),
                         getPagerLayout(position),
-                        getApp().db.artistSongJoinDao()
+                        getApp().db
                     )
                 }
                 3 -> {

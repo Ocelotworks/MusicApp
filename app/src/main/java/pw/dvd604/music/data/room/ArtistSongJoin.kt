@@ -19,5 +19,4 @@ import pw.dvd604.music.data.Song
     )]
 )
 data class ArtistSongJoin(val artistID: String, val songID: String) {
-
 }

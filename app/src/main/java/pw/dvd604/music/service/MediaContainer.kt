@@ -2,10 +2,12 @@ package pw.dvd604.music.service
 
 import android.media.MediaPlayer
 import android.net.Uri
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import pw.dvd604.music.data.ArtistSong
 import pw.dvd604.music.data.Song
 
-class MediaContainer(val service: MediaPlaybackService) : MediaPlayer.OnErrorListener,
+class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.OnErrorListener,
     MediaPlayer.OnPreparedListener,
     MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
     companion object {
@@ -22,10 +24,25 @@ class MediaContainer(val service: MediaPlaybackService) : MediaPlayer.OnErrorLis
     }
 
     fun play(id: String?) {
+        if (id == null)
+            return
 
+        GlobalScope.launch {
+            val artistJoin = service.db.artistSongJoinDao().getArtistJoinForSong(id)
+            //service.mNotificationBuilder.meta = artistJoin.toMeta()
+            service.mNotificationBuilder.build()
+        }
+
+
+        player.reset()
+        player.setDataSource("https://unacceptableuse.com/petify/song/$id")
+        player.prepare()
+
+        play()
     }
 
     fun play(uri: Uri?) {
+        player.reset()
         player.setDataSource(uri.toString())
         player.prepare()
 
@@ -58,7 +75,6 @@ class MediaContainer(val service: MediaPlaybackService) : MediaPlayer.OnErrorLis
 
     fun play() {
         player.start()
-        service.mNotificationBuilder.build()
     }
 
     override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
