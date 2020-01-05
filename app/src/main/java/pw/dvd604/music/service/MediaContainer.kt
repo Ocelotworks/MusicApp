@@ -2,8 +2,6 @@ package pw.dvd604.music.service
 
 import android.media.MediaPlayer
 import android.net.Uri
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import pw.dvd604.music.data.ArtistSong
 import pw.dvd604.music.data.Song
 
@@ -26,13 +24,6 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
     fun play(id: String?) {
         if (id == null)
             return
-
-        GlobalScope.launch {
-            val artistJoin = service.db.artistSongJoinDao().getArtistJoinForSong(id)
-            //service.mNotificationBuilder.meta = artistJoin.toMeta()
-            service.mNotificationBuilder.build()
-        }
-
 
         player.reset()
         player.setDataSource("https://unacceptableuse.com/petify/song/$id")

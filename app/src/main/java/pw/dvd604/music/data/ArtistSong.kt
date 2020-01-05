@@ -2,14 +2,11 @@ package pw.dvd604.music.data
 
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
-import androidx.room.Embedded
 
 class ArtistSong {
 
-    @Embedded(prefix = "song_")
     lateinit var song: Song
 
-    @Embedded(prefix = "artist_")
     lateinit var artist: Artist
 
     fun toCardData(): CardData {

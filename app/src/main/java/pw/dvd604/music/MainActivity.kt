@@ -18,7 +18,6 @@ import kotlinx.android.synthetic.main.fragment_playing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import pw.dvd604.music.data.room.dao.BaseDao
 import pw.dvd604.music.fragment.ListFragment
 import pw.dvd604.music.fragment.ListLayout
 import pw.dvd604.music.fragment.SettingsFragment
@@ -103,23 +102,6 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         return this.application as MusicApplication
     }
 
-    private fun getDao(position: Int): BaseDao<*> {
-        return when (position) {
-            0 -> {
-                getApp().db.albumDao()
-            }
-            1 -> {
-                getApp().db.artistDao()
-            }
-            2 -> {
-                getApp().db.songDao()
-            }
-            else -> {
-                getApp().db.songDao()
-            }
-        }
-    }
-
     private fun getPagerLayout(position: Int): ListLayout {
         return when (position) {
             0 -> {
@@ -162,10 +144,8 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
             return when (position) {
                 0, 1, 2 -> {
                     ListFragment(
-                        getDao(position),
                         getPageTitle(position).toString(),
-                        getPagerLayout(position),
-                        getApp().db
+                        getPagerLayout(position)
                     )
                 }
                 3 -> {

@@ -8,14 +8,9 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.media.MediaBrowserServiceCompat
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
-import pw.dvd604.music.data.ArtistJoinHelper
 import pw.dvd604.music.data.ArtistSong
 import pw.dvd604.music.data.Song
-import pw.dvd604.music.data.room.AppDatabase
 
 private const val LOG_TAG: String = "MediaService"
 
@@ -23,12 +18,10 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
     private var mediaSession: MediaSessionCompat? = null
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
-    lateinit var db: AppDatabase
     val mNotificationBuilder = NotificationBuilder(this, mediaSession)
     val mMediaContainer = MediaContainer(this)
     lateinit var songList: List<Song>
     lateinit var artistSongList: List<ArtistSong>
-    lateinit var artistJoinHelper: ArtistJoinHelper
 
     override fun onCreate() {
         super.onCreate()
@@ -40,18 +33,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             getString(R.string.channel_description)
         )
 
-        GlobalScope.launch {
-            try {
-                db = (application as MusicApplication).db
-                artistJoinHelper =
-                    ArtistJoinHelper(db.songDao(), db.artistSongJoinDao(), db.artistDao())
-
-                songList = db.songDao().getAll()
-                artistSongList = artistJoinHelper.get()
-            } catch (e: Exception) {
-                Log.e("Service", "", e)
-            }
-        }
 
         val sessionActivityPendingIntent =
             packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
@@ -85,17 +66,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
         result.detach()
-
-        GlobalScope.launch {
-            val data = artistJoinHelper.get().subList(0, 10)
-            val list = ArrayList<MediaBrowserCompat.MediaItem>(0)
-
-            data.forEach {
-                list.add(it.toMediaItem())
-            }
-
-            result.sendResult(list)
-        }
     }
 
     override fun onGetRoot(
