@@ -3,20 +3,23 @@ package pw.dvd604.music.util
 import android.Manifest
 import android.app.Activity
 import android.app.Application
+import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
-import android.util.Log
+import android.database.sqlite.SQLiteDatabase
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.android.volley.Response
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONArray
-import org.json.JSONObject
 import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.MusicApplication
+import pw.dvd604.music.data.Album
+import pw.dvd604.music.data.Artist
+import pw.dvd604.music.data.Song
+import pw.dvd604.music.data.storage.DatabaseContract
 import pw.dvd604.music.dialog.ViewDialog
-import java.io.File
 
 
 class ContentManager(
@@ -33,20 +36,12 @@ class ContentManager(
         Manifest.permission.WRITE_EXTERNAL_STORAGE
     )
 
-
     init {
         if (context !is Application) {
             throw Exception("Content Manager requires Application Context")
         }
 
         app = context as MusicApplication
-
-        if (!File(Settings.storage).exists()) {
-            File(Settings.storage).mkdirs()
-            Log.e("File", "True")
-        } else {
-            Log.e("File", "false")
-        }
     }
 
     fun buildDatabase() {
@@ -55,56 +50,55 @@ class ContentManager(
         //And then in a co-routine we're building song, artist and album DB tables, along with creating the relations between them
         val dialog = ViewDialog(activity)
 
+        dialog.showDialog("Building tables")
         GlobalScope.launch {
             try {
+                //https://unacceptableuse.com/petifyv3/api/v2/
+                HTTP(context).getReq("${BuildConfig.defaultURL}song", Response.Listener { res ->
+
+                    val array = JSONArray(res)
+
+                    Thread {
+                        for (i in 0 until array.length()) {
+                            val data = array.getJSONObject(i)
+                            val song = Song.parse(data)
+
+                            val tableValues: ContentValues = song.toValues()
+
+                            app.database.insertWithOnConflict(
+                                DatabaseContract.Song.TABLE_NAME,
+                                null,
+                                tableValues,
+                                SQLiteDatabase.CONFLICT_REPLACE
+                            )
+                        }
+
+                        dialog.hideDialog()
+                    }.start()
+                })
+
+                HTTP(context).getReq("${BuildConfig.defaultURL}artist", Response.Listener { res ->
+                    val array = JSONArray(res)
+
+                    for (i in 0 until array.length()) {
+                        val data = array.getJSONObject(i)
+                        val artist = Artist.parse(data)
+                    }
+                })
+
+                HTTP(context).getReq("${BuildConfig.defaultURL}album", Response.Listener { res ->
+                    val array = JSONArray(res)
+
+                    for (i in 0 until array.length()) {
+                        val data = array.getJSONObject(i)
+                        val album = Album.parse(data)
+                    }
+                })
 
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
             }
         }
-    }
-
-    private fun buildRelations(
-        dialog: ViewDialog?
-    ) {
-
-        HTTP(context).getReq(
-            "${BuildConfig.defaultURL}song",
-            Response.Listener { res ->
-                val array = JSONArray(res)
-                dialog?.showDialog("Building table relations")
-                GlobalScope.launch {
-                    try {
-
-                    } catch (e: Exception) {
-                        Log.e("Error", "", e)
-                    }
-                    doneBuild()
-                    dialog?.hideDialog()
-                }
-            })
-    }
-
-    private fun build(
-        parse: (obj: JSONObject) -> Any,
-        type: String,
-        dialog: ViewDialog? = null
-    ) {
-        HTTP(context).getReq(
-            "${BuildConfig.defaultURL}$type",
-            Response.Listener { res ->
-                val array = JSONArray(res)
-
-                    dialog?.showDialog("Building core tables")
-
-                GlobalScope.launch {
-                    try {
-
-                    } catch (e: Exception) {
-                        Log.e("Error", "", e)
-                    }
-                }
-            })
     }
 
     fun requestPermissions(): Boolean {

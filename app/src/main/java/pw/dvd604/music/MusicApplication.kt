@@ -1,17 +1,26 @@
 package pw.dvd604.music
 
+import android.app.Activity
 import android.app.Application
+import android.database.sqlite.SQLiteDatabase
+import android.os.Bundle
+import android.util.Log
 import io.sentry.Sentry
 import io.sentry.android.AndroidSentryClientFactory
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.extra.TrackHelper
+import pw.dvd604.music.data.storage.DatabaseHelper
 import pw.dvd604.music.util.Settings
 import kotlin.system.exitProcess
 
 
-class MusicApplication : Application() {
+class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
 
     lateinit var internalStorage: String
+    lateinit var dbHelper: DatabaseHelper
+    lateinit var database: SQLiteDatabase
 
     companion object {
         private var tracker: Tracker? = null
@@ -24,10 +33,20 @@ class MusicApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        registerActivityLifecycleCallbacks(this)
 
         internalStorage = filesDir.path
 
         Settings.init(this)
+
+        GlobalScope.launch {
+            try {
+                dbHelper = DatabaseHelper(this@MusicApplication)
+                database = dbHelper.writableDatabase
+            } catch (e: Exception) {
+                Log.e("Neilify Database", "", e)
+            }
+        }
 
 
         Sentry.init(
@@ -42,5 +61,27 @@ class MusicApplication : Application() {
             Sentry.capture(throwable)
             exitProcess(2)
         }
+    }
+
+    override fun onActivityPaused(p0: Activity?) {
+    }
+
+    override fun onActivityResumed(p0: Activity?) {
+    }
+
+    override fun onActivityStarted(p0: Activity?) {
+    }
+
+    override fun onActivityDestroyed(p0: Activity?) {
+        dbHelper.close()
+    }
+
+    override fun onActivitySaveInstanceState(p0: Activity?, p1: Bundle?) {
+    }
+
+    override fun onActivityStopped(p0: Activity?) {
+    }
+
+    override fun onActivityCreated(p0: Activity?, p1: Bundle?) {
     }
 }

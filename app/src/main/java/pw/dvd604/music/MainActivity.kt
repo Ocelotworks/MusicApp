@@ -1,11 +1,8 @@
 package pw.dvd604.music
 
 import android.content.ComponentName
-import android.media.AudioManager
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.session.MediaControllerCompat
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -15,9 +12,6 @@ import com.google.android.material.tabs.TabLayout
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_playing.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import pw.dvd604.music.fragment.ListFragment
 import pw.dvd604.music.fragment.ListLayout
 import pw.dvd604.music.fragment.SettingsFragment
@@ -40,35 +34,26 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setupUI()
-        mContentManager = ContentManager(this.applicationContext, this) {
-            GlobalScope.launch(Dispatchers.Main) {
-                try {
-                    setupUI()
-                } catch (e: Exception) {
-                    Log.e("Test", "", e)
-                }
-            }
-        }
+        mContentManager = ContentManager(this.applicationContext, this) {}
         mContentManager.buildDatabase()
     }
 
     public override fun onStart() {
         super.onStart()
-        mediaBrowser.connect()
+        //    mediaBrowser.connect()
     }
 
     public override fun onResume() {
         super.onResume()
-        volumeControlStream = AudioManager.STREAM_MUSIC
+        //   volumeControlStream = AudioManager.STREAM_MUSIC
     }
 
     public override fun onStop() {
         super.onStop()
         // (see "stay in sync with the MediaSession")
-        MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
-        mediaBrowser.disconnect()
+        //   MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
+        //  mediaBrowser.disconnect()
     }
-
 
     private fun setupUI() {
         pager.adapter = ScreenSlidePagerAdapter(supportFragmentManager)
