@@ -31,6 +31,10 @@ class ViewDialog(private var activity: Activity) {
         dialog.show()
     }
 
+    fun setText(s: String) {
+        dialog.loadingText.text = s
+    }
+
     fun hideDialog() {
         if (!this::dialog.isInitialized || !dialog.isShowing)
             return

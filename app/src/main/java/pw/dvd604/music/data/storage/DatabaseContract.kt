@@ -1,6 +1,7 @@
 package pw.dvd604.music.data.storage
 
 interface Table {
+    var TABLE_NAME: String
     var DROP_TABLE: String
     var CREATE_TABLE: String
 }
@@ -13,15 +14,12 @@ object DatabaseContract {
         Song,
         Album,
         Genre,
-        SongsAlbums,
-        SongsArtists,
         SongsGenres,
-        PlaylistSongs,
-        AlbumsArtists
+        PlaylistSongs
     )
 
     object Artist : Table {
-        const val TABLE_NAME = "artists"
+        override var TABLE_NAME = "artists"
         const val COLUMN_NAME_NAME = "name"
 
         override var DROP_TABLE = "DROP TABLE IF EXISTS $TABLE_NAME"
@@ -32,7 +30,7 @@ object DatabaseContract {
     }
 
     object Playlist : Table {
-        const val TABLE_NAME = "playlists"
+        override var TABLE_NAME = "playlists"
         const val COLUMN_NAME_NAME = "name"
         const val COLUMN_NAME_OWNER = "owner"
 
@@ -44,7 +42,7 @@ object DatabaseContract {
     }
 
     object Song : Table {
-        const val TABLE_NAME = "songs"
+        override var TABLE_NAME = "songs"
         const val COLUMN_NAME_ARTIST = "artist"
         const val COLUMN_NAME_ALBUM = "album"
         const val COLUMN_NAME_GENRE = "genre"
@@ -64,7 +62,7 @@ object DatabaseContract {
     }
 
     object Album : Table {
-        const val TABLE_NAME = "albums"
+        override var TABLE_NAME = "albums"
         const val COLUMN_NAME_ARTIST = "artist"
         const val COLUMN_NAME_IMAGE = "image"
         const val COLUMN_NAME_NAME = "name"
@@ -78,7 +76,7 @@ object DatabaseContract {
     }
 
     object Genre : Table {
-        const val TABLE_NAME = "genres"
+        override var TABLE_NAME = "genres"
         const val COLUMN_NAME_IMAGE = "image"
         const val COLUMN_NAME_NAME = "name"
 
@@ -89,63 +87,29 @@ object DatabaseContract {
         override var DROP_TABLE = "DROP TABLE IF EXISTS $TABLE_NAME"
     }
 
-    object SongsArtists : Table {
-        const val TABLE_NAME = "song_artists"
-        const val COLUMN_NAME_SONG_ID = "song"
-        const val COLUMN_NAME_ARTIST_ID = "artist"
-
-        override var CREATE_TABLE = "CREATE TABLE $TABLE_NAME (" +
-                "id TEXT NOT NULL PRIMARY KEY," +
-                "$COLUMN_NAME_ARTIST_ID TEXT NOT NULL," +
-                "$COLUMN_NAME_SONG_ID TEXT NOT NULL)"
-        override var DROP_TABLE = "DROP TABLE IF EXISTS $TABLE_NAME"
-    }
-
-    object SongsAlbums : Table {
-        const val TABLE_NAME = "album_songs"
-        const val COLUMN_NAME_SONG_ID = "song"
-        const val COLUMN_NAME_ALBUM_ID = "album"
-
-        override var CREATE_TABLE = "CREATE TABLE $TABLE_NAME (" +
-                "id TEXT NOT NULL PRIMARY KEY," +
-                "$COLUMN_NAME_SONG_ID TEXT NOT NULL," +
-                "$COLUMN_NAME_ALBUM_ID TEXT NOT NULL)"
-        override var DROP_TABLE = "DROP TABLE IF EXISTS $TABLE_NAME"
-    }
-
     object SongsGenres : Table {
-        const val TABLE_NAME = "genre_songs"
+        override var TABLE_NAME = "genre_songs"
         const val COLUMN_NAME_SONG_ID = "song"
         const val COLUMN_NAME_GENRE_ID = "genre"
 
         override var CREATE_TABLE = "CREATE TABLE $TABLE_NAME (" +
-                "id TEXT NOT NULL PRIMARY KEY," +
                 "$COLUMN_NAME_GENRE_ID TEXT NOT NULL," +
-                "$COLUMN_NAME_SONG_ID TEXT NOT NULL)"
-        override var DROP_TABLE = "DROP TABLE IF EXISTS $TABLE_NAME"
-    }
-
-    object AlbumsArtists : Table {
-        const val TABLE_NAME = "aritst_albums"
-        const val COLUMN_NAME_ARTIST_ID = "artist"
-        const val COLUMN_NAME_ALBUM_ID = "album"
-
-        override var CREATE_TABLE = "CREATE TABLE $TABLE_NAME (" +
-                "id TEXT NOT NULL PRIMARY KEY," +
-                "$COLUMN_NAME_ALBUM_ID TEXT NOT NULL," +
-                "$COLUMN_NAME_ARTIST_ID TEXT NOT NULL)"
+                "$COLUMN_NAME_SONG_ID TEXT NOT NULL," +
+                "PRIMARY KEY($COLUMN_NAME_SONG_ID, $COLUMN_NAME_GENRE_ID)" +
+                ")"
         override var DROP_TABLE = "DROP TABLE IF EXISTS $TABLE_NAME"
     }
 
     object PlaylistSongs : Table {
-        const val TABLE_NAME = "playlist_songs"
+        override var TABLE_NAME = "playlist_songs"
         const val COLUMN_NAME_PLAYLIST_ID = "playlist"
         const val COLUMN_NAME_SONG_ID = "song"
 
         override var CREATE_TABLE = "CREATE TABLE $TABLE_NAME (" +
-                "id TEXT NOT NULL PRIMARY KEY," +
                 "$COLUMN_NAME_PLAYLIST_ID TEXT NOT NULL," +
-                "$COLUMN_NAME_SONG_ID TEXT NOT NULL)"
+                "$COLUMN_NAME_SONG_ID TEXT NOT NULL," +
+                "PRIMARY KEY($COLUMN_NAME_SONG_ID, $COLUMN_NAME_PLAYLIST_ID)" +
+                ")"
         override var DROP_TABLE = "DROP TABLE IF EXISTS $TABLE_NAME"
     }
 }

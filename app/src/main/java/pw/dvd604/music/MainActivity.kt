@@ -34,7 +34,9 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setupUI()
-        mContentManager = ContentManager(this.applicationContext, this) {}
+        mContentManager = ContentManager(this.applicationContext, this) {
+            setupUI()
+        }
         mContentManager.buildDatabase()
     }
 

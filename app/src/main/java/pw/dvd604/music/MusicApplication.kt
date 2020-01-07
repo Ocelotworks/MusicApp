@@ -21,6 +21,7 @@ class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
     lateinit var internalStorage: String
     lateinit var dbHelper: DatabaseHelper
     lateinit var database: SQLiteDatabase
+    lateinit var readableDatabase: SQLiteDatabase
 
     companion object {
         private var tracker: Tracker? = null
@@ -43,6 +44,7 @@ class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
             try {
                 dbHelper = DatabaseHelper(this@MusicApplication)
                 database = dbHelper.writableDatabase
+                readableDatabase = dbHelper.readableDatabase
             } catch (e: Exception) {
                 Log.e("Neilify Database", "", e)
             }
