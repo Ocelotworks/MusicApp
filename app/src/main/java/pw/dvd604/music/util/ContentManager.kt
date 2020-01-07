@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.android.volley.Response
@@ -19,6 +20,7 @@ import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.data.Album
 import pw.dvd604.music.data.Artist
+import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.Song
 import pw.dvd604.music.data.storage.DatabaseContract
 import pw.dvd604.music.data.storage.Table
@@ -147,6 +149,42 @@ class ContentManager(
                 e.printStackTrace()
             }
         }.start()
+    }
+
+    fun getSongsWithArtists(): ArrayList<CardData> {
+        val list = ArrayList<CardData>(0)
+
+        try {
+            val cursor = app.readableDatabase.rawQuery(
+                "SELECT ${DatabaseContract.Song.TABLE_NAME}.id, ${DatabaseContract.Song.COLUMN_NAME_TITLE}, ${DatabaseContract.Artist.COLUMN_NAME_NAME} FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Artist.TABLE_NAME} ON ${DatabaseContract.Artist.TABLE_NAME}.id = ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_ARTIST} ORDER BY ${DatabaseContract.Artist.COLUMN_NAME_NAME} ASC",
+                null,
+                null
+            )
+            with(cursor) {
+                while (moveToNext()) {
+                    val data = CardData(
+                        id = getString(getColumnIndexOrThrow("id")),
+                        title = getString(
+                            getColumnIndexOrThrow(
+                                DatabaseContract.Song.COLUMN_NAME_TITLE
+                            )
+                        ),
+                        type = "",
+                        url = "",
+                        subtext = getString(
+                            getColumnIndexOrThrow(DatabaseContract.Artist.COLUMN_NAME_NAME)
+                        )
+                    )
+
+                    list.add(data)
+                }
+            }
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("", "", e)
+        }
+
+        return list
     }
 
     fun requestPermissions(): Boolean {

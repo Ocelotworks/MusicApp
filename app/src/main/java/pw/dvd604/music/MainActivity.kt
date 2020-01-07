@@ -25,7 +25,7 @@ private const val NUM_PAGES = 4
 
 class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListener {
 
-    private lateinit var mContentManager: ContentManager
+    lateinit var mContentManager: ContentManager
     lateinit var mediaBrowser: MediaBrowserCompat
     val controllerCallback = ControllerCallback(this)
     val controllerHandler = ControllerHandler(this)

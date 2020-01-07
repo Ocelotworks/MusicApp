@@ -62,7 +62,7 @@ class ListFragment(
                             null,
                             null,
                             null,
-                            null
+                            "${DatabaseContract.Album.COLUMN_NAME_NAME} ASC"
                         )
                     )
                 }
@@ -82,7 +82,12 @@ class ListFragment(
                 val adapter = songList.adapter as ListRecyclerAdapter
                 when (title) {
                     "Songs" -> {
+                        val task = async {
+                            (activity as MainActivity).mContentManager.getSongsWithArtists()
+                        }
 
+                        adapter.setData(task.await())
+                        adapter.notifyDataSetChanged()
                     }
                     "Artists" -> {
                         val task = async(Dispatchers.IO) {
