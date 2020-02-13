@@ -9,29 +9,20 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.media.MediaBrowserServiceCompat
 import pw.dvd604.music.R
-import pw.dvd604.music.data.ArtistSong
-import pw.dvd604.music.data.Song
 
 private const val LOG_TAG: String = "MediaService"
 
 class MediaPlaybackService : MediaBrowserServiceCompat() {
 
-    private var mediaSession: MediaSessionCompat? = null
+    var mediaSession: MediaSessionCompat? = null
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
-    val mNotificationBuilder = NotificationBuilder(this, mediaSession)
+    lateinit var mNotificationBuilder: NotificationBuilder
     val mMediaContainer = MediaContainer(this)
-    lateinit var songList: List<Song>
-    lateinit var artistSongList: List<ArtistSong>
 
     override fun onCreate() {
         super.onCreate()
 
         Log.e("Service", "Started")
-        mNotificationBuilder.createChannel(
-            getString(R.string.petify_music_channel),
-            getString(R.string.channel_name),
-            getString(R.string.channel_description)
-        )
 
 
         val sessionActivityPendingIntent =
@@ -50,6 +41,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 .setActions(
                     PlaybackStateCompat.ACTION_PLAY
                             or PlaybackStateCompat.ACTION_PLAY_PAUSE
+                            or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+                            or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
                 )
             setPlaybackState(stateBuilder.build())
 
@@ -59,6 +52,14 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             // Set the session's token so that client activities can communicate with it.
             setSessionToken(sessionToken)
         }
+
+        mNotificationBuilder = NotificationBuilder(this, mediaSession)
+
+        mNotificationBuilder.createChannel(
+            getString(R.string.petify_music_channel),
+            getString(R.string.channel_name),
+            getString(R.string.channel_description)
+        )
     }
 
     override fun onLoadChildren(

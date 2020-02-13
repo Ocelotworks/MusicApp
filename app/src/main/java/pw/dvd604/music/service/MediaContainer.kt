@@ -2,8 +2,10 @@ package pw.dvd604.music.service
 
 import android.media.MediaPlayer
 import android.net.Uri
+import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.data.ArtistSong
 import pw.dvd604.music.data.Song
+import pw.dvd604.music.data.storage.DatabaseContract
 
 class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.OnErrorListener,
     MediaPlayer.OnPreparedListener,
@@ -77,10 +79,49 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
     }
 
     override fun onCompletion(mp: MediaPlayer?) {
-
+        skip(1)
     }
 
     override fun onSeekComplete(mp: MediaPlayer?) {
 
+    }
+
+    fun pause() {
+        player.pause()
+    }
+
+    fun stop() {
+        player.stop()
+        player.reset()
+    }
+
+    fun skip(i: Int) {
+        if (i > 0) {
+            val cursor = (service.applicationContext as MusicApplication).readableDatabase.rawQuery(
+                "SELECT id FROM ${DatabaseContract.Song.TABLE_NAME} ORDER BY RANDOM() LIMIT 1",
+                null,
+                null
+            )
+
+            with(cursor) {
+                while (moveToNext()) {
+
+                    val id = getString(
+                        getColumnIndexOrThrow("id")
+                    )
+
+                    service.mediaSession?.controller?.transportControls?.playFromMediaId(
+                        id, null
+                    )
+
+                    service.mNotificationBuilder.build(id)
+                }
+                cursor.close()
+            }
+        }
+    }
+
+    fun currentPosition(): Long {
+        return player.currentPosition.toLong()
     }
 }

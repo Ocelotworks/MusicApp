@@ -3,6 +3,8 @@ package pw.dvd604.music
 import android.content.ComponentName
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -42,19 +44,19 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
 
     public override fun onStart() {
         super.onStart()
-        //    mediaBrowser.connect()
+        mediaBrowser.connect()
     }
 
     public override fun onResume() {
         super.onResume()
-        //   volumeControlStream = AudioManager.STREAM_MUSIC
+        //volumeControlStream = AudioManager.STREAM_MUSIC
     }
 
     public override fun onStop() {
         super.onStop()
         // (see "stay in sync with the MediaSession")
-        //   MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
-        //  mediaBrowser.disconnect()
+        MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
+        mediaBrowser.disconnect()
     }
 
     private fun setupUI() {
@@ -76,6 +78,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         smallArtistText.alpha = 1 - slideOffset
         smallPausePlay.alpha = 1 - slideOffset
         smallSongTitle.alpha = 1 - slideOffset
+        songArt.alpha = slideOffset
     }
 
     override fun onPanelStateChanged(
@@ -89,23 +92,51 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         return this.application as MusicApplication
     }
 
-    private fun getPagerLayout(position: Int): ListLayout {
-        return when (position) {
-            0 -> {
-                ListLayout.GRID
+    fun onClick(v: View) = when (v.id) {
+        this.btnNext.id -> {
+            this.mediaController.transportControls.skipToNext()
+        }
+        this.smallPausePlay.id,
+        this.btnPause.id -> {
+            if (this.mediaController.playbackState?.state == PlaybackStateCompat.STATE_PAUSED) {
+                smallPausePlay.setImageResource(R.drawable.baseline_pause_white_48)
+                btnPause.setImageResource(R.drawable.baseline_pause_white_48)
+                this.mediaController.transportControls.play()
+            } else {
+                this.mediaController.transportControls.pause()
+                smallPausePlay.setImageResource(R.drawable.baseline_play_arrow_white_48)
+                btnPause.setImageResource(R.drawable.baseline_play_arrow_white_48)
             }
-            1, 2 -> {
-                ListLayout.LIST
-            }
-            else -> {
-                ListLayout.GRID
-            }
+        }
+        this.btnShuffle.id -> {
+        }
+        this.btnStar.id -> {
+
+        }
+        this.btnPrev.id -> {
+            this.mediaController.transportControls.skipToPrevious()
+        }
+        else -> {
         }
     }
 
     private inner class ScreenSlidePagerAdapter(fm: FragmentManager) :
         FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
         override fun getCount(): Int = NUM_PAGES
+
+        private fun getPagerLayout(position: Int): ListLayout {
+            return when (position) {
+                0 -> {
+                    ListLayout.GRID
+                }
+                1, 2 -> {
+                    ListLayout.LIST
+                }
+                else -> {
+                    ListLayout.GRID
+                }
+            }
+        }
 
         override fun getPageTitle(position: Int): CharSequence? {
             return when (position) {
