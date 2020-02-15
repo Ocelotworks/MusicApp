@@ -83,7 +83,7 @@ class NotificationBuilder(
                                 getColumnIndexOrThrow(
                                     DatabaseContract.Song.COLUMN_NAME_DURATION
                                 )
-                            )
+                            ) * 1000
                         )
                     }
 

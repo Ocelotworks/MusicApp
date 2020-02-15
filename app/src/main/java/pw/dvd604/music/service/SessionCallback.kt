@@ -48,7 +48,7 @@ class SessionCallback(private val service: MediaPlaybackService) : MediaSessionC
             service.mediaSession?.setPlaybackState(
                 PlaybackStateCompat.Builder().setState(
                     PlaybackStateCompat.STATE_PLAYING,
-                    0,
+                    service.mMediaContainer.currentPosition(),
                     1f
                 ).build()
             )
@@ -64,7 +64,7 @@ class SessionCallback(private val service: MediaPlaybackService) : MediaSessionC
         service.mediaSession?.setPlaybackState(
             PlaybackStateCompat.Builder().setState(
                 PlaybackStateCompat.STATE_PLAYING,
-                0,
+                service.mMediaContainer.currentPosition(),
                 1f
             ).build()
         )
@@ -86,7 +86,7 @@ class SessionCallback(private val service: MediaPlaybackService) : MediaSessionC
         service.mediaSession?.setPlaybackState(
             PlaybackStateCompat.Builder().setState(
                 PlaybackStateCompat.STATE_STOPPED,
-                0,
+                service.mMediaContainer.currentPosition(),
                 1f
             ).build()
         )
