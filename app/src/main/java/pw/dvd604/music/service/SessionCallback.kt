@@ -1,9 +1,11 @@
 package pw.dvd604.music.service
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.view.KeyEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -14,6 +16,31 @@ class SessionCallback(private val service: MediaPlaybackService) : MediaSessionC
         GlobalScope.launch(Dispatchers.Main) {
             call()
         }
+    }
+
+    private fun buildNotification() {
+        ui { service.startForeground(6969, service.mNotificationBuilder.build()) }
+    }
+
+    override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
+        when ((mediaButtonEvent?.extras?.get(Intent.EXTRA_KEY_EVENT) as KeyEvent).keyCode) {
+
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+                if (MediaContainer.player.isPlaying) {
+                    onPause()
+                } else {
+                    onPlay()
+                }
+                buildNotification()
+            }
+            KeyEvent.KEYCODE_MEDIA_NEXT -> {
+                onSkipToNext()
+            }
+            KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+                onSkipToPrevious()
+            }
+        }
+        return super.onMediaButtonEvent(mediaButtonEvent)
     }
 
     override fun onPlayFromSearch(query: String?, extras: Bundle?) {

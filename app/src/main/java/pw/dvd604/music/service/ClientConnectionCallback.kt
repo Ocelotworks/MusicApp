@@ -6,7 +6,6 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import android.view.animation.LinearInterpolator
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.fragment_playing.*
@@ -58,9 +57,7 @@ class ControllerCallback(private val activity: MainActivity) : MediaControllerCo
     private var mProgressAnimator: ValueAnimator? = null
 
     override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-        Log.e("Meta", "A")
         if (metadata == null) return
-        Log.e("Meta", "B")
 
         activity.songName.text = metadata.description.title
         activity.songAuthor.text = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
@@ -101,6 +98,9 @@ class ControllerCallback(private val activity: MainActivity) : MediaControllerCo
         if (state != null && state.state == PlaybackStateCompat.STATE_PLAYING) {
             val timeToEnd =
                 ((activity.songProgress.max - progress) / state.playbackSpeed).toInt()
+
+            if (timeToEnd < 0) return
+
             mProgressAnimator =
                 ValueAnimator.ofInt(progress, activity.songProgress.max)
                     .setDuration(timeToEnd.toLong())

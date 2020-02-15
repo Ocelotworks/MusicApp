@@ -141,12 +141,6 @@ class NotificationBuilder(
                         )
                     }
 
-                    Log.e(
-                        "Test", "https://unacceptableuse.com/petifyv3/api/v2/album/${getString(
-                            getColumnIndexOrThrow(DatabaseContract.Song.COLUMN_NAME_ALBUM)
-                        )}/image"
-                    )
-
                     meta?.putBitmap(
                         MediaMetadata.METADATA_KEY_ALBUM_ART,
                         Glide.with(this@NotificationBuilder.context)
@@ -207,6 +201,24 @@ class NotificationBuilder(
             setSmallIcon(R.drawable.ic_notification)
             color = ContextCompat.getColor(context, R.color.colorPrimaryDark)
 
+            addAction(
+                NotificationCompat.Action(
+                    R.drawable.baseline_skip_previous_white_18,
+                    "Skip forward",
+                    MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        context as MediaPlaybackService,
+                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                    )
+                )
+            )
+
+            Log.e("Actions", "Definitely Running")
+            Log.e(
+                "Actions", "${MediaButtonReceiver.buildMediaButtonPendingIntent(
+                    context,
+                    PlaybackStateCompat.ACTION_PLAY_PAUSE
+                ) == null}"
+            )
             // Add a pause button
             addAction(
                 NotificationCompat.Action(
@@ -215,17 +227,6 @@ class NotificationBuilder(
                     MediaButtonReceiver.buildMediaButtonPendingIntent(
                         context,
                         PlaybackStateCompat.ACTION_PLAY_PAUSE
-                    )
-                )
-            )
-
-            addAction(
-                NotificationCompat.Action(
-                    R.drawable.baseline_skip_previous_white_18,
-                    "Skip forward",
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        context,
-                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
                     )
                 )
             )
@@ -245,7 +246,7 @@ class NotificationBuilder(
             setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
                     .setMediaSession(mediaSession.sessionToken)
-                    .setShowActionsInCompactView(1, 0, 2)
+                    .setShowActionsInCompactView(0, 1, 2)
 
                     // Add a cancel button
                     .setShowCancelButton(true)
