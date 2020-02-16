@@ -23,10 +23,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
     val mMediaContainer = MediaContainer(this)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.e(
-            LOG_TAG,
-            "onStartCommand(): received intent " + intent?.action + " with flags " + flags + " and startId " + startId
-        )
         MediaButtonReceiver.handleIntent(mediaSession, intent)
         return super.onStartCommand(intent, flags, startId)
     }
@@ -44,9 +40,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
         // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, LOG_TAG).apply {
-
-            isActive = true
-
             setRatingType(RatingCompat.RATING_NONE)
             setSessionActivity(sessionActivityPendingIntent)
 
@@ -54,6 +47,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             stateBuilder = PlaybackStateCompat.Builder()
                 .setActions(
                     PlaybackStateCompat.ACTION_PLAY
+                            or PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID
                             or PlaybackStateCompat.ACTION_PLAY_PAUSE
                             or PlaybackStateCompat.ACTION_STOP
                             or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
@@ -80,7 +74,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        result.detach()
+        result.sendResult(null)
     }
 
     override fun onGetRoot(

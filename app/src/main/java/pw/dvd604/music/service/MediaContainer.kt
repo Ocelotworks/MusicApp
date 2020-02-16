@@ -7,10 +7,12 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Environment
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.data.ArtistSong
 import pw.dvd604.music.data.Song
 import pw.dvd604.music.data.storage.DatabaseContract
+import java.io.File
 
 class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.OnErrorListener,
     MediaPlayer.OnPreparedListener,
@@ -39,7 +41,17 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
             return
 
         player.reset()
-        player.setDataSource("https://unacceptableuse.com/petify/song/$id")
+
+        val file = File(
+            "${Environment.getExternalStorageDirectory()}/petify/${id}}"
+        )
+
+        if (!file.exists()) {
+            player.setDataSource("https://unacceptableuse.com/petify/song/$id")
+        } else {
+            player.setDataSource(file.absolutePath)
+        }
+
         player.prepare()
 
         play()

@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setupUI()
+        setupUI(true)
         mContentManager = ContentManager(this.applicationContext, this) {
             setupUI()
         }
@@ -52,25 +52,27 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         //volumeControlStream = AudioManager.STREAM_MUSIC
     }
 
-    public override fun onStop() {
-        super.onStop()
-        // (see "stay in sync with the MediaSession")
+    public override fun onDestroy() {
+        super.onDestroy()
+        //(see "stay in sync with the MediaSession")
         MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
         mediaBrowser.disconnect()
     }
 
-    private fun setupUI() {
+    private fun setupUI(setupMediaBrowser: Boolean = false) {
         pager.adapter = ScreenSlidePagerAdapter(supportFragmentManager)
         sliding_layout.addPanelSlideListener(this)
 
         (tabDots as TabLayout).setupWithViewPager(pager)
 
-        mediaBrowser = MediaBrowserCompat(
-            this,
-            ComponentName(this, MediaPlaybackService::class.java),
-            ClientConnectionCallback(this),
-            null // optional Bundle
-        )
+        if (setupMediaBrowser) {
+            mediaBrowser = MediaBrowserCompat(
+                this,
+                ComponentName(this, MediaPlaybackService::class.java),
+                ClientConnectionCallback(this),
+                null // optional Bundle
+            )
+        }
     }
 
     override fun onPanelSlide(panel: View?, slideOffset: Float) {

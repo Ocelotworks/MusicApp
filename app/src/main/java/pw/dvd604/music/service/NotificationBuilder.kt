@@ -212,13 +212,6 @@ class NotificationBuilder(
                 )
             )
 
-            Log.e("Actions", "Definitely Running")
-            Log.e(
-                "Actions", "${MediaButtonReceiver.buildMediaButtonPendingIntent(
-                    context,
-                    PlaybackStateCompat.ACTION_PLAY_PAUSE
-                ) == null}"
-            )
             // Add a pause button
             addAction(
                 NotificationCompat.Action(
