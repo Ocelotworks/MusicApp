@@ -31,7 +31,9 @@ class ListFragment(
     private val layout: ListLayout = ListLayout.GRID
 ) : Fragment() {
 
-    lateinit var application: MusicApplication
+    constructor() : this("")
+
+    private lateinit var application: MusicApplication
 
     override fun onCreateView(
         inflater: LayoutInflater,

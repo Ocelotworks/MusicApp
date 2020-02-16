@@ -44,7 +44,8 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
 
     public override fun onStart() {
         super.onStart()
-        mediaBrowser.connect()
+        if (!mediaBrowser.isConnected)
+            mediaBrowser.connect()
     }
 
     public override fun onResume() {
@@ -55,6 +56,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
     public override fun onDestroy() {
         super.onDestroy()
         //(see "stay in sync with the MediaSession")
+        this.mediaController.transportControls.stop()
         MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
         mediaBrowser.disconnect()
     }

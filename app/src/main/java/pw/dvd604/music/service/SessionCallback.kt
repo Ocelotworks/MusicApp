@@ -68,7 +68,7 @@ class SessionCallback(private val service: MediaPlaybackService) : MediaSessionC
     }
 
     override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-        service.mMediaContainer.play(mediaId)
+        service.mMediaContainer.play(mediaId, extras)
 
 
 

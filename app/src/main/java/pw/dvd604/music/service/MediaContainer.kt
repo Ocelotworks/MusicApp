@@ -7,6 +7,7 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Bundle
 import android.os.Environment
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.data.ArtistSong
@@ -22,6 +23,7 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
         lateinit var becomingNoisyReceiver: BecomingNoisyReceiver
         lateinit var afChangeListener: AudioManager.OnAudioFocusChangeListener
         lateinit var request: AudioFocusRequest
+        val songsPlayed = ArrayList<String>(0)
     }
 
     init {
@@ -36,7 +38,7 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
         afChangeListener = AudioFocusListener(service)
     }
 
-    fun play(id: String?) {
+    fun play(id: String?, extras: Bundle? = null) {
         if (id == null)
             return
 
@@ -51,6 +53,9 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
         } else {
             player.setDataSource(file.absolutePath)
         }
+
+        if (extras?.getInt("do_not_add") != 1)
+            songsPlayed.add(id)
 
         player.prepare()
 
@@ -174,6 +179,20 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
                 }
                 cursor.close()
             }
+        } else if (i < 0) {
+            val currentIndex = songsPlayed.size - 1
+            var newIndex = currentIndex + i
+
+            if (newIndex < 0) newIndex = 0
+
+            val bundle = Bundle()
+            bundle.putInt("do_not_add", 1)
+
+            songsPlayed.removeAt(currentIndex)
+
+            service.mediaSession?.controller?.transportControls?.playFromMediaId(
+                songsPlayed[newIndex], bundle
+            )
         }
     }
 
