@@ -71,8 +71,8 @@ class ControllerCallback(private val activity: MainActivity) : MediaControllerCo
 
         Glide.with(activity).load(metadata.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART))
             .also { img ->
-                img.into(activity.songArt)
-                img.into(activity.smallAlbumArt)
+                img.placeholder(R.drawable.album).into(activity.songArt)
+                img.placeholder(R.drawable.albumsmall).into(activity.smallAlbumArt)
             }
     }
 
