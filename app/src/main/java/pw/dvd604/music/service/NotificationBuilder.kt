@@ -215,7 +215,11 @@ class NotificationBuilder(
             // Add a pause button
             addAction(
                 NotificationCompat.Action(
-                    R.drawable.baseline_pause_white_18,
+                    if (mediaSession.controller.playbackState.state == PlaybackStateCompat.STATE_PLAYING) {
+                        R.drawable.baseline_pause_white_18
+                    } else {
+                        R.drawable.baseline_play_arrow_white_18
+                    },
                     "Pause",
                     MediaButtonReceiver.buildMediaButtonPendingIntent(
                         context,

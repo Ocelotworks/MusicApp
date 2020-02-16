@@ -45,7 +45,7 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
         player.reset()
 
         val file = File(
-            "${Environment.getExternalStorageDirectory()}/petify/${id}}"
+            "${Environment.getExternalStorageDirectory()}/petify/${id}"
         )
 
         if (!file.exists()) {
@@ -180,6 +180,8 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
                 cursor.close()
             }
         } else if (i < 0) {
+            if (songsPlayed.size == 0) return
+
             val currentIndex = songsPlayed.size - 1
             var newIndex = currentIndex + i
 
