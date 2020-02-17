@@ -76,6 +76,13 @@ class ControllerCallback(private val activity: MainActivity) : MediaControllerCo
             }
     }
 
+    fun stopAnimation() {
+        if (mProgressAnimator != null) {
+            mProgressAnimator?.cancel()
+            mProgressAnimator = null
+        }
+    }
+
     override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
         super.onPlaybackStateChanged(state)
 

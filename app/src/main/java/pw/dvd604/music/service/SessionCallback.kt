@@ -2,6 +2,7 @@ package pw.dvd604.music.service
 
 import android.content.Intent
 import android.media.MediaMetadata
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
@@ -152,5 +153,19 @@ class SessionCallback(private val service: MediaPlaybackService) : MediaSessionC
                 1f
             ).build()
         )
+    }
+
+    override fun onSeekTo(pos: Long) {
+        service.mediaSession?.setPlaybackState(
+            PlaybackStateCompat.Builder().setState(
+                PlaybackStateCompat.STATE_BUFFERING,
+                service.mMediaContainer.currentPosition(),
+                1f
+            ).build()
+        )
+
+        MediaContainer.player.seekTo(pos, MediaPlayer.SEEK_CLOSEST)
+
+        onPlay()
     }
 }
