@@ -1,429 +1,183 @@
 package pw.dvd604.music
 
-import android.Manifest
-import android.content.pm.PackageManager
+import android.content.ComponentName
 import android.os.Bundle
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.view.ContextMenu
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.google.android.gms.cast.framework.CastButtonFactory
-import com.google.android.gms.cast.framework.CastContext
-import com.google.android.material.snackbar.Snackbar
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentStatePagerAdapter
+import com.google.android.material.tabs.TabLayout
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_songs.*
-import pw.dvd604.music.adapter.data.Media
-import pw.dvd604.music.adapter.data.MediaType
-import pw.dvd604.music.fragment.*
-import pw.dvd604.music.util.Settings
-import pw.dvd604.music.util.Settings.Companion.aggressiveReporting
-import pw.dvd604.music.util.Settings.Companion.server
-import pw.dvd604.music.util.SongList
-import pw.dvd604.music.util.Util
-import pw.dvd604.music.util.download.Downloader
-import pw.dvd604.music.util.network.FilterMapRequest
-import pw.dvd604.music.util.network.HTTP
-import pw.dvd604.music.util.network.SongListRequest
-import pw.dvd604.music.util.update.Updater
-import java.util.*
-import kotlin.system.exitProcess
+import kotlinx.android.synthetic.main.fragment_playing.*
+import pw.dvd604.music.fragment.ListFragment
+import pw.dvd604.music.fragment.ListLayout
+import pw.dvd604.music.fragment.SettingsFragment
+import pw.dvd604.music.service.ClientConnectionCallback
+import pw.dvd604.music.service.ControllerCallback
+import pw.dvd604.music.service.MediaPlaybackService
+import pw.dvd604.music.util.ContentManager
+import pw.dvd604.music.util.ControllerHandler
 
+private const val NUM_PAGES = 4
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListener {
 
-    private var mediaRouteMenuItem: MenuItem? = null
-    private var inSettings: Boolean = false
-    private var inQueue: Boolean = false
-    private var nowPlayingFragment: NowPlayingFragment = NowPlayingFragment()
-    var songFragment: SongFragment = SongFragment()
-    private lateinit var subSongFragment: SubSongFragment
-    private lateinit var detailFragment: SongDetailFragment
-    private var settingsFragment = SettingsFragment()
-    private var queueFragment = QueueFragment()
-    private val permissionsResult: Int = 1
-    private var homeLab: Boolean = false
-    private lateinit var http: HTTP
-    private lateinit var castContext: CastContext
-
+    lateinit var mContentManager: ContentManager
+    lateinit var mediaBrowser: MediaBrowserCompat
+    val controllerCallback = ControllerCallback(this)
+    val controllerHandler = ControllerHandler(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        Settings.getSetting(server).let { HTTP.setup(it) }
-        Util.downloader = Downloader(this.applicationContext)
-
-        if (getYearMonth() == 9) {
-            //Halloween theme
-            setTheme(R.style.AppThemeHalloween)
+        setupUI(true)
+        mContentManager = ContentManager(this.applicationContext, this) {
+            setupUI()
         }
-
-        //Insert actual fragments into shell containers
-        val fM = this.supportFragmentManager
-        val fT = fM.beginTransaction()
-        fT.add(R.id.fragmentContainer, nowPlayingFragment)
-        fT.add(R.id.slideContainer, songFragment)
-        fT.commit()
-
-        http = HTTP(this)
-
-        SongList.callback = songFragment::setSongs
-
-        //Check permissions
-        checkPermissions()
-
-        checkServerPrefs()
-
-        castContext = CastContext.getSharedInstance(this)
-
-        Thread {
-            populateSongList()
-            populateFilterMaps()
-
-            try {
-                settingsFragment.onSharedPreferenceChanged(Settings.prefs, Settings.blacklist)
-            } catch (e: Exception) {
-            }
-        }.start()
+        mContentManager.buildDatabase()
     }
 
-    override fun onStart() {
+    public override fun onStart() {
         super.onStart()
-
-        sliding_layout.setScrollableView(mediaList)
-        if (Settings.getBoolean(Settings.update)) {
-            Updater(this).checkUpdate()
-        }
+        if (!mediaBrowser.isConnected)
+            mediaBrowser.connect()
     }
 
-    override fun onDestroy() {
+    public override fun onResume() {
+        super.onResume()
+        //volumeControlStream = AudioManager.STREAM_MUSIC
+    }
+
+    public override fun onDestroy() {
         super.onDestroy()
-        this.mediaController?.transportControls?.stop()
+        //(see "stay in sync with the MediaSession")
+        this.mediaController.transportControls.stop()
+        MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
+        mediaBrowser.disconnect()
     }
 
-    private fun populateFilterMaps() {
-        for (type in MediaType.getNonSong()) {
-            val fileContents = Util.readFromFile(this, "${Util.dataTypeToString(type)}List")
+    private fun setupUI(setupMediaBrowser: Boolean = false) {
+        pager.adapter = ScreenSlidePagerAdapter(supportFragmentManager)
+        sliding_layout.addPanelSlideListener(this)
 
-            if (fileContents != null) {
-                FilterMapRequest(::setFilter, type).onResponse(fileContents)
+        (tabDots as TabLayout).setupWithViewPager(pager)
+
+        if (setupMediaBrowser) {
+            mediaBrowser = MediaBrowserCompat(
+                this,
+                ComponentName(this, MediaPlaybackService::class.java),
+                ClientConnectionCallback(this),
+                null // optional Bundle
+            )
+        }
+    }
+
+    override fun onPanelSlide(panel: View?, slideOffset: Float) {
+        smallAlbumArt.alpha = 1 - slideOffset
+        smallArtistText.alpha = 1 - slideOffset
+        smallPausePlay.alpha = 1 - slideOffset
+        smallSongTitle.alpha = 1 - slideOffset
+        songArt.alpha = slideOffset
+    }
+
+    override fun onPanelStateChanged(
+        panel: View?,
+        previousState: SlidingUpPanelLayout.PanelState?,
+        newState: SlidingUpPanelLayout.PanelState?
+    ) {
+    }
+
+    fun getApp(): MusicApplication {
+        return this.application as MusicApplication
+    }
+
+    fun onClick(v: View) = when (v.id) {
+        this.btnNext.id -> {
+            this.mediaController.transportControls.skipToNext()
+        }
+        this.smallPausePlay.id,
+        this.btnPause.id -> {
+            if (this.mediaController.playbackState?.state == PlaybackStateCompat.STATE_PAUSED) {
+                smallPausePlay.setImageResource(R.drawable.baseline_pause_white_48)
+                btnPause.setImageResource(R.drawable.baseline_pause_white_48)
+                this.mediaController.transportControls.play()
+            } else {
+                this.mediaController.transportControls.pause()
+                smallPausePlay.setImageResource(R.drawable.baseline_play_arrow_white_48)
+                btnPause.setImageResource(R.drawable.baseline_play_arrow_white_48)
             }
+        }
+        this.btnShuffle.id -> {
+        }
+        this.btnStar.id -> {
 
-            http.getReq(HTTP.getAllMedia(type), FilterMapRequest(::setFilter, type, ::writeFilter))
+        }
+        this.btnPrev.id -> {
+            this.mediaController.transportControls.skipToPrevious()
+        }
+        else -> {
         }
     }
 
-    private fun writeFilter(response: String, mediaType: MediaType) {
-        Util.writeToFile(this, "${Util.dataTypeToString(mediaType)}List", response)
-    }
+    private inner class ScreenSlidePagerAdapter(fm: FragmentManager) :
+        FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+        override fun getCount(): Int = NUM_PAGES
 
-    private fun setFilter(arrayList: ArrayList<Media>, mediaType: MediaType, broken: Boolean) {
-        if (!broken) {
-            SongList.generateMaps(arrayList)
-        } else {
-            Util.deleteFile(this, "${Util.dataTypeToString(mediaType)}List")
-        }
-
-        SongList.applyFilter()
-    }
-
-    private fun populateSongList() {
-        SongList.isBuilding = true
-        val fileContents = Util.readFromFile(this, "mediaList")
-
-        if (fileContents != null) {
-            SongListRequest(::setSongs).onResponse(fileContents)
-        }
-
-        http.getReq(
-            HTTP.getSong(),
-            SongListRequest(::setSongs, ::writeSongs)
-        )
-    }
-
-    private fun writeSongs(response: String?) {
-        Util.writeToFile(this, "mediaList", response!!)
-    }
-
-    private fun setSongs(media: ArrayList<Media>) {
-        SongList.setSongsAndNotify(media)
-    }
-
-    private fun checkServerPrefs() {
-        if (Settings.getSetting(server) == Settings.getDefault(server)) {
-            //We're connecting to petify - chances of this not being the case are slim
-            homeLab = false
-        } else {
-            //We're on a home lab, disable all advanced functions
-            homeLab = true
-            nowPlayingFragment.hideStar()
-        }
-    }
-
-    fun onClick(v: View) {
-        MusicApplication.track(
-            "Button Click",
-            Util.generatePayload(arrayOf("button"), arrayOf(Util.idToString(v.id)))
-        )
-        if (this.mediaController == null) {
-            this.report("An error occurred, please try again")
-            MusicApplication.track("error", "MediaController is null?")
-            return
-        }
-
-        val pbState = this.mediaController.playbackState?.state
-
-        when (v.id) {
-            R.id.btnQueue -> {
-                subSongFragment.addToQueue()
-                return
-            }
-            R.id.btnPause -> {
-                if (pbState == PlaybackStateCompat.STATE_PAUSED or PlaybackStateCompat.STATE_PLAYING) {
-                    if (pbState == PlaybackStateCompat.STATE_PLAYING) {
-                        mediaController.transportControls.pause()
-                    } else {
-                        mediaController.transportControls.play()
-                    }
+        private fun getPagerLayout(position: Int): ListLayout {
+            return when (position) {
+                0 -> {
+                    ListLayout.GRID
                 }
-                return
+                1, 2 -> {
+                    ListLayout.LIST
+                }
+                else -> {
+                    ListLayout.GRID
+                }
             }
-            R.id.btnNext -> {
-                if (pbState == PlaybackStateCompat.STATE_PLAYING or PlaybackStateCompat.STATE_PAUSED) {
-                    mediaController.transportControls.skipToNext()
-                } else {
-                    mediaController.transportControls.prepareFromUri(
-                        SongList.songList.random().toUri(),
-                        null
+        }
+
+        override fun getPageTitle(position: Int): CharSequence? {
+            return when (position) {
+                0 -> {
+                    "Albums"
+                }
+                1 -> {
+                    "Artists"
+                }
+                2 -> {
+                    "Songs"
+                }
+                3 -> {
+                    "Settings"
+                }
+                else -> {
+                    "Unknown?"
+                }
+            }
+        }
+
+        override fun getItem(position: Int): Fragment {
+            return when (position) {
+                0, 1, 2 -> {
+                    ListFragment(
+                        getPageTitle(position).toString(),
+                        getPagerLayout(position)
                     )
                 }
-                return
-            }
-            R.id.btnPrev -> {
-                if (pbState == PlaybackStateCompat.STATE_PLAYING or PlaybackStateCompat.STATE_PAUSED) {
-                    mediaController.transportControls.skipToPrevious()
+                3 -> {
+                    SettingsFragment()
                 }
-                return
-            }
-            R.id.btnStar -> {
-                if (!homeLab) {
-                    mediaController.sendCommand("likesong", null, null)
-                    Util.report("Liked media!", this, true)
-                } else {
-                    report(getString(R.string.homelabError), true)
-                }
-                return
-            }
-            R.id.btnShuffle -> {
-                nowPlayingFragment.shuffleMode()
-                return
-            }
-            R.id.btnBack -> {
-                val fM = this.supportFragmentManager
-                fM.popBackStack()
-                //fT.commit()
-            }
-        }
-    }
-
-    fun createSubFragment(url: String, name: String) {
-        val fM = this.supportFragmentManager
-        val fT = fM.beginTransaction()
-
-        fM.saveFragmentInstanceState(songFragment)
-
-        subSongFragment = SubSongFragment.create(url, name)
-        fT.replace(R.id.slideContainer, subSongFragment)
-        fT.addToBackStack(null)
-        fT.commit()
-    }
-
-    fun createDetailFragment(media: Media) {
-        val fM = this.supportFragmentManager
-        val fT = fM.beginTransaction()
-
-        fM.saveFragmentInstanceState(songFragment)
-
-        detailFragment = SongDetailFragment.create(media)
-        fT.replace(R.id.slideContainer, detailFragment)
-        fT.addToBackStack("subSong")
-        fT.commit()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        //Create our options menu
-        menuInflater.inflate(R.menu.menu_bar, menu)
-        mediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(
-            applicationContext,
-            menu,
-            R.id.media_route_menu_item
-        )
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if (inSettings) {
-            return super.onOptionsItemSelected(item)
-        }
-
-        return when (item.itemId) {
-            R.id.actionSettings -> {
-                // User chose the "Settings" item, show the app settings UI...
-                //By replacing the now playing fragment with the settings fragment
-                //and hiding the menu item
-                val fM = this.supportFragmentManager
-                val fT = fM.beginTransaction()
-                fT.replace(R.id.fragmentContainer, settingsFragment)
-                fT.commit()
-                inSettings = true
-
-                supportActionBar?.let {
-                    it.title = "Settings"
-                }
-                true
-            }
-            R.id.actionQueue -> {
-                val fM = this.supportFragmentManager
-                val fT = fM.beginTransaction()
-                if (!inQueue) {
-                    fT.replace(R.id.slideContainer, queueFragment)
-                    fT.commit()
-                    inQueue = true
-                    sliding_layout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
-                } else {
-                    fT.replace(R.id.slideContainer, songFragment)
-                    fT.commit()
-                    inQueue = false
-                }
-
-                true
-            }
-            else -> {
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                super.onOptionsItemSelected(item)
-            }
-        }
-    }
-
-
-    override fun onBackPressed() {
-        when {
-            inSettings -> {
-                //If we're currently looking at the settings, replace the fragment back to the old now playing fragment
-                // and un-hide the menu item
-                val fM = this.supportFragmentManager
-                val fT = fM.beginTransaction()
-
-                fT.replace(R.id.fragmentContainer, nowPlayingFragment)
-                fT.commit()
-                inSettings = false
-
-                supportActionBar?.let {
-                    it.title = resources.getString(R.string.app_name)
-                }
-
-                report("Settings changes require an app restart to take effect", true)
-            }
-            inQueue -> {
-                val fM = this.supportFragmentManager
-                val fT = fM.beginTransaction()
-
-                fT.replace(R.id.slideContainer, songFragment)
-                fT.commit()
-                inQueue = false
-
-                supportActionBar?.let {
-                    it.title = resources.getString(R.string.app_name)
+                else -> {
+                    SettingsFragment()
                 }
             }
-            else -> //Else let the system deal with the back button
-                super.onBackPressed()
         }
-    }
 
-    private fun checkPermissions() {
-        //Check we have both storage permissions
-        //Request them if we don't
-        val permissions = arrayOf(
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
-
-        val check: Boolean = check(permissions)
-
-        if (!check) {
-            ActivityCompat.requestPermissions(
-                this,
-                permissions,
-                permissionsResult
-            )
-        }
-    }
-
-    private fun check(perms: Array<String>): Boolean {
-        var result = true
-        for (perm in perms) {
-            if (ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_DENIED)
-                result = false
-        }
-        return result
-    }
-
-    fun report(text: String, urgent: Boolean = false) {
-        if (Settings.getBoolean(aggressiveReporting) || urgent) {
-            Snackbar.make(
-                this.findViewById(R.id.fragmentContainer),
-                text as CharSequence,
-                Snackbar.LENGTH_SHORT
-            )
-                .show()
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>, grantResults: IntArray
-    ) {
-        //Get request result
-        when (requestCode) {
-            permissionsResult -> {
-                if (grantResults.isNotEmpty()) {
-                    for (perm in grantResults) {
-                        if (perm != PackageManager.PERMISSION_GRANTED) {
-                            report("This app will not work without permissions", false)
-                            exitProcess(-1)
-                        }
-                    }
-                }
-                return
-            }
-            else -> {
-                // Ignore all other requests.
-            }
-        }
-    }
-
-    override fun onCreateContextMenu(
-        menu: ContextMenu, v: View,
-        menuInfo: ContextMenu.ContextMenuInfo
-    ) {
-        super.onCreateContextMenu(songFragment.buildContext(menu, v, menuInfo), v, menuInfo)
-    }
-
-    override fun onContextItemSelected(item: MenuItem?): Boolean {
-        return songFragment.contextItemSelected(item)
-    }
-
-    private fun getYearMonth(): Int {
-        val calendar = Calendar.getInstance()
-        calendar.time = Date()
-        return calendar.get(Calendar.MONTH)
     }
 }

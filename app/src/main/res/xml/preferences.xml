@@ -9,153 +9,29 @@
                 android:summary="Don't like rap? This is for you"
                 android:title="Content blacklist" />
 
-    <SwitchPreferenceCompat
-            android:defaultValue="1"
-            android:key="usageReporting"
-            android:summary="Send usage reports"
-            android:title="Anonymised statistics reports" />
-
         <EditTextPreference
-                android:key="apikKey"
+                android:key="apiKey"
                 android:title="API Key" />
 
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Offline play">
-
-        <SwitchPreferenceCompat
-                android:defaultValue="1"
+        <Preference
                 android:key="download"
-                android:title="Enable offline play" />
+                android:title="Download all songs" />
 
         <Preference
-                android:key="downloadAll"
-                android:summary="Downloads all media for offline play"
-                android:title="Download all media" />
-
-        <Preference
-                android:key="checkHash"
-                android:summary="Forces app to check the hash of every downloaded song"
-                android:title="Check local hashes" />
+                android:key="hash"
+                android:title="Hash all songs" />
 
         <SwitchPreferenceCompat
                 android:defaultValue="1"
                 android:key="shuffleOffline"
                 android:title="Shuffle only downloaded media" />
-    </PreferenceCategory>
 
-    <PreferenceCategory android:title="Intents">
-
-        <SwitchPreferenceCompat
-                android:key="useIntents"
-                android:summary="Listens to intents to allow audio control
-                \nIntent root: pw.dvd604.music
-                \nUsable intents: PLAY, NEXT and PREV"
-                android:title="Use intents" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Updates">
-        <SwitchPreferenceCompat
-                android:defaultValue="1"
-                android:key="autoUpdate"
-                android:title="Enable automatic updates" />
-    </PreferenceCategory>
-
-    <Preference
-            android:key="version"
-            android:summary="{MINOR_VERSION}"
-            android:title="{VERSION}" />
-
-    <PreferenceCategory
-            android:key="experimentalCategory"
-            android:title="Developer settings">
-        <EditTextPreference
-                android:key="trackingID"
-                android:title="Change Tracking ID" />
-
-        <EditTextPreference
-                android:defaultValue="https://unacceptableuse.com/petify"
-                android:key="address"
-                android:summary="Address to compatible server, e.g. Petify"
-                android:title="Server address" />
-
-        <SwitchPreferenceCompat
-                android:defaultValue="1"
-                android:key="albumArt"
-                android:summary="Downloads played album art to reduce data usage"
-                android:title="Keep album art stored locally" />
-
-        <SwitchPreferenceCompat
-                android:defaultValue="1"
-                android:key="crashReporting"
-                android:summary="Send crash reports"
-                android:title="Anonymised crash reports" />
-
-        <EditTextPreference
-                android:defaultValue="/sdcard/petify"
-                android:key="storage"
-                android:title="Offline Storage Directory" />
-
-        <SwitchPreferenceCompat
-                android:defaultValue="1"
-                android:key="aggressiveReporting"
-                android:summary="Show error reports as soon as they appear"
-                android:title="Aggressive error reports" />
-
-        <Preference
-                android:key="downloadAlbumArt"
-                android:title="Force download local song album art" />
 
         <SwitchPreferenceCompat
                 android:defaultValue="0"
                 android:key="developerOptions"
                 android:title="Developer Options" />
 
-        <PreferenceCategory android:title="Experimental">
-
-            <Preference
-                    android:key="appCrash"
-                    android:title="Test app crash" />
-
-            <SwitchPreferenceCompat
-                    android:defaultValue="0"
-                    android:key="forceLayouts"
-                    android:summary="Really not recommended"
-                    android:title="Force Experimental Layouts" />
-
-            <PreferenceCategory android:title="Running mode [EXPERIMENTAL]">
-
-                <SwitchPreferenceCompat
-                        android:defaultValue="0"
-                        android:key="enableRunning"
-                        android:title="Enable" />
-
-                <SeekBarPreference
-                        android:defaultValue="100"
-                        android:key="stepPM"
-                        android:max="200"
-                        android:title="Target steps/minute" />
-
-                <SeekBarPreference
-                        android:defaultValue="10"
-                        android:key="marginOfError"
-                        android:max="70"
-                        android:title="Margin of error (%)" />
-
-                <SeekBarPreference
-                        android:defaultValue="50"
-                        android:key="minSongSpeed"
-                        android:max="100"
-                        android:title="Minimum playback speed (%)" />
-
-                <SeekBarPreference
-                        android:defaultValue="50"
-                        android:key="maxSongSpeed"
-                        android:max="100"
-                        android:title="Maximum playback speed (%)" />
-
-            </PreferenceCategory>
-        </PreferenceCategory>
     </PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>

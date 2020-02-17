@@ -29,11 +29,11 @@ android {
         apikeyProperties.store(apikeyPropertiesFile.newWriter(), null)
 
         defaultConfig {
-            applicationId "pw.dvd604.music"
+            applicationId "pw.dvd604.music.debug"
             minSdkVersion 26
             targetSdkVersion 28
             versionCode code
-            versionName "3.0"
+            versionName "4.0"
             testInstrumentationRunner "android.support.MediaService.runner.AndroidJUnitRunner"
             buildConfigField("String", "sentryKey", apikeyProperties['sentryKey'])
             buildConfigField("String", "apiURL", apikeyProperties['apiURL'])
@@ -41,6 +41,7 @@ android {
             buildConfigField("int", "siteID", apikeyProperties['siteID'])
             buildConfigField("String", "versionURL", apikeyProperties['versionURL'])
             buildConfigField("String", "versionURLRoot", apikeyProperties['versionURLRoot'])
+            buildConfigField("String", "storage", apikeyProperties['storage'])
         }
 
     } else {
@@ -89,8 +90,8 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.1'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.0"
 
     implementation 'io.sentry:sentry-android:1.7.27'
     implementation 'org.slf4j:slf4j-nop:1.7.25'
@@ -109,4 +110,18 @@ dependencies {
     testImplementation 'androidx.test:core:1.2.0'
     // Optional -- Mockito framework
     testImplementation 'org.mockito:mockito-core:1.10.19'
+
+    def room_version = "2.2.1"
+
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version" // For Kotlin use kapt instead of annotationProcessor
+
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation "androidx.room:room-ktx:$room_version"
+
+    // Test helpers
+    testImplementation "androidx.room:room-testing:$room_version"
+    implementation 'com.android.support:design:28.0.0'
+
+    implementation 'com.github.bumptech.glide:glide:4.10.0'
 }
