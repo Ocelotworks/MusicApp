@@ -9,7 +9,9 @@ import io.sentry.Sentry
 import io.sentry.android.AndroidSentryClientFactory
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
+import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import pw.dvd604.music.data.storage.DatabaseHelper
 import pw.dvd604.music.util.Settings
@@ -35,6 +37,9 @@ class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
     override fun onCreate() {
         super.onCreate()
         registerActivityLifecycleCallbacks(this)
+
+        tracker = TrackerBuilder.createDefault(BuildConfig.apiURL, BuildConfig.siteID)
+            .build(Matomo.getInstance(this))
 
         internalStorage = filesDir.path
 
@@ -66,24 +71,31 @@ class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
     }
 
     override fun onActivityPaused(p0: Activity?) {
+        track("APP STATE", "Paused")
     }
 
     override fun onActivityResumed(p0: Activity?) {
+        track("APP STATE", "Resumed")
     }
 
     override fun onActivityStarted(p0: Activity?) {
+        track("APP STATE", "Started")
     }
 
     override fun onActivityDestroyed(p0: Activity?) {
+        track("APP STATE", "Destroyed")
         dbHelper.close()
     }
 
     override fun onActivitySaveInstanceState(p0: Activity?, p1: Bundle?) {
+        track("APP STATE", "SIS'd")
     }
 
     override fun onActivityStopped(p0: Activity?) {
+        track("APP STATE", "Stopped")
     }
 
     override fun onActivityCreated(p0: Activity?, p1: Bundle?) {
+        track("APP STATE", "Created")
     }
 }
