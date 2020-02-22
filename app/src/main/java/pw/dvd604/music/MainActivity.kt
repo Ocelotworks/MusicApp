@@ -40,6 +40,14 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
             setupUI()
         }
         mContentManager.buildDatabase()
+
+        //  val model : PlayingViewModel by viewModels()
+
+        //model.song.value = "Penis"
+
+        // model.song.observe(this, Observer { name ->
+        //     songName.text = name
+        // })
     }
 
     public override fun onStart() {
@@ -51,6 +59,11 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
     public override fun onResume() {
         super.onResume()
         //volumeControlStream = AudioManager.STREAM_MUSIC
+    }
+
+    public override fun onPause() {
+        super.onPause()
+        //model.song = songName.text.toString()
     }
 
     public override fun onDestroy() {

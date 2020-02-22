@@ -24,7 +24,7 @@ import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.Song
 import pw.dvd604.music.data.storage.DatabaseContract
 import pw.dvd604.music.data.storage.Table
-import pw.dvd604.music.dialog.ViewDialog
+import pw.dvd604.music.ui.dialog.ViewDialog
 
 
 class ContentManager(

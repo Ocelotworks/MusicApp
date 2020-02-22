@@ -1,4 +1,4 @@
-package pw.dvd604.music.dialog
+package pw.dvd604.music.ui.dialog
 
 import android.app.Activity
 import android.app.Dialog
