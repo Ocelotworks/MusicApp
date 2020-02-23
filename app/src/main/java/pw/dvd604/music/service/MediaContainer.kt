@@ -10,8 +10,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import pw.dvd604.music.MusicApplication
-import pw.dvd604.music.data.ArtistSong
-import pw.dvd604.music.data.Song
 import pw.dvd604.music.data.storage.DatabaseContract
 import java.io.File
 
@@ -70,27 +68,11 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
         play()
     }
 
-    fun play(song: Song) {
-
-    }
-
-    fun play(artistSong: ArtistSong) {
-
-    }
-
     fun prepare(id: String?) {
 
     }
 
     fun prepare(uri: Uri?) {
-
-    }
-
-    fun prepare(song: Song) {
-
-    }
-
-    fun prepare(artistSong: ArtistSong) {
 
     }
 

@@ -110,6 +110,12 @@ class ListFragment(
                         adapter.setData(artists as ArrayList<CardData>)
                         adapter.notifyDataSetChanged()
                     }
+                    "Playlist" -> {
+                        val data = ArrayList<CardData>(0)
+                        data.add(CardData("To do", "123", "Placeholder", "//"))
+                        adapter.setData(data)
+                        adapter.notifyDataSetChanged()
+                    }
                 }
 
             }

@@ -23,7 +23,7 @@ import pw.dvd604.music.service.MediaPlaybackService
 import pw.dvd604.music.util.ContentManager
 import pw.dvd604.music.util.ControllerHandler
 
-private const val NUM_PAGES = 4
+private const val NUM_PAGES = 5
 
 class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListener {
 
@@ -146,7 +146,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
                 0 -> {
                     ListLayout.GRID
                 }
-                1, 2 -> {
+                1, 2, 3 -> {
                     ListLayout.LIST
                 }
                 else -> {
@@ -167,6 +167,9 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
                     "Songs"
                 }
                 3 -> {
+                    "Playlist"
+                }
+                4 -> {
                     "Settings"
                 }
                 else -> {
@@ -177,13 +180,13 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
 
         override fun getItem(position: Int): Fragment {
             return when (position) {
-                0, 1, 2 -> {
+                0, 1, 2, 3 -> {
                     ListFragment(
                         getPageTitle(position).toString(),
                         getPagerLayout(position)
                     )
                 }
-                3 -> {
+                4 -> {
                     SettingsFragment()
                 }
                 else -> {
