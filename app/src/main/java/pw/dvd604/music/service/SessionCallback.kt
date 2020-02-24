@@ -49,6 +49,15 @@ class SessionCallback(private val service: MediaPlaybackService) : MediaSessionC
         return super.onMediaButtonEvent(mediaButtonEvent)
     }
 
+    override fun onCustomAction(action: String?, extras: Bundle?) {
+        super.onCustomAction(action, extras)
+        when (action) {
+            "requestData" -> {
+
+            }
+        }
+    }
+
     override fun onPlayFromSearch(query: String?, extras: Bundle?) {
     }
 

@@ -13,6 +13,8 @@ class BecomingNoisyReceiver(private val service: MediaPlaybackService) : SafeBro
         if (action?.compareTo(AudioManager.ACTION_AUDIO_BECOMING_NOISY) == 0) {
             if (MediaContainer.player.isPlaying) {
                 service.mediaSession?.controller?.transportControls?.pause()
+
+                service.startForeground(6969, service.mNotificationBuilder.build())
             }
         }
     }

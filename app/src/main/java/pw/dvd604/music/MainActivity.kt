@@ -41,20 +41,13 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         }
         mContentManager.requestPermissions()
         mContentManager.buildDatabase()
-
-        //  val model : PlayingViewModel by viewModels()
-
-        //model.song.value = "Penis"
-
-        // model.song.observe(this, Observer { name ->
-        //     songName.text = name
-        // })
     }
 
     public override fun onStart() {
         super.onStart()
-        if (!mediaBrowser.isConnected)
+        if (!mediaBrowser.isConnected) {
             mediaBrowser.connect()
+        }
     }
 
     public override fun onResume() {
@@ -64,7 +57,6 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
 
     public override fun onPause() {
         super.onPause()
-        //model.song = songName.text.toString()
     }
 
     public override fun onDestroy() {
