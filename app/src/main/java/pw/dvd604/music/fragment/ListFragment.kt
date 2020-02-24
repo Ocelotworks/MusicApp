@@ -1,9 +1,12 @@
 package pw.dvd604.music.fragment
 
+import android.content.res.Resources
+import android.graphics.drawable.StateListDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,6 +24,8 @@ import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.adapter.CardRecyclerAdapter
 import pw.dvd604.music.data.adapter.ListRecyclerAdapter
 import pw.dvd604.music.data.storage.DatabaseContract
+import pw.dvd604.music.ui.FastScroller
+
 
 enum class ListLayout {
     GRID, LIST
@@ -46,6 +51,30 @@ class ListFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         application = (this.activity as MainActivity).getApp()
+
+        val verticalThumbDrawable =
+            ContextCompat.getDrawable(
+                this.context!!,
+                R.drawable.thumb_drawable
+            ) as StateListDrawable
+        val verticalTrackDrawable =
+            ContextCompat.getDrawable(this.context!!, R.drawable.line_drawable)!!
+        val horizontalThumbDrawable =
+            ContextCompat.getDrawable(
+                this.context!!,
+                R.drawable.thumb_drawable
+            ) as StateListDrawable
+        val horizontalTrackDrawable =
+            ContextCompat.getDrawable(this.context!!, R.drawable.line_drawable)!!
+
+        val resources: Resources = context!!.resources
+        FastScroller(
+            songList, verticalThumbDrawable, verticalTrackDrawable,
+            horizontalThumbDrawable, horizontalTrackDrawable,
+            resources.getDimensionPixelSize(R.dimen.fastscrolldefault_thickness),
+            resources.getDimensionPixelSize(R.dimen.fastscrollminimum_range),
+            resources.getDimensionPixelOffset(R.dimen.fastscrollmargin)
+        )
 
         //GRID - Pictures
         if (layout == ListLayout.GRID) {

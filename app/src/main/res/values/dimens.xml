@@ -4,4 +4,7 @@
     <dimen name="layer_height">16</dimen>
     <dimen name="offset_distance">32</dimen>
     <dimen name="preview_offset_distance">32</dimen>
+    <dimen name="fastscrolldefault_thickness">8dp</dimen>
+    <dimen name="fastscrollmargin">0dp</dimen>
+    <dimen name="fastscrollminimum_range">50dp</dimen>
 </resources>
