@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         mContentManager = ContentManager(this.applicationContext, this) {
             setupUI()
         }
+        mContentManager.requestPermissions()
         mContentManager.buildDatabase()
 
         //  val model : PlayingViewModel by viewModels()
