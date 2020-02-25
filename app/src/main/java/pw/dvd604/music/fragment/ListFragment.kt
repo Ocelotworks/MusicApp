@@ -1,7 +1,5 @@
 package pw.dvd604.music.fragment
 
-import android.content.res.Resources
-import android.graphics.drawable.StateListDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -25,7 +23,6 @@ import pw.dvd604.music.data.adapter.CardRecyclerAdapter
 import pw.dvd604.music.data.adapter.ListRecyclerAdapter
 import pw.dvd604.music.data.storage.DatabaseContract
 import pw.dvd604.music.ui.FastScroller
-
 
 enum class ListLayout {
     GRID, LIST
@@ -52,37 +49,19 @@ class ListFragment(
         super.onViewCreated(view, savedInstanceState)
         application = (this.activity as MainActivity).getApp()
 
-        val verticalThumbDrawable =
-            ContextCompat.getDrawable(
-                this.context!!,
-                R.drawable.thumb_drawable
-            ) as StateListDrawable
-        val verticalTrackDrawable =
-            ContextCompat.getDrawable(this.context!!, R.drawable.line_drawable)!!
-        val horizontalThumbDrawable =
-            ContextCompat.getDrawable(
-                this.context!!,
-                R.drawable.thumb_drawable
-            ) as StateListDrawable
-        val horizontalTrackDrawable =
-            ContextCompat.getDrawable(this.context!!, R.drawable.line_drawable)!!
-
-        val resources: Resources = context!!.resources
-        FastScroller(
-            songList, verticalThumbDrawable, verticalTrackDrawable,
-            horizontalThumbDrawable, horizontalTrackDrawable,
-            resources.getDimensionPixelSize(R.dimen.fastscrolldefault_thickness),
-            resources.getDimensionPixelSize(R.dimen.fastscrollminimum_range),
-            resources.getDimensionPixelOffset(R.dimen.fastscrollmargin)
-        )
-
         //GRID - Pictures
         if (layout == ListLayout.GRID) {
             CoroutineScope(Dispatchers.Main).launch {
                 songList.layoutManager = GridLayoutManager(this@ListFragment.context, 3)
                 songList.adapter = CardRecyclerAdapter(this@ListFragment.context!!) {}
 
-                var adapter = songList.adapter as CardRecyclerAdapter
+                FastScroller(
+                    songList,
+                    ContextCompat.getColor(this@ListFragment.context!!, R.color.colorAccent),
+                    ContextCompat.getColor(this@ListFragment.context!!, R.color.colorPrimaryDark)
+                )
+
+                val adapter = songList.adapter as CardRecyclerAdapter
 
                 val task = async(Dispatchers.IO) {
                     Album.cursorToArray(
@@ -108,6 +87,12 @@ class ListFragment(
             songList.adapter = ListRecyclerAdapter(this@ListFragment.context!!) {
                 (this.activity as MainActivity).controllerHandler.play(it.id)
             }
+
+            FastScroller(
+                songList,
+                ContextCompat.getColor(this@ListFragment.context!!, R.color.colorAccent),
+                ContextCompat.getColor(this@ListFragment.context!!, R.color.colorPrimaryDark)
+            )
 
             CoroutineScope(Dispatchers.Main).launch {
                 val adapter = songList.adapter as ListRecyclerAdapter
@@ -135,9 +120,9 @@ class ListFragment(
                             )
                         }
 
-                        val artists = task.await()
-                        adapter.setData(artists as ArrayList<CardData>)
+                        adapter.setData(task.await())
                         adapter.notifyDataSetChanged()
+
                     }
                     "Playlist" -> {
                         val data = ArrayList<CardData>(0)

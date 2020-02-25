@@ -17,8 +17,8 @@ class Artist(
             return artist
         }
 
-        fun cursorToArray(query: Cursor): ArrayList<Artist> {
-            val list = ArrayList<Artist>(0)
+        fun cursorToArray(query: Cursor): ArrayList<CardData> {
+            val list = ArrayList<CardData>(0)
             with(query) {
                 while (moveToNext()) {
                     val artist = Artist()
