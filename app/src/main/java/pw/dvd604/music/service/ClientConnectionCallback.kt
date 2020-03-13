@@ -120,14 +120,19 @@ class ControllerCallback(private val activity: MainActivity) : MediaControllerCo
             PlaybackStateCompat.STATE_BUFFERING -> {
                 activity.btnPause.setImageResource(R.drawable.baseline_shuffle_white_48)
                 activity.smallPausePlay.setImageResource(R.drawable.baseline_shuffle_white_48)
+                activity.opinionController.openable = false
             }
             PlaybackStateCompat.STATE_PLAYING -> {
                 activity.btnPause.setImageResource(R.drawable.baseline_pause_white_48)
                 activity.smallPausePlay.setImageResource(R.drawable.baseline_pause_white_48)
+                activity.opinionController.openable = true
             }
             PlaybackStateCompat.STATE_PAUSED -> {
                 activity.btnPause.setImageResource(R.drawable.baseline_play_arrow_white_48)
                 activity.smallPausePlay.setImageResource(R.drawable.baseline_play_arrow_white_48)
+            }
+            PlaybackStateCompat.STATE_STOPPED -> {
+                activity.opinionController.openable = false
             }
         }
     }

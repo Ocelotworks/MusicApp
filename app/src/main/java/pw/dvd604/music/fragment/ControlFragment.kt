@@ -23,6 +23,7 @@ class ControlFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         songProgress.setOnSeekBarChangeListener(this)
+        retainInstance = true
     }
 
     override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {}

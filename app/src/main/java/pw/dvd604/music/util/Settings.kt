@@ -13,6 +13,7 @@ class Settings {
         const val shuffle = "shuffle"
         const val shuffleOffline = "shuffleOffline"
         const val developer = "developerOptions"
+        const val autoSkip = "autoSkipOnDislike"
 
         @SuppressLint("SdCardPath")
         val storage = BuildConfig.storage.replace(
@@ -24,6 +25,7 @@ class Settings {
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             offlineMusic to true,
             shuffleOffline to true,
+            autoSkip to true,
             developer to false
         )
 

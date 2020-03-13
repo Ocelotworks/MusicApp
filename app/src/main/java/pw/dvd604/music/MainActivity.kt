@@ -20,8 +20,10 @@ import pw.dvd604.music.fragment.SettingsFragment
 import pw.dvd604.music.service.ClientConnectionCallback
 import pw.dvd604.music.service.ControllerCallback
 import pw.dvd604.music.service.MediaPlaybackService
+import pw.dvd604.music.ui.OpinionButtonController
 import pw.dvd604.music.util.ContentManager
 import pw.dvd604.music.util.ControllerHandler
+import pw.dvd604.music.util.Settings
 
 private const val NUM_PAGES = 5
 
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
     lateinit var mediaBrowser: MediaBrowserCompat
     val controllerCallback = ControllerCallback(this)
     val controllerHandler = ControllerHandler(this)
+    lateinit var opinionController: OpinionButtonController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +73,9 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
     private fun setupUI(setupMediaBrowser: Boolean = false) {
         pager.adapter = ScreenSlidePagerAdapter(supportFragmentManager)
         sliding_layout.addPanelSlideListener(this)
+        opinionController =
+            OpinionButtonController(btnLike, btnNeutral, btnDislike, ::onOpinionChange, 500)
+        opinionController.openable = false
 
         (tabDots as TabLayout).setupWithViewPager(pager)
 
@@ -80,6 +86,22 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
                 ClientConnectionCallback(this),
                 null // optional Bundle
             )
+        }
+    }
+
+    private fun onOpinionChange(state: Int) {
+        when (state) {
+            1 -> {
+
+            }
+            0 -> {
+
+            }
+            -1 -> {
+                if (Settings.getBoolean(Settings.autoSkip)) {
+                    this.mediaController.transportControls.skipToNext()
+                }
+            }
         }
     }
 

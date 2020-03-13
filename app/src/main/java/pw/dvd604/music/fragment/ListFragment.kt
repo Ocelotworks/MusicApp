@@ -47,6 +47,7 @@ class ListFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        retainInstance = true
         application = (this.activity as MainActivity).getApp()
 
         //GRID - Pictures

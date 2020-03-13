@@ -13,6 +13,11 @@
                 android:key="apiKey"
                 android:title="API Key" />
 
+        <SwitchPreferenceCompat
+                android:defaultValue="1"
+                android:key="autoSkipOnDislike"
+                android:title="Auto skip on song Dislike" />
+
         <Preference
                 android:key="download"
                 android:title="Download all songs" />
@@ -25,7 +30,6 @@
                 android:defaultValue="1"
                 android:key="shuffleOffline"
                 android:title="Shuffle only downloaded media" />
-
 
         <SwitchPreferenceCompat
                 android:defaultValue="0"
