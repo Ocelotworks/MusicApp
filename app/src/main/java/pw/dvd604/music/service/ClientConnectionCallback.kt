@@ -74,6 +74,8 @@ class ControllerCallback(private val activity: MainActivity) : MediaControllerCo
                 img.placeholder(R.drawable.album).into(activity.songArt)
                 img.placeholder(R.drawable.albumsmall).into(activity.smallAlbumArt)
             }
+
+        activity.opinionController.resetState()
     }
 
     fun stopAnimation() {
@@ -86,34 +88,9 @@ class ControllerCallback(private val activity: MainActivity) : MediaControllerCo
     override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
         super.onPlaybackStateChanged(state)
 
-        // If there's an ongoing animation, stop it now.
-        // If there's an ongoing animation, stop it now.
         if (mProgressAnimator != null) {
             mProgressAnimator?.cancel()
             mProgressAnimator = null
-        }
-
-        val progress = state?.position?.toInt() ?: 0
-        activity.songProgress.progress = progress
-
-        // If the media is playing then the seekbar should follow it, and the easiest
-        // way to do that is to create a ValueAnimator to update it so the bar reaches
-        // the end of the media the same time as playback gets there (or close enough).
-        // If the media is playing then the seekbar should follow it, and the easiest
-// way to do that is to create a ValueAnimator to update it so the bar reaches
-// the end of the media the same time as playback gets there (or close enough).
-        if (state != null && state.state == PlaybackStateCompat.STATE_PLAYING) {
-            val timeToEnd =
-                ((activity.songProgress.max - progress) / state.playbackSpeed).toInt()
-
-            if (timeToEnd < 0) return
-
-            mProgressAnimator =
-                ValueAnimator.ofInt(progress, activity.songProgress.max)
-                    .setDuration(timeToEnd.toLong())
-            mProgressAnimator?.interpolator = LinearInterpolator()
-            mProgressAnimator?.addUpdateListener(this)
-            mProgressAnimator?.start()
         }
 
         when (state?.state) {
@@ -126,6 +103,21 @@ class ControllerCallback(private val activity: MainActivity) : MediaControllerCo
                 activity.btnPause.setImageResource(R.drawable.baseline_pause_white_48)
                 activity.smallPausePlay.setImageResource(R.drawable.baseline_pause_white_48)
                 activity.opinionController.openable = true
+
+                val progress = state.position.toInt()
+                activity.songProgress.progress = progress
+
+                val timeToEnd =
+                    ((activity.songProgress.max - progress) / state.playbackSpeed).toInt()
+
+                if (timeToEnd < 0) return
+
+                mProgressAnimator =
+                    ValueAnimator.ofInt(progress, activity.songProgress.max)
+                        .setDuration(timeToEnd.toLong())
+                mProgressAnimator?.interpolator = LinearInterpolator()
+                mProgressAnimator?.addUpdateListener(this)
+                mProgressAnimator?.start()
             }
             PlaybackStateCompat.STATE_PAUSED -> {
                 activity.btnPause.setImageResource(R.drawable.baseline_play_arrow_white_48)

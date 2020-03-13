@@ -100,6 +100,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
             -1 -> {
                 if (Settings.getBoolean(Settings.autoSkip)) {
                     this.mediaController.transportControls.skipToNext()
+                    opinionController.resetState()
                 }
             }
         }

@@ -69,11 +69,9 @@ class OpinionButtonController(
             }
         }
         callback(stateInt)
-
-        resetState()
     }
 
-    private fun resetState() {
+    fun resetState() {
         stateInt = 0
         centre.setImageResource(R.drawable.baseline_thumbs_up_down_white_36)
         state = centre.drawable
