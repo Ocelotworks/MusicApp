@@ -9,6 +9,8 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.data.storage.DatabaseContract
 import java.io.File
@@ -139,44 +141,48 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
     }
 
     fun skip(i: Int) {
-        if (i > 0) {
-            val cursor = (service.applicationContext as MusicApplication).readableDatabase.rawQuery(
-                "SELECT id FROM ${DatabaseContract.Song.TABLE_NAME} ORDER BY RANDOM() LIMIT 1",
-                null,
-                null
-            )
-
-            with(cursor) {
-                while (moveToNext()) {
-
-                    val id = getString(
-                        getColumnIndexOrThrow("id")
+        GlobalScope.launch {
+            if (i > 0) {
+                val cursor =
+                    (service.applicationContext as MusicApplication).readableDatabase.rawQuery(
+                        "SELECT id FROM ${DatabaseContract.Song.TABLE_NAME} ORDER BY RANDOM() LIMIT 1",
+                        null,
+                        null
                     )
+
+                with(cursor) {
+                    while (moveToNext()) {
+
+                        val id = getString(
+                            getColumnIndexOrThrow("id")
+                        )
+
+                        service.mediaSession?.controller?.transportControls?.playFromMediaId(
+                            id, null
+                        )
+
+                        service.mNotificationBuilder.build(id)
+                    }
+                    cursor.close()
+                }
+            } else if (i < 0) {
+                if (songsPlayed.size != 0) {
+
+                    val currentIndex = songsPlayed.size - 1
+                    var newIndex = currentIndex + i
+
+                    if (newIndex < 0) newIndex = 0
+
+                    val bundle = Bundle()
+                    bundle.putInt("do_not_add", 1)
+
+                    songsPlayed.removeAt(currentIndex)
 
                     service.mediaSession?.controller?.transportControls?.playFromMediaId(
-                        id, null
+                        songsPlayed[newIndex], bundle
                     )
-
-                    service.mNotificationBuilder.build(id)
                 }
-                cursor.close()
             }
-        } else if (i < 0) {
-            if (songsPlayed.size == 0) return
-
-            val currentIndex = songsPlayed.size - 1
-            var newIndex = currentIndex + i
-
-            if (newIndex < 0) newIndex = 0
-
-            val bundle = Bundle()
-            bundle.putInt("do_not_add", 1)
-
-            songsPlayed.removeAt(currentIndex)
-
-            service.mediaSession?.controller?.transportControls?.playFromMediaId(
-                songsPlayed[newIndex], bundle
-            )
         }
     }
 

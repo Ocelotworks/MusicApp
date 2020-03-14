@@ -1,6 +1,7 @@
 package pw.dvd604.music
 
 import android.content.ComponentName
+import android.media.Rating
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -74,7 +75,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         pager.adapter = ScreenSlidePagerAdapter(supportFragmentManager)
         sliding_layout.addPanelSlideListener(this)
         opinionController =
-            OpinionButtonController(btnLike, btnNeutral, btnDislike, ::onOpinionChange, 500)
+            OpinionButtonController(btnLike, btnNeutral, btnDislike, ::onOpinionChange, 250)
         opinionController.openable = false
 
         (tabDots as TabLayout).setupWithViewPager(pager)
@@ -92,16 +93,20 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
     private fun onOpinionChange(state: Int) {
         when (state) {
             1 -> {
-
+                val rating = Rating.newThumbRating(true)
+                this.mediaController.transportControls.setRating(rating)
             }
             0 -> {
-
+                this.mediaController.transportControls.setRating(Rating.newUnratedRating(Rating.RATING_THUMB_UP_DOWN))
             }
             -1 -> {
                 if (Settings.getBoolean(Settings.autoSkip)) {
                     this.mediaController.transportControls.skipToNext()
                     opinionController.resetState()
                 }
+
+                val rating = Rating.newThumbRating(false)
+                this.mediaController.transportControls.setRating(rating)
             }
         }
     }

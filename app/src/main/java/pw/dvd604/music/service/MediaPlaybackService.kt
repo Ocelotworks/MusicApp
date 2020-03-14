@@ -40,7 +40,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
         // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, LOG_TAG).apply {
-            setRatingType(RatingCompat.RATING_NONE)
+            setRatingType(RatingCompat.RATING_THUMB_UP_DOWN)
             setSessionActivity(sessionActivityPendingIntent)
 
             // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
@@ -52,13 +52,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                             or PlaybackStateCompat.ACTION_STOP
                             or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
                 ).setState(PlaybackStateCompat.STATE_PLAYING, 0, 1f, SystemClock.elapsedRealtime())
-                .addCustomAction(
-                    PlaybackStateCompat.CustomAction.Builder(
-                        "requestData",
-                        "requestData",
-                        R.drawable.baseline_arrow_back_white_18
-                    ).build()
-                )
             setPlaybackState(stateBuilder.build())
 
             // MySessionCallback() has methods that handle callbacks from a media controller

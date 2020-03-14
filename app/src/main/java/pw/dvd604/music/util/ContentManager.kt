@@ -112,8 +112,13 @@ class ContentManager(
                         val song = Song.parse(data)
 
                         val tableValues: ContentValues = song.toValues()
+                        val opinionValue = ContentValues().apply {
+                            put(DatabaseContract.Opinion.COLUMN_NAME_OPINION, 0)
+                            put("id", song.id)
+                        }
 
                         insert(DatabaseContract.Song, tableValues)
+                        insert(DatabaseContract.Opinion, opinionValue)
 
                         val songGenreRelation = ContentValues().apply {
                             put(DatabaseContract.SongsGenres.COLUMN_NAME_GENRE_ID, song.genreID)

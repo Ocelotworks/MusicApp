@@ -4,6 +4,7 @@ import android.animation.ValueAnimator
 import android.media.MediaMetadata
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.animation.LinearInterpolator
@@ -63,6 +64,7 @@ class ControllerCallback(private val activity: MainActivity) : MediaControllerCo
         activity.songAuthor.text = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
         activity.songDuration.text =
             Util.prettyTime(metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION) / 1000)
+
         activity.songProgress.max =
             metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION).toInt()
 
@@ -76,6 +78,21 @@ class ControllerCallback(private val activity: MainActivity) : MediaControllerCo
             }
 
         activity.opinionController.resetState()
+
+        val rating: RatingCompat = metadata.getRating(MediaMetadataCompat.METADATA_KEY_RATING)
+            ?: return
+
+        if (!rating.isRated) {
+            activity.btnNeutral.setImageResource(R.drawable.baseline_thumbs_up_down_white_36)
+            return
+        }
+
+        if (rating.isThumbUp) {
+            activity.btnNeutral.setImageResource(R.drawable.baseline_thumb_up_white_36)
+        } else {
+            activity.btnNeutral.setImageResource(R.drawable.baseline_thumb_down_white_36)
+            this.activity.mediaController.transportControls.skipToNext()
+        }
     }
 
     fun stopAnimation() {
