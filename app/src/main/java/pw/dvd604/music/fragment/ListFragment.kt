@@ -16,12 +16,9 @@ import kotlinx.coroutines.launch
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
-import pw.dvd604.music.data.Album
-import pw.dvd604.music.data.Artist
 import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.adapter.CardRecyclerAdapter
 import pw.dvd604.music.data.adapter.ListRecyclerAdapter
-import pw.dvd604.music.data.storage.DatabaseContract
 import pw.dvd604.music.ui.FastScroller
 
 enum class ListLayout {
@@ -30,10 +27,12 @@ enum class ListLayout {
 
 class ListFragment(
     private val title: String,
-    private val layout: ListLayout = ListLayout.GRID
+    private val layout: ListLayout = ListLayout.GRID,
+    private val getData: (() -> ArrayList<CardData>)?,
+    private val onClick: ((id: String) -> Unit)? = null
 ) : Fragment() {
 
-    constructor() : this("")
+    constructor() : this("", ListLayout.GRID, null, null)
 
     private lateinit var application: MusicApplication
 
@@ -50,44 +49,10 @@ class ListFragment(
         retainInstance = true
         application = (this.activity as MainActivity).getApp()
 
-        //GRID - Pictures
         if (layout == ListLayout.GRID) {
-            CoroutineScope(Dispatchers.Main).launch {
-                songList.layoutManager = GridLayoutManager(this@ListFragment.context, 3)
-                songList.adapter = CardRecyclerAdapter(this@ListFragment.context!!) {}
-
-                FastScroller(
-                    songList,
-                    ContextCompat.getColor(this@ListFragment.context!!, R.color.colorAccent),
-                    ContextCompat.getColor(this@ListFragment.context!!, R.color.colorPrimaryDark)
-                )
-
-                val adapter = songList.adapter as CardRecyclerAdapter
-
-                val task = async(Dispatchers.IO) {
-                    Album.cursorToArray(
-                        application.readableDatabase.query(
-                            DatabaseContract.Album.TABLE_NAME,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            "${DatabaseContract.Album.COLUMN_NAME_NAME} ASC"
-                        )
-                    )
-                }
-
-                val data = task.await()
-                adapter.setData(data)
-                adapter.notifyDataSetChanged()
-            }
-        } else if (layout == ListLayout.LIST) {
-            //LIST - JUST TEXT
-            songList.layoutManager = LinearLayoutManager(context)
-            songList.adapter = ListRecyclerAdapter(this@ListFragment.context!!) {
-                (this.activity as MainActivity).controllerHandler.play(it.id)
-            }
+            songList.layoutManager = GridLayoutManager(this@ListFragment.context, 3)
+            val adapter = CardRecyclerAdapter(this@ListFragment.context!!) {}
+            songList.adapter = adapter
 
             FastScroller(
                 songList,
@@ -96,43 +61,37 @@ class ListFragment(
             )
 
             CoroutineScope(Dispatchers.Main).launch {
-                val adapter = songList.adapter as ListRecyclerAdapter
-                when (title) {
-                    "Songs" -> {
-                        val task = async {
-                            (activity as MainActivity).mContentManager.getSongsWithArtists()
-                        }
-
-                        adapter.setData(task.await())
-                        adapter.notifyDataSetChanged()
-                    }
-                    "Artists" -> {
-                        val task = async(Dispatchers.IO) {
-                            Artist.cursorToArray(
-                                application.readableDatabase.query(
-                                    DatabaseContract.Artist.TABLE_NAME,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    "${DatabaseContract.Artist.COLUMN_NAME_NAME} ASC"
-                                )
-                            )
-                        }
-
-                        adapter.setData(task.await())
-                        adapter.notifyDataSetChanged()
-
-                    }
-                    "Playlist" -> {
-                        val data = ArrayList<CardData>(0)
-                        data.add(CardData("To do", "123", "Placeholder", "//"))
-                        adapter.setData(data)
-                        adapter.notifyDataSetChanged()
-                    }
+                val task = async(Dispatchers.Main) {
+                    getData?.invoke()
                 }
 
+                if (task.await() != null) {
+                    adapter.setData(task.await()!!)
+                    adapter.notifyDataSetChanged()
+                }
+            }
+        } else {
+            songList.layoutManager = LinearLayoutManager(context)
+            val adapter = ListRecyclerAdapter(this@ListFragment.context!!) {
+                onClick?.invoke(it.id)
+            }
+            songList.adapter = adapter
+
+            FastScroller(
+                songList,
+                ContextCompat.getColor(this@ListFragment.context!!, R.color.colorAccent),
+                ContextCompat.getColor(this@ListFragment.context!!, R.color.colorPrimaryDark)
+            )
+
+            CoroutineScope(Dispatchers.Main).launch {
+                val task = async(Dispatchers.Main) {
+                    getData?.invoke()
+                }
+
+                if (task.await() != null) {
+                    adapter.setData(task.await()!!)
+                    adapter.notifyDataSetChanged()
+                }
             }
         }
     }

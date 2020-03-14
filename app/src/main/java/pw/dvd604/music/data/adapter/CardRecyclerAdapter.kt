@@ -27,7 +27,7 @@ class CardRecyclerAdapter(
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) =
         holder.bind(data[position], listener)
 
-    fun setData(newData: List<CardData>) {
+    fun setData(newData: ArrayList<CardData>) {
         data = newData
     }
 }

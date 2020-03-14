@@ -7,14 +7,19 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.fragment.app.FragmentPagerAdapter
 import com.google.android.material.tabs.TabLayout
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_playing.*
+import pw.dvd604.music.data.Album
+import pw.dvd604.music.data.Artist
+import pw.dvd604.music.data.CardData
+import pw.dvd604.music.data.storage.DatabaseContract
 import pw.dvd604.music.fragment.ListFragment
 import pw.dvd604.music.fragment.ListLayout
 import pw.dvd604.music.fragment.SettingsFragment
@@ -159,8 +164,16 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
     }
 
     private inner class ScreenSlidePagerAdapter(fm: FragmentManager) :
-        FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+        FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
         override fun getCount(): Int = NUM_PAGES
+        var mCurrentFragment: Fragment? = null
+
+        override fun setPrimaryItem(container: ViewGroup, position: Int, obj: Any) {
+            if (mCurrentFragment != obj) {
+                mCurrentFragment = obj as Fragment
+            }
+            super.setPrimaryItem(container, position, obj)
+        }
 
         private fun getPagerLayout(position: Int): ListLayout {
             return when (position) {
@@ -171,7 +184,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
                     ListLayout.LIST
                 }
                 else -> {
-                    ListLayout.GRID
+                    ListLayout.LIST
                 }
             }
         }
@@ -201,10 +214,12 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
 
         override fun getItem(position: Int): Fragment {
             return when (position) {
-                0, 1, 2, 3 -> {
+                0, 1, 2, 3, 5 -> {
                     ListFragment(
                         getPageTitle(position).toString(),
-                        getPagerLayout(position)
+                        getPagerLayout(position),
+                        getDataCallback(position),
+                        getOnClickAction(position)
                     )
                 }
                 4 -> {
@@ -216,5 +231,89 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
             }
         }
 
+        private fun getDataCallback(position: Int): (() -> ArrayList<CardData>)? {
+            return when (position) {
+                0 -> {
+                    // "Albums"
+                    ::getAlbumData
+                }
+                1 -> {
+                    //  "Artists"
+                    ::getArtistData
+                }
+                2 -> {
+                    //"Songs"
+                    ::getSongData
+                }
+                3 -> {
+                    //"Playlist"
+                    ::getPlaylistData
+                }
+                else -> {
+                    ::createListData
+                }
+            }
+        }
+
+    }
+
+    private fun getOnClickAction(position: Int): ((id: String) -> Unit)? {
+        return when (position) {
+            1 -> {
+                {
+                    val adapter = pager.adapter as ScreenSlidePagerAdapter
+
+
+                }//this.supportFragmentManager.beginTransaction(). }
+            }
+            2 -> {
+                { controllerHandler.play(it) }
+            }
+            else -> {
+                {}
+            }
+        }
+    }
+
+    private fun getPlaylistData(): ArrayList<CardData> {
+        val data = ArrayList<CardData>(0)
+        data.add(CardData("To do", "123", "Placeholder", "//"))
+        return data
+    }
+
+    private fun getSongData(): ArrayList<CardData> {
+        return mContentManager.getSongsWithArtists()
+    }
+
+    private fun getArtistData(): ArrayList<CardData> {
+        return Artist.cursorToArray(
+            getApp().readableDatabase.query(
+                DatabaseContract.Artist.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "${DatabaseContract.Artist.COLUMN_NAME_NAME} ASC"
+            )
+        )
+    }
+
+    private fun getAlbumData(): ArrayList<CardData> {
+        return Album.cursorToArray(
+            getApp().readableDatabase.query(
+                DatabaseContract.Album.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "${DatabaseContract.Album.COLUMN_NAME_NAME} ASC"
+            )
+        ) as ArrayList<CardData>
+    }
+
+    private fun createListData(): ArrayList<CardData> {
+        return ArrayList<CardData>(0)
     }
 }
