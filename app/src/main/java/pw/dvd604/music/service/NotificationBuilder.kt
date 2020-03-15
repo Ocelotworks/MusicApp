@@ -121,7 +121,11 @@ class NotificationBuilder(
                     Log.e("Error", "Rating error.")
                     RatingCompat.newUnratedRating(RatingCompat.RATING_THUMB_UP_DOWN)
                 }
-                meta?.putRating(MediaMetadata.METADATA_KEY_RATING, rating)
+                try {
+                    meta?.putRating(MediaMetadata.METADATA_KEY_RATING, rating)
+                } catch (e: ConcurrentModificationException) {
+                    //Genuinely don't know why this is an issue
+                }
             }
         }
         cursor.close()
