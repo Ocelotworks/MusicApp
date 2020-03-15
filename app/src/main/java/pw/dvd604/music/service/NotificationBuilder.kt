@@ -48,6 +48,7 @@ class NotificationBuilder(
     }
 
     fun buildMetaFromID(id: String): MediaMetadataCompat? {
+        meta = null
 
         if (Looper.getMainLooper().thread == Thread.currentThread()) {
             Log.e(
@@ -61,9 +62,9 @@ class NotificationBuilder(
             arrayOf(id),
             null
         )
-
-        with(cursor) {
-            while (moveToNext()) {
+        try {
+            with(cursor) {
+                moveToFirst()
                 meta = MediaMetadataCompat.Builder().apply {
                     this.putText(
                         MediaMetadata.METADATA_KEY_TITLE, getString(
@@ -86,10 +87,8 @@ class NotificationBuilder(
                             )
                         ) * 1000
                     )
-                }
 
-                try {
-                    meta?.putBitmap(
+                    this.putBitmap(
                         MediaMetadata.METADATA_KEY_ALBUM_ART,
                         Glide.with(this@NotificationBuilder.context)
                             .asBitmap()
@@ -101,37 +100,34 @@ class NotificationBuilder(
                             .submit()
                             .get()
                     )
-                } catch (e: Exception) {
 
-                }
+                    val rating: RatingCompat = try {
+                        val ratingInt =
+                            getInt(getColumnIndexOrThrow(DatabaseContract.Opinion.COLUMN_NAME_OPINION))
 
-                val rating: RatingCompat = try {
-                    val ratingInt =
-                        getInt(getColumnIndexOrThrow(DatabaseContract.Opinion.COLUMN_NAME_OPINION))
+                        if (ratingInt != 0) {
+                            RatingCompat.newThumbRating(
+                                ratingInt == 1
+                            )
+                        } else {
+                            RatingCompat.newUnratedRating(RatingCompat.RATING_THUMB_UP_DOWN)
+                        }
 
-                    if (ratingInt != 0) {
-                        RatingCompat.newThumbRating(
-                            ratingInt == 1
-                        )
-                    } else {
+                    } catch (e1: Exception) {
+                        Log.e("Error", "Rating error.")
                         RatingCompat.newUnratedRating(RatingCompat.RATING_THUMB_UP_DOWN)
                     }
-
-                } catch (e1: Exception) {
-                    Log.e("Error", "Rating error.")
-                    RatingCompat.newUnratedRating(RatingCompat.RATING_THUMB_UP_DOWN)
-                }
-                try {
-                    meta?.putRating(MediaMetadata.METADATA_KEY_RATING, rating)
-                } catch (e: ConcurrentModificationException) {
-                    //Genuinely don't know why this is an issue
+                    if (!this.build().containsKey(MediaMetadata.METADATA_KEY_RATING))
+                        this.putRating(MediaMetadata.METADATA_KEY_RATING, rating)
                 }
             }
+            cursor.close()
+        } catch (e: Exception) {
+
         }
-        cursor.close()
 
         if (meta == null) {
-            meta = MediaMetadataCompat.Builder().apply {
+            val metaEmpty = MediaMetadataCompat.Builder().apply {
                 this.putText(
                     MediaMetadata.METADATA_KEY_TITLE, "DoOt Me UP InsIdE"
                 )
@@ -149,65 +145,13 @@ class NotificationBuilder(
                     RatingCompat.newUnratedRating(RatingCompat.RATING_THUMB_UP_DOWN)
                 )
             }
+            return metaEmpty.build()
         }
 
         return meta?.build()
     }
 
     fun build(id: String): Notification? {
-        /*
-        val cursor = (context.applicationContext as MusicApplication).readableDatabase.rawQuery(
-            "SELECT ${DatabaseContract.Song.COLUMN_NAME_TITLE}, ${DatabaseContract.Song.COLUMN_NAME_ALBUM}, ${DatabaseContract.Song.COLUMN_NAME_DURATION}, ${DatabaseContract.Artist.COLUMN_NAME_NAME} FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Artist.TABLE_NAME} ON ${DatabaseContract.Artist.TABLE_NAME}.id = ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_ARTIST} WHERE ${DatabaseContract.Song.TABLE_NAME}.id = ?",
-            arrayOf(id),
-            null
-        )
-
-        with(cursor) {
-            while (moveToNext()) {
-                try {
-                    meta = MediaMetadataCompat.Builder().apply {
-                        this.putText(
-                            MediaMetadata.METADATA_KEY_TITLE, getString(
-                                getColumnIndexOrThrow(
-                                    DatabaseContract.Song.COLUMN_NAME_TITLE
-                                )
-                            )
-                        )
-                        this.putText(
-                            MediaMetadata.METADATA_KEY_ARTIST, getString(
-                                getColumnIndexOrThrow(DatabaseContract.Artist.COLUMN_NAME_NAME)
-                            )
-                        )
-                        this.putText(MediaMetadata.METADATA_KEY_MEDIA_ID, id)
-                        this.putLong(
-                            MediaMetadata.METADATA_KEY_DURATION, getLong(
-                                getColumnIndexOrThrow(
-                                    DatabaseContract.Song.COLUMN_NAME_DURATION
-                                )
-                            ) * 1000
-                        )
-                    }
-
-                    meta?.putBitmap(
-                        MediaMetadata.METADATA_KEY_ALBUM_ART,
-                        Glide.with(this@NotificationBuilder.context)
-                            .asBitmap()
-                            .load(
-                                "https://unacceptableuse.com/petifyv3/api/v2/album/${getString(
-                                    getColumnIndexOrThrow(DatabaseContract.Song.COLUMN_NAME_ALBUM)
-                                )}/image"
-                            )
-                            .submit()
-                            .get()
-                    )
-                } catch (e: Exception) {
-                    Log.e("Shite", "", e)
-                }
-            }
-        }
-        cursor.close()
-        */
-
         return build(buildMetaFromID(id))
     }
 

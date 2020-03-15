@@ -120,7 +120,7 @@ class SessionCallback(private val service: MediaPlaybackService) : MediaSessionC
 
         GlobalScope.launch {
             val meta = service.mNotificationBuilder.buildMetaFromID(mediaId)
-            val notification = service.mNotificationBuilder.build(mediaId)
+            val notification = service.mNotificationBuilder.build()
 
             service.mediaSession?.setMetadata(meta)
 
@@ -135,7 +135,6 @@ class SessionCallback(private val service: MediaPlaybackService) : MediaSessionC
             if (notification != null) {
                 ui { service.startForeground(6969, notification) }
             }
-
         }
     }
 
