@@ -192,6 +192,42 @@ class ContentManager(
         return list
     }
 
+    fun getSongsFromArtist(artistId: String): ArrayList<CardData> {
+        val list = ArrayList<CardData>(0)
+
+        try {
+            val cursor = app.readableDatabase.rawQuery(
+                "SELECT ${DatabaseContract.Song.TABLE_NAME}.id, ${DatabaseContract.Song.COLUMN_NAME_TITLE}, ${DatabaseContract.Artist.COLUMN_NAME_NAME} FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Artist.TABLE_NAME} ON ${DatabaseContract.Artist.TABLE_NAME}.id = ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_ARTIST} WHERE ${DatabaseContract.Artist.TABLE_NAME}.id = ? ORDER BY ${DatabaseContract.Artist.COLUMN_NAME_NAME} ASC",
+                arrayOf(artistId),
+                null
+            )
+            with(cursor) {
+                while (moveToNext()) {
+                    val data = CardData(
+                        id = getString(getColumnIndexOrThrow("id")),
+                        title = getString(
+                            getColumnIndexOrThrow(
+                                DatabaseContract.Song.COLUMN_NAME_TITLE
+                            )
+                        ),
+                        type = "",
+                        url = "",
+                        subtext = getString(
+                            getColumnIndexOrThrow(DatabaseContract.Artist.COLUMN_NAME_NAME)
+                        )
+                    )
+
+                    list.add(data)
+                }
+            }
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("", "", e)
+        }
+
+        return list
+    }
+
     fun requestPermissions(): Boolean {
         var result: Int
         val listPermissionsNeeded = ArrayList<String>()
@@ -206,5 +242,41 @@ class ContentManager(
             return false
         }
         return true
+    }
+
+    fun getSongsFromAlbum(id: String): ArrayList<CardData> {
+        val list = ArrayList<CardData>(0)
+
+        try {
+            val cursor = app.readableDatabase.rawQuery(
+                "SELECT ${DatabaseContract.Song.TABLE_NAME}.id, ${DatabaseContract.Song.COLUMN_NAME_TITLE}, ${DatabaseContract.Artist.COLUMN_NAME_NAME} FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Artist.TABLE_NAME} ON ${DatabaseContract.Artist.TABLE_NAME}.id = ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_ARTIST} WHERE ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_ALBUM} = ? ORDER BY ${DatabaseContract.Artist.COLUMN_NAME_NAME} ASC",
+                arrayOf(id),
+                null
+            )
+            with(cursor) {
+                while (moveToNext()) {
+                    val data = CardData(
+                        id = getString(getColumnIndexOrThrow("id")),
+                        title = getString(
+                            getColumnIndexOrThrow(
+                                DatabaseContract.Song.COLUMN_NAME_TITLE
+                            )
+                        ),
+                        type = "",
+                        url = "",
+                        subtext = getString(
+                            getColumnIndexOrThrow(DatabaseContract.Artist.COLUMN_NAME_NAME)
+                        )
+                    )
+
+                    list.add(data)
+                }
+            }
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("", "", e)
+        }
+
+        return list
     }
 }

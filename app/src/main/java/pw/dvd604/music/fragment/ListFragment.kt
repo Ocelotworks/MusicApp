@@ -9,15 +9,13 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_songs.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
 import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.adapter.CardRecyclerAdapter
+import pw.dvd604.music.data.adapter.GenericRecyclerAdapter
 import pw.dvd604.music.data.adapter.ListRecyclerAdapter
 import pw.dvd604.music.ui.FastScroller
 
@@ -31,6 +29,10 @@ class ListFragment(
     private val getData: (() -> ArrayList<CardData>)?,
     private val onClick: ((id: String) -> Unit)? = null
 ) : Fragment() {
+
+    private var oldData: ArrayList<CardData>? = null
+    private var oldPosition: Int = 0
+    var isInSub = false
 
     constructor() : this("", ListLayout.GRID, null, null)
 
@@ -51,7 +53,8 @@ class ListFragment(
 
         if (layout == ListLayout.GRID) {
             songList.layoutManager = GridLayoutManager(this@ListFragment.context, 3)
-            val adapter = CardRecyclerAdapter(this@ListFragment.context!!) {}
+            val adapter =
+                CardRecyclerAdapter(this@ListFragment.context!!) { onClick?.invoke(it.id) }
             songList.adapter = adapter
 
             FastScroller(
@@ -66,7 +69,7 @@ class ListFragment(
                 }
 
                 if (task.await() != null) {
-                    adapter.setData(task.await()!!)
+                    adapter.data = task.await()!!
                     adapter.notifyDataSetChanged()
                 }
             }
@@ -89,10 +92,72 @@ class ListFragment(
                 }
 
                 if (task.await() != null) {
-                    adapter.setData(task.await()!!)
+                    adapter.data = (task.await()!!)
                     adapter.notifyDataSetChanged()
                 }
             }
+        }
+    }
+
+    fun expandData(id: String) {
+        isInSub = true
+        var adapter = songList.adapter as GenericRecyclerAdapter
+
+        oldData = adapter.data
+        oldPosition = songList.verticalScrollbarPosition
+
+        GlobalScope.launch {
+            val dataTask = async {
+                val newData = ArrayList<CardData>(0)
+                val item = adapter.data.find { it.id == id }
+
+                if (item != null) {
+                    //This is awful and I hate it, but it'll do for now
+                    if (item.url.contains("artist")) {
+                        //Must be an artist
+                        (this@ListFragment.activity as MainActivity).mContentManager.getSongsFromArtist(
+                            id
+                        ).forEach { newData.add(it) }
+                    } else if (item.url.contains("album")) {
+
+                        (this@ListFragment.activity as MainActivity).mContentManager.getSongsFromAlbum(
+                            id
+                        ).forEach { newData.add(it) }
+
+                    }
+                }
+
+
+                newData
+            }
+            adapter.data = dataTask.await()
+            ui { adapter.notifyDataSetChanged() }
+        }
+    }
+
+    fun onBackPressed(): Boolean {
+        if (oldData != null) {
+            isInSub = false
+
+            val adapter = songList.adapter as GenericRecyclerAdapter
+
+
+            adapter.data = oldData as ArrayList<CardData>
+
+            adapter.notifyDataSetChanged()
+
+            songList.verticalScrollbarPosition = oldPosition
+
+            oldData = null
+            return false
+        }
+
+        return true
+    }
+
+    private fun ui(call: () -> Unit) {
+        GlobalScope.launch(Dispatchers.Main) {
+            call()
         }
     }
 }

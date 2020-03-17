@@ -12,9 +12,9 @@ import pw.dvd604.music.data.CardData
 
 class CardRecyclerAdapter(
     private val context: Context,
-    private var data: List<CardData> = ArrayList(0),
+    override var data: ArrayList<CardData> = ArrayList(0),
     private val listener: (CardData) -> Unit
-) : RecyclerView.Adapter<CardViewHolder>() {
+) : GenericRecyclerAdapter<CardViewHolder>(context, data, listener) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
         val inflater: LayoutInflater =
@@ -26,10 +26,6 @@ class CardRecyclerAdapter(
 
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) =
         holder.bind(data[position], listener)
-
-    fun setData(newData: ArrayList<CardData>) {
-        data = newData
-    }
 }
 
 class CardViewHolder(view: View) : RecyclerView.ViewHolder(view) {

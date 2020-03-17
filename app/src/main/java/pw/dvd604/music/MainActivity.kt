@@ -259,12 +259,16 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
 
     private fun getOnClickAction(position: Int): ((id: String) -> Unit)? {
         return when (position) {
-            1 -> {
+            0, 1 -> {
                 {
                     val adapter = pager.adapter as ScreenSlidePagerAdapter
-
-
-                }//this.supportFragmentManager.beginTransaction(). }
+                    val fragment: ListFragment = adapter.mCurrentFragment as ListFragment
+                    if (!fragment.isInSub) {
+                        fragment.expandData(it)
+                    } else {
+                        controllerHandler.play(it)
+                    }
+                }
             }
             2 -> {
                 { controllerHandler.play(it) }
@@ -315,5 +319,12 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
 
     private fun createListData(): ArrayList<CardData> {
         return ArrayList<CardData>(0)
+    }
+
+    override fun onBackPressed() {
+        val adapter = pager.adapter as ScreenSlidePagerAdapter
+        if ((adapter.mCurrentFragment as ListFragment).onBackPressed()) {
+            super.onBackPressed()
+        }
     }
 }
