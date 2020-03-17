@@ -35,8 +35,10 @@ abstract class SafeBroadcastReceiver : BroadcastReceiver() {
     }
 
     private fun unregisterInternal(context: Context): Boolean {
-        context.unregisterReceiver(this)
-        registered = false
+        if (registered) {
+            context.unregisterReceiver(this)
+            registered = false
+        }
         return true
     }
 }

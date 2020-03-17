@@ -4,12 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_songs.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.R
@@ -17,7 +19,6 @@ import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.adapter.CardRecyclerAdapter
 import pw.dvd604.music.data.adapter.GenericRecyclerAdapter
 import pw.dvd604.music.data.adapter.ListRecyclerAdapter
-import pw.dvd604.music.ui.FastScroller
 
 enum class ListLayout {
     GRID, LIST
@@ -51,48 +52,32 @@ class ListFragment(
         retainInstance = true
         application = (this.activity as MainActivity).getApp()
 
-        if (layout == ListLayout.GRID) {
+        val adapter = if (layout == ListLayout.GRID) {
             songList.layoutManager = GridLayoutManager(this@ListFragment.context, 3)
-            val adapter =
-                CardRecyclerAdapter(this@ListFragment.context!!) { onClick?.invoke(it.id) }
-            songList.adapter = adapter
-
-            FastScroller(
-                songList,
-                ContextCompat.getColor(this@ListFragment.context!!, R.color.colorAccent),
-                ContextCompat.getColor(this@ListFragment.context!!, R.color.colorPrimaryDark)
-            )
-
-            CoroutineScope(Dispatchers.Main).launch {
-                val task = async(Dispatchers.Main) {
-                    getData?.invoke()
-                }
-
-                if (task.await() != null) {
-                    adapter.data = task.await()!!
-                    adapter.notifyDataSetChanged()
-                }
-            }
+            CardRecyclerAdapter(this@ListFragment.context!!) { onClick?.invoke(it.id) }
         } else {
             songList.layoutManager = LinearLayoutManager(context)
-            val adapter = ListRecyclerAdapter(this@ListFragment.context!!) {
+            ListRecyclerAdapter(this@ListFragment.context!!) {
                 onClick?.invoke(it.id)
             }
-            songList.adapter = adapter
+        }
 
-            FastScroller(
-                songList,
-                ContextCompat.getColor(this@ListFragment.context!!, R.color.colorAccent),
-                ContextCompat.getColor(this@ListFragment.context!!, R.color.colorPrimaryDark)
-            )
+        songList.adapter = adapter
 
-            CoroutineScope(Dispatchers.Main).launch {
-                val task = async(Dispatchers.Main) {
-                    getData?.invoke()
-                }
+        /* FastScroller(
+             songList,
+             ContextCompat.getColor(this@ListFragment.context!!, R.color.colorAccent),
+             ContextCompat.getColor(this@ListFragment.context!!, R.color.colorPrimaryDark)
+         )*/
 
-                if (task.await() != null) {
-                    adapter.data = (task.await()!!)
+        GlobalScope.launch {
+            val task = async {
+                getData?.invoke()
+            }
+
+            if (task.await() != null) {
+                adapter.data = task.await()!!
+                ui {
                     adapter.notifyDataSetChanged()
                 }
             }
