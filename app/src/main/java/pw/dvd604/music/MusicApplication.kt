@@ -15,6 +15,7 @@ import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
 import pw.dvd604.music.data.storage.DatabaseHelper
 import pw.dvd604.music.util.Settings
+import java.util.*
 import kotlin.system.exitProcess
 
 
@@ -44,6 +45,10 @@ class MusicApplication : Application(), Application.ActivityLifecycleCallbacks {
         internalStorage = filesDir.path
 
         Settings.init(this)
+        val id = UUID.randomUUID().toString()
+        tracker?.userId = Settings.getSetting(Settings.tracking, id)
+        Settings.putString(Settings.tracking, id)
+
 
         GlobalScope.launch {
             try {

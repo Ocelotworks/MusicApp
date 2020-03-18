@@ -145,7 +145,7 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
             if (i > 0) {
                 val cursor =
                     (service.applicationContext as MusicApplication).readableDatabase.rawQuery(
-                        "SELECT id FROM ${DatabaseContract.Song.TABLE_NAME} ORDER BY RANDOM() LIMIT 1",
+                        "SELECT ${DatabaseContract.Song.TABLE_NAME}.id FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Opinion.TABLE_NAME} ON ${DatabaseContract.Opinion.TABLE_NAME}.id =  ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.Opinion.COLUMN_NAME_OPINION} <> -1 ORDER BY RANDOM() LIMIT 1",
                         null,
                         null
                     )

@@ -14,6 +14,7 @@ class Settings {
         const val shuffleOffline = "shuffleOffline"
         const val developer = "developerOptions"
         const val autoSkip = "autoSkipOnDislike"
+        const val tracking = "trackingID"
 
         @SuppressLint("SdCardPath")
         val storage = BuildConfig.storage.replace(

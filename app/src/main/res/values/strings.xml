@@ -1,41 +1,19 @@
 <resources>
-    <string name="app_name">Neilify</string>
-    <string name="title">Title</string>
-    <string name="artist">Artist</string>
-    <string name="genre">Genre</string>
-    <string name="album">Album</string>
-    <string name="search">Search</string>
+    <string name="app_name">Petify</string>
     <string name="song_name">Nothing Playing</string>
     <string name="song_author">Swipe up to select a song</string>
     <string name="todo">TODO</string>
     <string name="songDuration">00:00</string>
     <string name="channel_name">Media Controls</string>
     <string name="channel_description">Lorem Ipsum</string>
-    <string name="pause">Pause</string>
-    <string name="homelabError">This feature is only enabled when playing from Petify</string>
     <string name="channel_name_progress">Download Progress</string>
     <string name="channel_description_progress">Lorem Ipsum</string>
     <string name="channel_name_update">Update</string>
     <string name="channel_description_update">Lorem Ipsum</string>
-    <string name="blacklist_message">Enter type:term to exclude that content\ngenre:rap or playlist:bad media for example</string>
-    <string name="preference_multiline_hint">One entry per line</string>
-    <string name="notification_update_title">Update available!</string>
-    <string name="notification_update_text">An update for Petify is available</string>
     <string name="petify_music_channel">petify_music</string>
     <string name="petify_download_channel">petify_download_channel</string>
     <string name="petify_update_channel">petify_update_channel</string>
     <string name="petify_hash_channel">petify_hash_channel</string>
     <string name="petify_hash_name">Hash</string>
     <string name="petify_hash_description">Lorem Ipsum</string>
-    <string name="playlist">Playlist</string>
-    <string name="addQueue">Queue</string>
-    <string name="empty">Empty</string>
-    <string name="loading_string">Warming things up</string>
-    <string-array name="searchEntries">
-        <item>Song</item>
-        <item>Artist</item>
-        <item>Genre</item>
-        <item>Album</item>
-        <item>Playlist</item>
-    </string-array>
 </resources>

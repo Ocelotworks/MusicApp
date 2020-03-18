@@ -2,12 +2,6 @@
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
         android:theme="@style/AppTheme">
     <PreferenceCategory android:title="General">
-        <EditTextPreference
-                android:dialogLayout="@layout/preference_multiline"
-                android:dialogMessage="@string/blacklist_message"
-                android:key="blacklist"
-                android:summary="Don't like rap? This is for you"
-                android:title="Content blacklist" />
 
         <EditTextPreference
                 android:key="apiKey"
@@ -30,12 +24,15 @@
                 android:defaultValue="1"
                 android:key="shuffleOffline"
                 android:title="Shuffle only downloaded media" />
-
-        <SwitchPreferenceCompat
-                android:defaultValue="0"
-                android:key="developerOptions"
-                android:title="Developer Options" />
-
     </PreferenceCategory>
+
+    <SwitchPreferenceCompat
+            android:defaultValue="0"
+            android:key="developerOptions"
+            android:title="Developer Options" />
+
+    <EditTextPreference
+            android:key="trackingID"
+            android:title="Change tracking ID" />
 
 </androidx.preference.PreferenceScreen>

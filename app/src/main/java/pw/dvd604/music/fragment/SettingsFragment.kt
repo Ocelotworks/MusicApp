@@ -7,6 +7,7 @@ import androidx.preference.PreferenceFragmentCompat
 import pw.dvd604.music.R
 import pw.dvd604.music.service.downloader.DownloadService
 import pw.dvd604.music.service.downloader.HashService
+import pw.dvd604.music.util.Settings
 
 class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -17,6 +18,10 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         super.onCreate(savedInstanceState)
         this.findPreference<Preference>("download")?.onPreferenceClickListener = this
         this.findPreference<Preference>("hash")?.onPreferenceClickListener = this
+
+        if (!Settings.getBoolean(Settings.developer)) {
+            this.preferenceScreen.removePreference(this.findPreference("trackingID"))
+        }
     }
 
     override fun onPreferenceClick(preference: Preference?): Boolean {

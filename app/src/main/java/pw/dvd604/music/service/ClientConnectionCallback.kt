@@ -91,7 +91,6 @@ class ControllerCallback(private val activity: MainActivity) : MediaControllerCo
             activity.btnNeutral.setImageResource(R.drawable.baseline_thumb_up_white_36)
         } else {
             activity.btnNeutral.setImageResource(R.drawable.baseline_thumb_down_white_36)
-            this.activity.mediaController.transportControls.skipToNext()
         }
     }
 

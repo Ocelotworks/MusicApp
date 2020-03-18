@@ -201,7 +201,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
                     "Songs"
                 }
                 3 -> {
-                    "Playlist"
+                    "Playlists"
                 }
                 4 -> {
                     "Settings"
@@ -216,7 +216,6 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
             return when (position) {
                 0, 1, 2, 3, 5 -> {
                     ListFragment(
-                        getPageTitle(position).toString(),
                         getPagerLayout(position),
                         getDataCallback(position),
                         getOnClickAction(position)
