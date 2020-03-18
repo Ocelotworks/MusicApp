@@ -279,9 +279,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
     }
 
     private fun getPlaylistData(): ArrayList<CardData> {
-        val data = ArrayList<CardData>(0)
-        data.add(CardData("To do", "123", "Placeholder", "//"))
-        return data
+        return mContentManager.getPlaylists()
     }
 
     private fun getSongData(): ArrayList<CardData> {

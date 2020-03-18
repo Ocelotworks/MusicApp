@@ -18,10 +18,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.MusicApplication
-import pw.dvd604.music.data.Album
-import pw.dvd604.music.data.Artist
-import pw.dvd604.music.data.CardData
-import pw.dvd604.music.data.Song
+import pw.dvd604.music.data.*
 import pw.dvd604.music.data.storage.DatabaseContract
 import pw.dvd604.music.data.storage.Table
 import pw.dvd604.music.ui.dialog.ViewDialog
@@ -52,6 +49,7 @@ class ContentManager(
     lateinit var songArray: JSONArray
     lateinit var artistArray: JSONArray
     lateinit var albumArray: JSONArray
+    lateinit var playlistArray: JSONArray
 
     fun insert(table: Table, values: ContentValues) {
         app.database.insertWithOnConflict(
@@ -81,7 +79,12 @@ class ContentManager(
                                 "${BuildConfig.defaultURL}album",
                                 Response.Listener { res ->
                                     albumArray = JSONArray(res)
-                                    beginParse(dialog)
+                                    HTTP(context).getReq(
+                                        "${BuildConfig.defaultURL}playlist",
+                                        Response.Listener { res ->
+                                            playlistArray = JSONArray(res)
+                                            beginParse(dialog)
+                                        })
                                 })
                         })
                 })
@@ -145,6 +148,14 @@ class ContentManager(
 
                         insert(DatabaseContract.Album, album.toValues())
                     }
+
+                    for (i in 0 until playlistArray.length()) {
+                        ui { dialog.setText("$i / ${playlistArray.length()} Playlists") }
+                        val data = playlistArray.getJSONObject(i)
+                        val playlist = Playlist.parse(data)
+
+                        insert(DatabaseContract.Playlist, playlist.toValues())
+                    }
                     dialog.hideDialog()
                     ui { doneBuild() }
                 } else {
@@ -174,7 +185,7 @@ class ContentManager(
                                 DatabaseContract.Song.COLUMN_NAME_TITLE
                             )
                         ),
-                        type = "",
+                        type = "song",
                         url = "",
                         subtext = getString(
                             getColumnIndexOrThrow(DatabaseContract.Artist.COLUMN_NAME_NAME)
@@ -210,7 +221,7 @@ class ContentManager(
                                 DatabaseContract.Song.COLUMN_NAME_TITLE
                             )
                         ),
-                        type = "",
+                        type = "song",
                         url = "",
                         subtext = getString(
                             getColumnIndexOrThrow(DatabaseContract.Artist.COLUMN_NAME_NAME)
@@ -262,11 +273,44 @@ class ContentManager(
                                 DatabaseContract.Song.COLUMN_NAME_TITLE
                             )
                         ),
-                        type = "",
+                        type = "song",
                         url = "",
                         subtext = getString(
                             getColumnIndexOrThrow(DatabaseContract.Artist.COLUMN_NAME_NAME)
                         )
+                    )
+
+                    list.add(data)
+                }
+            }
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("", "", e)
+        }
+
+        return list
+    }
+
+    fun getPlaylists(): ArrayList<CardData> {
+        val list = ArrayList<CardData>(0)
+
+        try {
+            val cursor = app.readableDatabase.rawQuery(
+                "SELECT * FROM ${DatabaseContract.Playlist.TABLE_NAME} ORDER BY ${DatabaseContract.Playlist.COLUMN_NAME_NAME} ASC",
+                null,
+                null
+            )
+            with(cursor) {
+                while (moveToNext()) {
+                    val data = CardData(
+                        id = getString(getColumnIndexOrThrow("id")),
+                        title = getString(
+                            getColumnIndexOrThrow(
+                                DatabaseContract.Playlist.COLUMN_NAME_NAME
+                            )
+                        ),
+                        type = "playlist",
+                        url = ""
                     )
 
                     list.add(data)

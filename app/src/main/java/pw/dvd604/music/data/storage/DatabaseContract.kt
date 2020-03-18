@@ -43,12 +43,10 @@ object DatabaseContract {
     object Playlist : Table {
         override var TABLE_NAME = "playlists"
         const val COLUMN_NAME_NAME = "name"
-        const val COLUMN_NAME_OWNER = "owner"
 
         override var CREATE_TABLE = "CREATE TABLE $TABLE_NAME (" +
                 "id TEXT NOT NULL PRIMARY KEY," +
-                "$COLUMN_NAME_NAME TEXT NOT NULL," +
-                "$COLUMN_NAME_OWNER TEXT NOT NULL)"
+                "$COLUMN_NAME_NAME TEXT NOT NULL)"
         override var DROP_TABLE = "DROP TABLE IF EXISTS $TABLE_NAME"
     }
 

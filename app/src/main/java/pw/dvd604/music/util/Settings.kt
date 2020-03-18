@@ -1,11 +1,8 @@
 package pw.dvd604.music.util
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Environment
 import androidx.preference.PreferenceManager
-import pw.dvd604.music.BuildConfig
 
 class Settings {
     companion object {
@@ -15,19 +12,16 @@ class Settings {
         const val developer = "developerOptions"
         const val autoSkip = "autoSkipOnDislike"
         const val tracking = "trackingID"
-
-        @SuppressLint("SdCardPath")
-        val storage = BuildConfig.storage.replace(
-            "/sdcard/",
-            Environment.getExternalStorageDirectory().path,
-            true
-        )
+        const val api = "apiKey"
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             offlineMusic to true,
             shuffleOffline to true,
             autoSkip to true,
-            developer to false
+            developer to false,
+            autoSkip to true,
+            tracking to "",
+            api to ""
         )
 
         var prefs: SharedPreferences? = null

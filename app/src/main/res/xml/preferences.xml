@@ -12,6 +12,15 @@
                 android:key="autoSkipOnDislike"
                 android:title="Auto skip on song Dislike" />
 
+
+
+        <SwitchPreferenceCompat
+                android:defaultValue="1"
+                android:key="shuffleOffline"
+                android:title="Shuffle only downloaded media" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Temporary Homes for Internal Controls">
         <Preference
                 android:key="download"
                 android:title="Download all songs" />
@@ -20,16 +29,17 @@
                 android:key="hash"
                 android:title="Hash all songs" />
 
-        <SwitchPreferenceCompat
-                android:defaultValue="1"
-                android:key="shuffleOffline"
-                android:title="Shuffle only downloaded media" />
+        <Preference
+                android:key="rebuild"
+                android:title="Rebuild local database" />
     </PreferenceCategory>
 
-    <SwitchPreferenceCompat
-            android:defaultValue="0"
-            android:key="developerOptions"
-            android:title="Developer Options" />
+    <PreferenceCategory android:title="Developer Settings">
+        <SwitchPreferenceCompat
+                android:defaultValue="0"
+                android:key="developerOptions"
+                android:title="Developer Options" />
+    </PreferenceCategory>
 
     <EditTextPreference
             android:key="trackingID"
