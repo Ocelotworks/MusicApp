@@ -80,7 +80,7 @@ class ContentManager(
                                 Response.Listener { res ->
                                     albumArray = JSONArray(res)
                                     HTTP(context).getReq(
-                                        "${BuildConfig.defaultURL}playlist",
+                                        "${BuildConfig.defaultURL}playlist?include-songs=true",
                                         Response.Listener { res ->
                                             playlistArray = JSONArray(res)
                                             beginParse(dialog)
@@ -155,6 +155,21 @@ class ContentManager(
                         val playlist = Playlist.parse(data)
 
                         insert(DatabaseContract.Playlist, playlist.toValues())
+
+                        val songList = data.getJSONArray("songs")
+                        for (j in 0 until songList.length()) {
+                            val songData = songList.getJSONObject(j)
+
+                            val id = songData.getString("id")
+                            val values = ContentValues().apply {
+                                this.put(
+                                    DatabaseContract.PlaylistSongs.COLUMN_NAME_PLAYLIST_ID,
+                                    playlist.id
+                                )
+                                this.put(DatabaseContract.PlaylistSongs.COLUMN_NAME_SONG_ID, id)
+                            }
+                            insert(DatabaseContract.PlaylistSongs, values)
+                        }
                     }
                     dialog.hideDialog()
                     ui { doneBuild() }
@@ -310,7 +325,7 @@ class ContentManager(
                             )
                         ),
                         type = "playlist",
-                        url = ""
+                        url = "playlist"
                     )
 
                     list.add(data)
@@ -321,6 +336,47 @@ class ContentManager(
             Log.e("", "", e)
         }
 
+        return list
+    }
+
+    fun getPlaylistContents(id: String): ArrayList<CardData> {
+        val list = ArrayList<CardData>(0)
+
+        try {
+            val cursor = app.readableDatabase.rawQuery(
+                "SELECT ${DatabaseContract.Song.TABLE_NAME}.id, ${DatabaseContract.Song.COLUMN_NAME_TITLE}, ${DatabaseContract.Artist.COLUMN_NAME_NAME} FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Artist.TABLE_NAME} ON ${DatabaseContract.Artist.TABLE_NAME}.id = ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_ARTIST} INNER JOIN ${DatabaseContract.PlaylistSongs.TABLE_NAME} ON ${DatabaseContract.PlaylistSongs.TABLE_NAME}.${DatabaseContract.PlaylistSongs.COLUMN_NAME_SONG_ID} = ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.PlaylistSongs.TABLE_NAME}.${DatabaseContract.PlaylistSongs.COLUMN_NAME_PLAYLIST_ID} = ?",
+                arrayOf(id),
+                null
+            )
+
+            Log.e(
+                "Test",
+                "SELECT ${DatabaseContract.Song.TABLE_NAME}.id, ${DatabaseContract.Song.COLUMN_NAME_TITLE}, ${DatabaseContract.Artist.COLUMN_NAME_NAME} FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Artist.TABLE_NAME} ON ${DatabaseContract.Artist.TABLE_NAME}.id = ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_ARTIST} INNER JOIN ${DatabaseContract.PlaylistSongs.TABLE_NAME} ON ${DatabaseContract.PlaylistSongs.TABLE_NAME}.${DatabaseContract.PlaylistSongs.COLUMN_NAME_SONG_ID} = ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.PlaylistSongs.TABLE_NAME}.${DatabaseContract.PlaylistSongs.COLUMN_NAME_PLAYLIST_ID} = $id"
+            )
+
+            with(cursor) {
+                while (moveToNext()) {
+                    val data = CardData(
+                        id = getString(getColumnIndexOrThrow("id")),
+                        title = getString(
+                            getColumnIndexOrThrow(
+                                DatabaseContract.Song.COLUMN_NAME_TITLE
+                            )
+                        ),
+                        type = "song",
+                        url = "",
+                        subtext = getString(
+                            getColumnIndexOrThrow(DatabaseContract.Artist.COLUMN_NAME_NAME)
+                        )
+                    )
+
+                    list.add(data)
+                }
+            }
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("", "", e)
+        }
         return list
     }
 }

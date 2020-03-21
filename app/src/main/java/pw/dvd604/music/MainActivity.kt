@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -258,11 +259,12 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
 
     private fun getOnClickAction(position: Int): ((id: String) -> Unit)? {
         return when (position) {
-            0, 1 -> {
+            0, 1, 3 -> {
                 {
                     val adapter = pager.adapter as ScreenSlidePagerAdapter
                     val fragment: ListFragment = adapter.mCurrentFragment as ListFragment
                     if (!fragment.isInSub) {
+                        Log.e("Test", "Yes")
                         fragment.expandData(it)
                     } else {
                         controllerHandler.play(it)
