@@ -1,7 +1,6 @@
 package pw.dvd604.music.fragment
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -112,28 +111,26 @@ class ListFragment(
             val dataTask = async {
                 val newData = ArrayList<CardData>(0)
                 val item = adapter.data.find { it.id == id }
-                Log.e("Test", item?.url)
                 if (item != null) {
-                    //This is awful and I hate it, but it'll do for now
-                    when {
-                        item.url.contains("artist") -> {
+                    when (item.type) {
+                        "artist" -> {
                             //Must be an artist
                             (this@ListFragment.activity as MainActivity).mContentManager.getSongsFromArtist(
                                 id
                             ).forEach { newData.add(it) }
                         }
-                        item.url.contains("album") -> {
+                        "album" -> {
 
                             (this@ListFragment.activity as MainActivity).mContentManager.getSongsFromAlbum(
                                 id
                             ).forEach {
-                                it.id = item.id
+                                //it.id = item.id
                                 it.url = item.url
                                 newData.add(it)
                             }
 
                         }
-                        item.url.contains("playlist") -> {
+                        "playlist" -> {
                             (this@ListFragment.activity as MainActivity).mContentManager.getPlaylistContents(
                                 id
                             ).forEach {
@@ -175,5 +172,9 @@ class ListFragment(
         GlobalScope.launch(Dispatchers.Main) {
             call()
         }
+    }
+
+    fun resetView() {
+        onBackPressed()
     }
 }

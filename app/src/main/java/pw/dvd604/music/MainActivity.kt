@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -171,6 +170,8 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
 
         override fun setPrimaryItem(container: ViewGroup, position: Int, obj: Any) {
             if (mCurrentFragment != obj) {
+                if (mCurrentFragment != null)
+                    (mCurrentFragment as ListFragment).resetView()
                 mCurrentFragment = obj as Fragment
             }
             super.setPrimaryItem(container, position, obj)
@@ -215,7 +216,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
 
         override fun getItem(position: Int): Fragment {
             return when (position) {
-                0, 1, 2, 3, 5 -> {
+                0, 1, 2, 3 -> {
                     ListFragment(
                         getPagerLayout(position),
                         getDataCallback(position),
@@ -230,31 +231,30 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
                 }
             }
         }
+    }
 
-        private fun getDataCallback(position: Int): (() -> ArrayList<CardData>)? {
-            return when (position) {
-                0 -> {
-                    // "Albums"
-                    ::getAlbumData
-                }
-                1 -> {
-                    //  "Artists"
-                    ::getArtistData
-                }
-                2 -> {
-                    //"Songs"
-                    ::getSongData
-                }
-                3 -> {
-                    //"Playlist"
-                    ::getPlaylistData
-                }
-                else -> {
-                    ::createListData
-                }
+    private fun getDataCallback(position: Int): (() -> ArrayList<CardData>)? {
+        return when (position) {
+            0 -> {
+                // "Albums"
+                ::getAlbumData
+            }
+            1 -> {
+                //  "Artists"
+                ::getArtistData
+            }
+            2 -> {
+                //"Songs"
+                ::getSongData
+            }
+            3 -> {
+                //"Playlist"
+                ::getPlaylistData
+            }
+            else -> {
+                ::createListData
             }
         }
-
     }
 
     private fun getOnClickAction(position: Int): ((id: String) -> Unit)? {
@@ -264,7 +264,6 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
                     val adapter = pager.adapter as ScreenSlidePagerAdapter
                     val fragment: ListFragment = adapter.mCurrentFragment as ListFragment
                     if (!fragment.isInSub) {
-                        Log.e("Test", "Yes")
                         fragment.expandData(it)
                     } else {
                         controllerHandler.play(it)

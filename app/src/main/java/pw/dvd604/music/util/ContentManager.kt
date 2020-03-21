@@ -349,11 +349,6 @@ class ContentManager(
                 null
             )
 
-            Log.e(
-                "Test",
-                "SELECT ${DatabaseContract.Song.TABLE_NAME}.id, ${DatabaseContract.Song.COLUMN_NAME_TITLE}, ${DatabaseContract.Artist.COLUMN_NAME_NAME} FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Artist.TABLE_NAME} ON ${DatabaseContract.Artist.TABLE_NAME}.id = ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_ARTIST} INNER JOIN ${DatabaseContract.PlaylistSongs.TABLE_NAME} ON ${DatabaseContract.PlaylistSongs.TABLE_NAME}.${DatabaseContract.PlaylistSongs.COLUMN_NAME_SONG_ID} = ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.PlaylistSongs.TABLE_NAME}.${DatabaseContract.PlaylistSongs.COLUMN_NAME_PLAYLIST_ID} = $id"
-            )
-
             with(cursor) {
                 while (moveToNext()) {
                     val data = CardData(
