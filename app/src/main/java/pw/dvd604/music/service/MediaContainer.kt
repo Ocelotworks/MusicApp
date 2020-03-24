@@ -146,7 +146,7 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
         GlobalScope.launch {
             if (i > 0) {
                 val normalSQL =
-                    "SELECT ${DatabaseContract.Song.TABLE_NAME}.id FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Opinion.TABLE_NAME} ON ${DatabaseContract.Opinion.TABLE_NAME}.id =  ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.Opinion.COLUMN_NAME_OPINION} <> -1 ORDER BY RANDOM() LIMIT 1"
+                    "SELECT ${DatabaseContract.Song.TABLE_NAME}.id FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Opinion.TABLE_NAME} ON ${DatabaseContract.Opinion.TABLE_NAME}.id =  ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.Opinion.COLUMN_NAME_OPINION} <> -1 AND ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_TITLE} <> 'Unknown' ORDER BY RANDOM() LIMIT 1"
                 val playlistSQL =
                     "SELECT ${DatabaseContract.Song.TABLE_NAME}.id FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Opinion.TABLE_NAME} ON ${DatabaseContract.Opinion.TABLE_NAME}.id =  ${DatabaseContract.Song.TABLE_NAME}.id INNER JOIN ${DatabaseContract.PlaylistSongs.TABLE_NAME} ON ${DatabaseContract.PlaylistSongs.TABLE_NAME}.${DatabaseContract.PlaylistSongs.COLUMN_NAME_SONG_ID} = ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.Opinion.COLUMN_NAME_OPINION} <> -1 AND ${DatabaseContract.PlaylistSongs.COLUMN_NAME_PLAYLIST_ID} = ? ORDER BY RANDOM() LIMIT 1"
 
