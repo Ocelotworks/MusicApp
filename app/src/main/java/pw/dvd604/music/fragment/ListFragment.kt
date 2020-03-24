@@ -20,6 +20,7 @@ import pw.dvd604.music.data.CardData
 import pw.dvd604.music.data.adapter.CardRecyclerAdapter
 import pw.dvd604.music.data.adapter.GenericRecyclerAdapter
 import pw.dvd604.music.data.adapter.ListRecyclerAdapter
+import pw.dvd604.music.service.MediaContainer
 import pw.dvd604.music.ui.FastScroller
 
 enum class ListLayout {
@@ -131,6 +132,7 @@ class ListFragment(
 
                         }
                         "playlist" -> {
+                            MediaContainer.playlistID = id
                             (this@ListFragment.activity as MainActivity).mContentManager.getPlaylistContents(
                                 id
                             ).forEach {
@@ -162,6 +164,7 @@ class ListFragment(
             songList.scrollToPosition(oldPosition)
 
             oldData = null
+            MediaContainer.playlistID = ""
             return false
         }
 

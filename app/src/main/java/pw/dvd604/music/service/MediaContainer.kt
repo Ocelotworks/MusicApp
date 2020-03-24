@@ -23,6 +23,7 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
         lateinit var becomingNoisyReceiver: BecomingNoisyReceiver
         lateinit var afChangeListener: AudioManager.OnAudioFocusChangeListener
         lateinit var request: AudioFocusRequest
+        var playlistID = ""
         val songsPlayed = ArrayList<String>(0)
     }
 
@@ -143,10 +144,23 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
     fun skip(i: Int) {
         GlobalScope.launch {
             if (i > 0) {
+                val normalSQL =
+                    "SELECT ${DatabaseContract.Song.TABLE_NAME}.id FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Opinion.TABLE_NAME} ON ${DatabaseContract.Opinion.TABLE_NAME}.id =  ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.Opinion.COLUMN_NAME_OPINION} <> -1 ORDER BY RANDOM() LIMIT 1"
+                val playlistSQL =
+                    "SELECT ${DatabaseContract.Song.TABLE_NAME}.id FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Opinion.TABLE_NAME} ON ${DatabaseContract.Opinion.TABLE_NAME}.id =  ${DatabaseContract.Song.TABLE_NAME}.id INNER JOIN ${DatabaseContract.PlaylistSongs.TABLE_NAME} ON ${DatabaseContract.PlaylistSongs.TABLE_NAME}.${DatabaseContract.PlaylistSongs.COLUMN_NAME_SONG_ID} = ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.Opinion.COLUMN_NAME_OPINION} <> -1 AND ${DatabaseContract.PlaylistSongs.COLUMN_NAME_PLAYLIST_ID} = ? ORDER BY RANDOM() LIMIT 1"
+
                 val cursor =
                     (service.applicationContext as MusicApplication).readableDatabase.rawQuery(
-                        "SELECT ${DatabaseContract.Song.TABLE_NAME}.id FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Opinion.TABLE_NAME} ON ${DatabaseContract.Opinion.TABLE_NAME}.id =  ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.Opinion.COLUMN_NAME_OPINION} <> -1 ORDER BY RANDOM() LIMIT 1",
-                        null,
+                        if (playlistID != "") {
+                            playlistSQL
+                        } else {
+                            normalSQL
+                        },
+                        if (playlistID != "") {
+                            arrayOf(playlistID)
+                        } else {
+                            null
+                        },
                         null
                     )
 
