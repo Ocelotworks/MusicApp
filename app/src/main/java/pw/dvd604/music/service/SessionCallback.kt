@@ -117,6 +117,7 @@ class SessionCallback(private val service: MediaPlaybackService) : MediaSessionC
         lastID = mediaId ?: ""
 
         if (mediaId == null) return
+        MediaContainer.songID = lastID
 
         GlobalScope.launch {
             val meta = service.mNotificationBuilder.buildMetaFromID(mediaId)

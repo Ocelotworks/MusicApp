@@ -29,6 +29,7 @@ import pw.dvd604.music.service.MediaPlaybackService
 import pw.dvd604.music.ui.OpinionButtonController
 import pw.dvd604.music.util.ContentManager
 import pw.dvd604.music.util.ControllerHandler
+import pw.dvd604.music.util.HTTP
 import pw.dvd604.music.util.Settings
 
 private const val NUM_PAGES = 5
@@ -100,6 +101,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
             1 -> {
                 val rating = Rating.newThumbRating(true)
                 this.mediaController.transportControls.setRating(rating)
+                HTTP(this).postLike()
             }
             0 -> {
                 this.mediaController.transportControls.setRating(Rating.newUnratedRating(Rating.RATING_THUMB_UP_DOWN))
@@ -112,6 +114,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
 
                 val rating = Rating.newThumbRating(false)
                 this.mediaController.transportControls.setRating(rating)
+                HTTP(this).postDislike()
             }
         }
     }
@@ -138,6 +141,7 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
     fun onClick(v: View) = when (v.id) {
         this.btnNext.id -> {
             this.mediaController.transportControls.skipToNext()
+            HTTP(this).postSkip()
         }
         this.smallPausePlay.id,
         this.btnPause.id -> {

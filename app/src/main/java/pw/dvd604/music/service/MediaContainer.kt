@@ -19,6 +19,7 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
     MediaPlayer.OnPreparedListener,
     MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
     companion object {
+        var songID: String = ""
         lateinit var player: MediaPlayer
         lateinit var becomingNoisyReceiver: BecomingNoisyReceiver
         lateinit var afChangeListener: AudioManager.OnAudioFocusChangeListener

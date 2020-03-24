@@ -10,6 +10,7 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONObject
 import pw.dvd604.music.BuildConfig
+import pw.dvd604.music.service.MediaContainer
 
 
 class HTTP(context: Context?) {
@@ -45,7 +46,38 @@ class HTTP(context: Context?) {
 
     }
 
+    fun postReq(url: String) {
+        queue.add(StringRequest(Request.Method.POST, url, null, null))
+    }
+
     fun putReq(url: String, payload: JSONObject?) {
         queue.add(JsonObjectRequest(Request.Method.PUT, url, payload, null, null))
+    }
+
+    fun postSkip() {
+        val apiKey = Settings.getSetting(Settings.api)
+
+        if (apiKey == "")
+            return
+
+        this.postReq("${BuildConfig.defaultURL}song/${MediaContainer.songID}")
+    }
+
+    fun postLike() {
+        val apiKey = Settings.getSetting(Settings.api)
+
+        if (apiKey == "")
+            return
+
+        this.putReq("${BuildConfig.defaultURL}song/${MediaContainer.songID}/like", null)
+    }
+
+    fun postDislike() {
+        val apiKey = Settings.getSetting(Settings.api)
+
+        if (apiKey == "")
+            return
+
+        this.putReq("${BuildConfig.defaultURL}song/${MediaContainer.songID}/dislike", null)
     }
 }
