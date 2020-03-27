@@ -175,7 +175,8 @@ class MainActivity : AppCompatActivity(), SlidingUpPanelLayout.PanelSlideListene
         override fun setPrimaryItem(container: ViewGroup, position: Int, obj: Any) {
             if (mCurrentFragment != obj) {
                 if (mCurrentFragment != null)
-                    (mCurrentFragment as ListFragment).resetView()
+                    if (mCurrentFragment is ListFragment)
+                        (mCurrentFragment as ListFragment).resetView()
                 mCurrentFragment = obj as Fragment
             }
             super.setPrimaryItem(container, position, obj)

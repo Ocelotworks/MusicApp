@@ -186,8 +186,14 @@ class ContentManager(
         val list = ArrayList<CardData>(0)
 
         try {
+
+            val sql = if (Settings.getBoolean(Settings.blacklist)) {
+                "SELECT ${DatabaseContract.Song.TABLE_NAME}.id, ${DatabaseContract.Song.COLUMN_NAME_TITLE}, ${DatabaseContract.Artist.COLUMN_NAME_NAME} FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Artist.TABLE_NAME} ON ${DatabaseContract.Artist.TABLE_NAME}.id = ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_ARTIST} INNER JOIN ${DatabaseContract.Opinion.TABLE_NAME} ON ${DatabaseContract.Opinion.TABLE_NAME}.id = ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.Opinion.COLUMN_NAME_OPINION} <> -1 ORDER BY ${DatabaseContract.Artist.COLUMN_NAME_NAME} ASC"
+            } else {
+                "SELECT ${DatabaseContract.Song.TABLE_NAME}.id, ${DatabaseContract.Song.COLUMN_NAME_TITLE}, ${DatabaseContract.Artist.COLUMN_NAME_NAME} FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Artist.TABLE_NAME} ON ${DatabaseContract.Artist.TABLE_NAME}.id = ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_ARTIST} ORDER BY ${DatabaseContract.Artist.COLUMN_NAME_NAME} ASC"
+            }
             val cursor = app.readableDatabase.rawQuery(
-                "SELECT ${DatabaseContract.Song.TABLE_NAME}.id, ${DatabaseContract.Song.COLUMN_NAME_TITLE}, ${DatabaseContract.Artist.COLUMN_NAME_NAME} FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Artist.TABLE_NAME} ON ${DatabaseContract.Artist.TABLE_NAME}.id = ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_ARTIST} ORDER BY ${DatabaseContract.Artist.COLUMN_NAME_NAME} ASC",
+                sql,
                 null,
                 null
             )

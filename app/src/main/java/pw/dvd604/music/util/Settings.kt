@@ -13,6 +13,7 @@ class Settings {
         const val autoSkip = "autoSkipOnDislike"
         const val tracking = "trackingID"
         const val api = "apiKey"
+        const val blacklist = "dislikeblacklist"
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             offlineMusic to true,
@@ -21,7 +22,8 @@ class Settings {
             developer to false,
             autoSkip to true,
             tracking to "",
-            api to ""
+            api to "",
+            blacklist to false
         )
 
         var prefs: SharedPreferences? = null

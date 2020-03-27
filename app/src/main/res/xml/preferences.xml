@@ -13,11 +13,15 @@
                 android:title="Auto skip on song Dislike" />
 
 
-
         <SwitchPreferenceCompat
                 android:defaultValue="1"
                 android:key="shuffleOffline"
                 android:title="Shuffle only downloaded media" />
+
+        <SwitchPreferenceCompat
+                android:defaultValue="0"
+                android:key="dislikeblacklist"
+                android:title="Treat dislike list as blacklist" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Temporary Homes for Internal Controls">

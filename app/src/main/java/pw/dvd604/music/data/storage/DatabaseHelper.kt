@@ -16,10 +16,13 @@ class DatabaseHelper(context: Context) :
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         // This database is only a cache for online data, so its upgrade policy is
         // to simply to discard the data and start over
-        DatabaseContract.tables.forEach {
+        DatabaseContract.changedTables.forEach {
             db.execSQL(it.DROP_TABLE)
         }
-        onCreate(db)
+
+        DatabaseContract.changedTables.forEach {
+            db.execSQL(it.CREATE_TABLE)
+        }
     }
 
     override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {

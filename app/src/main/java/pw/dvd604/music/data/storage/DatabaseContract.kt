@@ -19,6 +19,16 @@ object DatabaseContract {
         Opinion
     )
 
+    var changedTables = arrayOf(
+        Artist,
+        Playlist,
+        Song,
+        Album,
+        Genre,
+        SongsGenres,
+        PlaylistSongs
+    )
+
     object Opinion : Table {
         override var TABLE_NAME: String = "opinions"
         const val COLUMN_NAME_OPINION = "opinion"
