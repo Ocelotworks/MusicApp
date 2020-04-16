@@ -32,10 +32,12 @@ object DatabaseContract {
     object Opinion : Table {
         override var TABLE_NAME: String = "opinions"
         const val COLUMN_NAME_OPINION = "opinion"
+        const val COLUMN_NAME_SENT = "sent"
 
         override var CREATE_TABLE: String = "CREATE TABLE $TABLE_NAME (" +
                 "id TEXT NOT NULL PRIMARY KEY," +
-                "$COLUMN_NAME_OPINION INTEGER)"
+                "$COLUMN_NAME_OPINION INTEGER," +
+                "$COLUMN_NAME_SENT INTEGER)"
         override var DROP_TABLE: String = "DROP TABLE IF EXISTS $TABLE_NAME"
     }
 

@@ -81,6 +81,7 @@ class SessionCallback(private val service: MediaPlaybackService) : MediaSessionC
                             }
                         }
                     )
+                    put(DatabaseContract.Opinion.COLUMN_NAME_SENT, 0)
                 }
 
                 (service.application as MusicApplication).database.insertWithOnConflict(

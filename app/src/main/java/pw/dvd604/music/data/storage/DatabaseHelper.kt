@@ -16,6 +16,14 @@ class DatabaseHelper(context: Context) :
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         // This database is only a cache for online data, so its upgrade policy is
         // to simply to discard the data and start over
+
+        if (oldVersion == 11 && newVersion == 12) {
+            val sql =
+                "ALTER TABLE ${DatabaseContract.Opinion.TABLE_NAME} ADD ${DatabaseContract.Opinion.COLUMN_NAME_SENT} INTEGER"
+            db.execSQL(sql)
+            return
+        }
+
         DatabaseContract.changedTables.forEach {
             db.execSQL(it.DROP_TABLE)
         }
@@ -31,7 +39,7 @@ class DatabaseHelper(context: Context) :
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 11
+        const val DATABASE_VERSION = 12
         const val DATABASE_NAME = "Neilify.db"
     }
 }
