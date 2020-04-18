@@ -49,4 +49,14 @@
             android:key="trackingID"
             android:title="Change tracking ID" />
 
+    <EditTextPreference
+            android:title="Song Select SQL"
+            android:summary="This can and will break your app so it crashes on startup \n\nUse it at your own risk"
+            android:key="randomSql" />
+
+    <Preference
+            android:key="version"
+            android:title="Petify V0"
+            android:summary="Build number: 0" />
+
 </androidx.preference.PreferenceScreen>

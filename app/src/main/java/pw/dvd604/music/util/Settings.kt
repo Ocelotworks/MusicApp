@@ -3,6 +3,7 @@ package pw.dvd604.music.util
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
+import pw.dvd604.music.data.storage.DatabaseContract
 
 class Settings {
     companion object {
@@ -14,6 +15,7 @@ class Settings {
         const val tracking = "trackingID"
         const val api = "apiKey"
         const val blacklist = "dislikeblacklist"
+        const val sql = "randomSql"
 
         private val prefDefault: HashMap<String, Any> = hashMapOf(
             offlineMusic to true,
@@ -23,7 +25,8 @@ class Settings {
             autoSkip to true,
             tracking to "",
             api to "",
-            blacklist to false
+            blacklist to false,
+            sql to "SELECT ${DatabaseContract.Song.TABLE_NAME}.id FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Opinion.TABLE_NAME} ON ${DatabaseContract.Opinion.TABLE_NAME}.id =  ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.Opinion.COLUMN_NAME_OPINION} <> -1 AND ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_TITLE} <> 'Unknown' AND SUBSTR(${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_TITLE}, 1, 1) <> LOWER(SUBSTR(${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_TITLE}, 1, 1)) ORDER BY RANDOM() LIMIT 1"
         )
 
         var prefs: SharedPreferences? = null

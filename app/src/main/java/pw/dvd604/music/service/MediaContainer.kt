@@ -13,6 +13,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import pw.dvd604.music.MusicApplication
 import pw.dvd604.music.data.storage.DatabaseContract
+import pw.dvd604.music.util.Settings
 import java.io.File
 
 class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.OnErrorListener,
@@ -145,8 +146,11 @@ class MediaContainer(private val service: MediaPlaybackService) : MediaPlayer.On
     fun skip(i: Int) {
         GlobalScope.launch {
             if (i > 0) {
-                val normalSQL =
+                val normalSQL = if (Settings.getBoolean(Settings.developer)) {
+                    Settings.getSetting(Settings.sql)
+                } else {
                     "SELECT ${DatabaseContract.Song.TABLE_NAME}.id FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Opinion.TABLE_NAME} ON ${DatabaseContract.Opinion.TABLE_NAME}.id =  ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.Opinion.COLUMN_NAME_OPINION} <> -1 AND ${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_TITLE} <> 'Unknown' AND SUBSTR(${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_TITLE}, 1, 1) <> LOWER(SUBSTR(${DatabaseContract.Song.TABLE_NAME}.${DatabaseContract.Song.COLUMN_NAME_TITLE}, 1, 1)) ORDER BY RANDOM() LIMIT 1"
+                }
                 val playlistSQL =
                     "SELECT ${DatabaseContract.Song.TABLE_NAME}.id FROM ${DatabaseContract.Song.TABLE_NAME} INNER JOIN ${DatabaseContract.Opinion.TABLE_NAME} ON ${DatabaseContract.Opinion.TABLE_NAME}.id =  ${DatabaseContract.Song.TABLE_NAME}.id INNER JOIN ${DatabaseContract.PlaylistSongs.TABLE_NAME} ON ${DatabaseContract.PlaylistSongs.TABLE_NAME}.${DatabaseContract.PlaylistSongs.COLUMN_NAME_SONG_ID} = ${DatabaseContract.Song.TABLE_NAME}.id WHERE ${DatabaseContract.Opinion.COLUMN_NAME_OPINION} <> -1 AND ${DatabaseContract.PlaylistSongs.COLUMN_NAME_PLAYLIST_ID} = ? ORDER BY RANDOM() LIMIT 1"
 

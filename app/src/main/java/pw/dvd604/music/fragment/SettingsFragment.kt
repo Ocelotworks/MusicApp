@@ -2,8 +2,10 @@ package pw.dvd604.music.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import pw.dvd604.music.BuildConfig
 import pw.dvd604.music.MainActivity
 import pw.dvd604.music.R
 import pw.dvd604.music.data.storage.DatabaseContract
@@ -26,7 +28,16 @@ class SettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
         if (!Settings.getBoolean(Settings.developer)) {
             this.preferenceScreen.removePreference(this.findPreference("trackingID"))
+            this.preferenceScreen.removePreference(this.findPreference("randomSql"))
+        } else {
+            this.preferenceScreen.findPreference<EditTextPreference>("randomSql")?.text =
+                Settings.getSetting(Settings.sql)
         }
+
+        this.preferenceScreen.findPreference<Preference>("version")?.title =
+            "Petify ${BuildConfig.VERSION_NAME}"
+        this.preferenceScreen.findPreference<Preference>("version")?.summary =
+            "Build Number: ${BuildConfig.VERSION_CODE}"
     }
 
     override fun onPreferenceClick(preference: Preference?): Boolean {
